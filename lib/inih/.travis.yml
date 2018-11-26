@@ -1,0 +1,6 @@
+language: c
+sudo: false
+install:
+  - g++ INIReaderTest.cpp -o INIReaderTest.out 
+script:
+  - ./INIReaderTest.out
