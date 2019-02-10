@@ -25,8 +25,8 @@ class Clocks
     static void SetHz(PcvModule module, std::uint32_t hz);
     static std::string GetChargerTypeName(ChargerType chargerType);
     static std::uint32_t GetNearestHz(PcvModule module, bool isCharging, std::uint32_t inHz);
-    static void GetList(PcvModule module, std::uint32_t **outClocks, size_t *outClockCount);
 
   protected:
     static std::uint32_t GetNearestHz(PcvModule module, std::uint32_t inHz);
+    static void GetList(PcvModule module, std::uint32_t **outClocks, size_t *outClockCount);
 };
