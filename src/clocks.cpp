@@ -83,9 +83,10 @@ std::string Clocks::GetChargerTypeName(ChargerType chargerType)
     {
         case ChargerType_Charger: // Official Charger
             return "Official";
-        case ChargerType_Usb:     // Fall-through, unofficial Charger
-        default:
+        case ChargerType_Usb:
             return "Unofficial";
+        default:
+            return "None";
     }
 }
 
@@ -134,7 +135,7 @@ std::uint32_t Clocks::GetNearestHz(PcvModule module, bool isCharging, std::uint3
     } 
     else if (isCharging && module == PcvModule_Gpu && hz > g_gpu_unofficial_charger_max)
     {
-        if(GetConsoleChargerType() != ChargerType_Charger || !IsConsoleDocked())
+        if(GetConsoleChargerType() != ChargerType_Charger && !IsConsoleDocked())
         {
             hz = g_gpu_unofficial_charger_max;
         }
