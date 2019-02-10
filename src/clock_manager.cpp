@@ -46,7 +46,7 @@ void ClockManager::Tick()
 
             if (hz > 0)
             {
-                hz = Clocks::GetNearestHz(g_modules[i], this->chargerType != ChargerType_None, hz);
+                hz = Clocks::GetNearestHz(g_modules[i], this->docked, this->chargerType, hz);
 
                 if (hz != this->freqs[i])
                 {

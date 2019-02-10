@@ -55,9 +55,9 @@ void Clocks::Exit()
     psmExit();
 }
 
-std::string Clocks::GetModeName(bool isDocked)
+std::string Clocks::GetModeName(bool docked)
 {
-    return isDocked ? "docked" : "handheld";
+    return docked ? "docked" : "handheld";
 }
 
 std::string Clocks::GetModuleName(PcvModule module)
@@ -125,23 +125,29 @@ std::uint32_t Clocks::GetCurrentHz(PcvModule module)
     return hz;
 }
 
-std::uint32_t Clocks::GetNearestHz(PcvModule module, bool isCharging, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(PcvModule module, bool docked, ChargerType chargerType, std::uint32_t inHz)
 {
-    std::uint32_t hz = Clocks::GetNearestHz(module, inHz);
+    std::uint32_t hz = GetNearestHz(module, inHz);
+    std::uint32_t maxHz = GetMaxAllowedHz(module, docked, chargerType);
 
-    if (!isCharging && module == PcvModule_Gpu && hz > g_gpu_handheld_max)
-    {
-        hz = g_gpu_handheld_max;
-    } 
-    else if (isCharging && module == PcvModule_Gpu && hz > g_gpu_unofficial_charger_max)
-    {
-        if(GetConsoleChargerType() != ChargerType_Charger && !IsConsoleDocked())
-        {
-            hz = g_gpu_unofficial_charger_max;
-        }
+    if(maxHz != 0) {
+        hz = std::min(hz, maxHz);
     }
 
     return hz;
+}
+
+std::uint32_t Clocks::GetMaxAllowedHz(PcvModule module, bool docked, ChargerType chargerType)
+{
+    if(module == PcvModule_Gpu) {
+        if(chargerType == ChargerType_None) {
+            return g_gpu_handheld_max;
+        } else if(chargerType == ChargerType_Usb) {
+            return g_gpu_unofficial_charger_max;
+        }
+    }
+
+    return 0;
 }
 
 std::uint32_t Clocks::GetNearestHz(PcvModule module, std::uint32_t inHz)
