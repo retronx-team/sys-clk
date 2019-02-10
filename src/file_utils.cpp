@@ -20,7 +20,7 @@ static void _FileUtils_InitializeThreadFunc(void *args)
     svcExitThread();
 }
 
-static void _FileUtils_WaitFSReady()
+void FileUtils::WaitSDServices()
 {
     Handle temporaryHandle = 0;
     std::vector<std::string> requiredServices = {"pcv", "gpio", "pinmux", "psc:c"};
@@ -69,7 +69,7 @@ Result FileUtils::Initialize()
     Result rc = 0;
 
     mutexInit(&g_log_mutex);
-    _FileUtils_WaitFSReady();
+    WaitSDServices();
 
     if (R_SUCCEEDED(rc))
     {
@@ -92,7 +92,7 @@ Result FileUtils::Initialize()
 
         g_has_initialized = true;
 
-        FileUtils::Log("=== " TARGET "boot ===\n");
+        FileUtils::Log("=== " TARGET " boot ===\n");
     }
 
     return rc;

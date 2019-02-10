@@ -50,6 +50,7 @@ static std::uint32_t g_gpu_clocks[] = {
     76800000,
 };
 
-static std::uint32_t g_gpu_handheld_max = 460800000;
+static std::uint32_t g_gpu_handheld_max           = 460800000;
+static std::uint32_t g_gpu_unofficial_charger_max = 768000000;
 
 static size_t g_gpu_clock_count = sizeof(g_gpu_clocks) / sizeof(g_gpu_clocks[0]);

@@ -26,4 +26,5 @@ class ClockManager
     bool docked;
     std::uint64_t applicationTid;
     std::uint32_t *freqs;
+    ChargerType chargerType;
 };

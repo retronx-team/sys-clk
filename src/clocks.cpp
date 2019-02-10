@@ -15,24 +15,22 @@
 
 void Clocks::GetList(PcvModule module, std::uint32_t **outClocks, size_t *outClockCount)
 {
-    if (module == PcvModule_Cpu)
+    switch(module)
     {
-        *outClocks = &g_cpu_clocks[0];
-        *outClockCount = g_cpu_clock_count;
-    }
-    else if (module == PcvModule_Gpu)
-    {
-        *outClocks = &g_gpu_clocks[0];
-        *outClockCount = g_gpu_clock_count;
-    }
-    else if (module == PcvModule_Emc)
-    {
-        *outClocks = &g_mem_clocks[0];
-        *outClockCount = g_mem_clock_count;
-    }
-    else
-    {
-        ERROR_THROW("No such PcvModule: %u", module);
+        case PcvModule_Cpu:
+            *outClocks = &g_cpu_clocks[0];
+            *outClockCount = g_cpu_clock_count;
+            break;
+        case PcvModule_Gpu:
+            *outClocks = &g_gpu_clocks[0];
+            *outClockCount = g_gpu_clock_count;
+            break;
+        case PcvModule_Emc:
+            *outClocks = &g_mem_clocks[0];
+            *outClockCount = g_mem_clock_count;
+            break;
+        default:
+            ERROR_THROW("No such PcvModule: %u", module);
     }
 }
 
@@ -45,44 +43,50 @@ void Clocks::Initialize()
 
     rc = apmExtInitialize();
     ASSERT_RESULT_OK(rc, "apmExtInitialize");
+
+    rc = psmInitialize();
+    ASSERT_RESULT_OK(rc, "psmInitialize");
 }
 
 void Clocks::Exit()
 {
     pcvExit();
     apmExit();
+    psmExit();
 }
 
-std::string Clocks::GetModeName(bool docked)
+std::string Clocks::GetModeName(bool isDocked)
 {
-    if (docked)
-    {
-        return "docked";
-    }
-    else
-    {
-        return "handheld";
-    }
+    return isDocked ? "docked" : "handheld";
 }
 
 std::string Clocks::GetModuleName(PcvModule module)
 {
-    if (module == PcvModule_Cpu)
+    switch(module)
     {
-        return "cpu";
+        case PcvModule_Cpu:
+            return "cpu";
+        case PcvModule_Gpu:
+            return "gpu";
+        case PcvModule_Emc:
+            return "mem";
+        default:
+            ERROR_THROW("No such PcvModule: %u", module);
     }
-    else if (module == PcvModule_Gpu)
-    {
-        return "gpu";
-    }
-    else if (module == PcvModule_Emc)
-    {
-        return "mem";
-    }
-
-    ERROR_THROW("No such PcvModule: %u", module);
     
     return "";
+}
+
+std::string Clocks::GetChargerTypeName(ChargerType chargerType)
+{
+    switch(chargerType)
+    {
+        case ChargerType_Charger: // Official Charger
+            return "Official";
+        case ChargerType_Usb:     // Fall-through, unofficial Charger
+        default:
+            return "Unofficial";
+    }
 }
 
 bool Clocks::IsConsoleDocked()
@@ -91,7 +95,18 @@ bool Clocks::IsConsoleDocked()
     Result rc = apmExtGetPerformanceMode(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
 
-    return mode == 1;
+    return mode ? true : false;
+}
+
+ChargerType Clocks::GetConsoleChargerType()
+{
+    Result rc = 0;
+    ChargerType chargerType;
+
+    rc = psmGetChargerType(&chargerType);
+    ASSERT_RESULT_OK(rc, "psmGetChargerType");
+
+    return chargerType;
 }
 
 void Clocks::SetHz(PcvModule module, std::uint32_t hz)
@@ -109,13 +124,20 @@ std::uint32_t Clocks::GetCurrentHz(PcvModule module)
     return hz;
 }
 
-std::uint32_t Clocks::GetNearestHz(PcvModule module, bool docked, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(PcvModule module, bool isCharging, std::uint32_t inHz)
 {
     std::uint32_t hz = Clocks::GetNearestHz(module, inHz);
 
-    if (!docked && module == PcvModule_Gpu && hz > g_gpu_handheld_max)
+    if (!isCharging && module == PcvModule_Gpu && hz > g_gpu_handheld_max)
     {
         hz = g_gpu_handheld_max;
+    } 
+    else if (isCharging && module == PcvModule_Gpu && hz > g_gpu_unofficial_charger_max)
+    {
+        if(GetConsoleChargerType() != ChargerType_Charger || !IsConsoleDocked())
+        {
+            hz = g_gpu_unofficial_charger_max;
+        }
     }
 
     return hz;
@@ -127,9 +149,9 @@ std::uint32_t Clocks::GetNearestHz(PcvModule module, std::uint32_t inHz)
     size_t clockCount = 0;
     GetList(module, &clocks, &clockCount);
 
-    if (clockCount == 0)
+    if (!clockCount)
     {
-        ERROR_THROW("clockCount = 0 for PcvModule: %u", module);
+        ERROR_THROW("clockCount == 0 for PcvModule: %u", module);
     }
 
     for (int i = clockCount - 1; i > 0; i--)

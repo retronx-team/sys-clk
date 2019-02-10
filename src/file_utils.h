@@ -22,9 +22,10 @@
 class FileUtils
 {
   public:
-    static Result Initialize();
-    static void InitializeAsync();
-    static bool IsInitialized();
     static void Exit();
+    static Result Initialize();
+    static bool IsInitialized();
+    static void WaitSDServices();
+    static void InitializeAsync();
     static void Log(const char *format, ...);
 };

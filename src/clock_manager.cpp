@@ -46,7 +46,7 @@ void ClockManager::Tick()
 
             if (hz > 0)
             {
-                hz = Clocks::GetNearestHz(g_modules[i], this->docked, hz);
+                hz = Clocks::GetNearestHz(g_modules[i], this->chargerType != ChargerType_None, hz);
 
                 if (hz != this->freqs[i])
                 {
@@ -65,7 +65,7 @@ bool ClockManager::RefreshContext()
     std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTitleId();
     if (applicationTid != this->applicationTid)
     {
-        FileUtils::Log("* ApplicationTid changed: %016lX\n", applicationTid);
+        FileUtils::Log("* ApplicationTid changed to: %016lX\n", applicationTid);
         this->applicationTid = applicationTid;
         changed = true;
     }
@@ -73,8 +73,16 @@ bool ClockManager::RefreshContext()
     bool docked = Clocks::IsConsoleDocked();
     if (docked != this->docked)
     {
-        FileUtils::Log("* Console is now in %s mode\n", Clocks::GetModeName(docked).c_str());
+        FileUtils::Log("* Console mode changed to: %s\n", Clocks::GetModeName(docked).c_str());
         this->docked = docked;
+        changed = true;
+    }
+
+    ChargerType chargerType = Clocks::GetConsoleChargerType();
+    if (chargerType != this->chargerType)
+    {
+        FileUtils::Log("* Charger type changed to: %s\n", Clocks::GetChargerTypeName(chargerType).c_str());
+        this->chargerType = chargerType;
         changed = true;
     }
 
