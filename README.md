@@ -89,7 +89,7 @@ handheld_mem=800
 ### GPU clocks
 **Notes:**  
 -GPU overclock is capped at 460 if handheld  
--Clocks over 768MHz need the official charger
+-Clocks higher than 768MHz need the official charger
 * 921
 * 844
 * 768 → official docked
