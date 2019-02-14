@@ -64,18 +64,16 @@ handheld_gpu=153
 handheld_mem=800
 ```
 
-## Clock table (mhz)
+## Clock table (MHz)
 
-### Mem clocks
-
+### RAM clocks
 * 1600 -> official docked
 * 1331 -> official handheld
 * 1065
 * 800
 * 665
 
-### cpu clocks
-
+### CPU clocks
 * 1683
 * 1581
 * 1428
@@ -88,10 +86,10 @@ handheld_mem=800
 * 714
 * 612
 
-### gpu clocks
-
-**Note:** gpu overclock is capped at 460 if handheld
-
+### GPU clocks
+**Notes:**  
+-GPU overclock is capped at 460 if handheld  
+-Clocks over 768MHz need the official charger
 * 921
 * 844
 * 768 → official docked
