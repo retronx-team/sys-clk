@@ -25,7 +25,7 @@ ClockManager::ClockManager()
 {
     this->config = new Config(FILE_CONFIG_DIR "/config.ini");
     this->applicationTid = 0;
-    this->docked = false;
+    this->profile = ClockProfile_Handheld;
     this->freqs = new std::uint32_t[g_modules_count];
 }
 
@@ -42,11 +42,11 @@ void ClockManager::Tick()
         std::uint32_t hz = 0;
         for (size_t i = 0; i < g_modules_count; i++)
         {
-            hz = this->config->GetClockHz(this->applicationTid, g_modules[i], this->docked);
+            hz = this->config->GetClockHz(this->applicationTid, g_modules[i], this->profile);
 
             if (hz > 0)
             {
-                hz = Clocks::GetNearestHz(g_modules[i], this->docked, this->chargerType, hz);
+                hz = Clocks::GetNearestHz(g_modules[i], this->profile, hz);
 
                 if (hz != this->freqs[i])
                 {
@@ -70,19 +70,11 @@ bool ClockManager::RefreshContext()
         changed = true;
     }
 
-    bool docked = Clocks::IsConsoleDocked();
-    if (docked != this->docked)
+    ClockProfile profile = Clocks::GetCurrentProfile();
+    if (profile != this->profile)
     {
-        FileUtils::Log("* Console mode changed to: %s\n", Clocks::GetModeName(docked).c_str());
-        this->docked = docked;
-        changed = true;
-    }
-
-    ChargerType chargerType = Clocks::GetConsoleChargerType();
-    if (chargerType != this->chargerType)
-    {
-        FileUtils::Log("* Charger type changed to: %s\n", Clocks::GetChargerTypeName(chargerType).c_str());
-        this->chargerType = chargerType;
+        FileUtils::Log("* Console profile changed to: %s\n", Clocks::GetProfileName(profile).c_str());
+        this->profile = profile;
         changed = true;
     }
 

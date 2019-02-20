@@ -10,6 +10,7 @@
 
 #pragma once
 #include "config.h"
+#include "clocks.h"
 
 class ClockManager
 {
@@ -23,7 +24,7 @@ class ClockManager
     bool RefreshContext();
 
     Config *config;
-    bool docked;
+    ClockProfile profile;
     std::uint64_t applicationTid;
     std::uint32_t *freqs;
     ChargerType chargerType;

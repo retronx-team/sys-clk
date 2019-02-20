@@ -12,8 +12,10 @@
 #include <ctime>
 #include <string>
 #include <map>
+#include <initializer_list>
 #include <switch.h>
 #include <inih.h>
+#include "clocks.h"
 
 class Config
 {
@@ -30,10 +32,11 @@ class Config
     bool Loaded();
     std::string LastError();
 
-    std::uint32_t GetClockHz(std::uint64_t tid, PcvModule module, bool docked);
+    std::uint32_t GetClockHz(std::uint64_t tid, PcvModule module, ClockProfile profile);
 
   protected:
     time_t CheckModificationTime();
+    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, PcvModule module, std::initializer_list<ClockProfile> profiles);
 
     std::map<std::uint64_t, std::string> tidSections;
     INIReader *ini;

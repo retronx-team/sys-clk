@@ -30,6 +30,15 @@ Presets can be customized by adding them to the ini config file located at `/con
 docked_cpu=
 docked_gpu=
 docked_mem=
+handheld_charging_cpu=
+handheld_charging_gpu=
+handheld_charging_mem=
+handheld_charging_usb_cpu=
+handheld_charging_usb_gpu=
+handheld_charging_usb_mem=
+handheld_charging_official_cpu=
+handheld_charging_official_gpu=
+handheld_charging_official_mem=
 handheld_cpu=
 handheld_gpu=
 handheld_mem=
@@ -39,10 +48,14 @@ handheld_mem=
 A list of games title id can be found in [Switchbrew wiki](https://switchbrew.org/wiki/Title_list/Games).
 * Frequencies are expressed in mhz, and will be scaled to the nearest possible values, described in the clock table below.
 * If any key is omitted, value is empty or set to 0, it will be ignored.
+* If charging, sys-clk will look for the frequencies in that order, picking the first found:
+	- Charger specific config (USB or Official): `handheld_charging_usb_X` or `handheld_charging_official_X`
+	- Non-specific charging config: `handheld_charging_X`
+	- Handheld config: `handheld_X`
 
 ### Example 1: Zelda BOTW
 
-* Overclock CPU when docked
+* Overclock CPU when docked or charging
 * Overclock MEM to docked clocks when handheld
 
 Leads to a smoother framerate overall (ex: in the korok forest)
@@ -50,6 +63,7 @@ Leads to a smoother framerate overall (ex: in the korok forest)
 ```
 [01007EF00011E000]
 docked_cpu=1224
+handheld_charging_cpu=1224
 handheld_mem=1600
 ```
 

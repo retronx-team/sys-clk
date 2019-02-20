@@ -55,11 +55,6 @@ void Clocks::Exit()
     psmExit();
 }
 
-std::string Clocks::GetModeName(bool docked)
-{
-    return docked ? "docked" : "handheld";
-}
-
 std::string Clocks::GetModuleName(PcvModule module)
 {
     switch(module)
@@ -73,41 +68,56 @@ std::string Clocks::GetModuleName(PcvModule module)
         default:
             ERROR_THROW("No such PcvModule: %u", module);
     }
-    
+
     return "";
 }
 
-std::string Clocks::GetChargerTypeName(ChargerType chargerType)
+std::string Clocks::GetProfileName(ClockProfile profile)
 {
-    switch(chargerType)
+    switch(profile)
     {
-        case ChargerType_Charger: // Official Charger
-            return "Official";
-        case ChargerType_Usb:
-            return "Unofficial";
+        case ClockProfile_Docked:
+            return "docked";
+        case ClockProfile_Handheld:
+            return "handheld";
+        case ClockProfile_HandheldCharging:
+            return "handheld_charging";
+        case ClockProfile_HandheldChargingUSB:
+            return "handheld_charging_usb";
+        case ClockProfile_HandheldChargingOfficial:
+            return "handheld_charging_official";
         default:
-            return "None";
+            ERROR_THROW("No such ClockProfile: %u", profile);
     }
+
+    return "";
 }
 
-bool Clocks::IsConsoleDocked()
+ClockProfile Clocks::GetCurrentProfile()
 {
     std::uint32_t mode = 0;
     Result rc = apmExtGetPerformanceMode(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
 
-    return mode ? true : false;
-}
+    if(mode) {
+        return ClockProfile_Docked;
+    }
 
-ChargerType Clocks::GetConsoleChargerType()
-{
-    Result rc = 0;
     ChargerType chargerType;
 
     rc = psmGetChargerType(&chargerType);
     ASSERT_RESULT_OK(rc, "psmGetChargerType");
 
-    return chargerType;
+    if(chargerType == ChargerType_Charger)
+    {
+        return ClockProfile_HandheldChargingOfficial;
+    }
+    else if(chargerType == ChargerType_Usb)
+    {
+        return ClockProfile_HandheldChargingUSB;
+    }
+
+    return ClockProfile_Handheld;
 }
 
 void Clocks::SetHz(PcvModule module, std::uint32_t hz)
@@ -125,24 +135,29 @@ std::uint32_t Clocks::GetCurrentHz(PcvModule module)
     return hz;
 }
 
-std::uint32_t Clocks::GetNearestHz(PcvModule module, bool docked, ChargerType chargerType, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(PcvModule module, ClockProfile profile, std::uint32_t inHz)
 {
     std::uint32_t hz = GetNearestHz(module, inHz);
-    std::uint32_t maxHz = GetMaxAllowedHz(module, docked, chargerType);
+    std::uint32_t maxHz = GetMaxAllowedHz(module, profile);
 
-    if(maxHz != 0) {
+    if(maxHz != 0)
+    {
         hz = std::min(hz, maxHz);
     }
 
     return hz;
 }
 
-std::uint32_t Clocks::GetMaxAllowedHz(PcvModule module, bool docked, ChargerType chargerType)
+std::uint32_t Clocks::GetMaxAllowedHz(PcvModule module, ClockProfile profile)
 {
-    if(module == PcvModule_Gpu) {
-        if(chargerType == ChargerType_None) {
+    if(module == PcvModule_Gpu)
+    {
+        if(profile < ClockProfile_HandheldCharging)
+        {
             return g_gpu_handheld_max;
-        } else if(chargerType == ChargerType_Usb) {
+        }
+        else if(profile <= ClockProfile_HandheldChargingUSB)
+        {
             return g_gpu_unofficial_charger_max;
         }
     }

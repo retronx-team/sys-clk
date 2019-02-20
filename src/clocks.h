@@ -12,22 +12,30 @@
 #include <string>
 #include <switch.h>
 
+typedef enum
+{
+    ClockProfile_Handheld,
+    ClockProfile_HandheldCharging,
+    ClockProfile_HandheldChargingUSB,
+    ClockProfile_HandheldChargingOfficial,
+    ClockProfile_Docked,
+} ClockProfile;
+
 class Clocks
 {
   public:
     static void Exit();
     static void Initialize();
     static bool IsConsoleDocked();
-    static ChargerType GetConsoleChargerType();
-    static std::string GetModeName(bool docked);
+    static ClockProfile GetCurrentProfile();
     static std::string GetModuleName(PcvModule module);
     static std::uint32_t GetCurrentHz(PcvModule module);
     static void SetHz(PcvModule module, std::uint32_t hz);
-    static std::string GetChargerTypeName(ChargerType chargerType);
-    static std::uint32_t GetNearestHz(PcvModule module, bool docked, ChargerType chargerType, std::uint32_t inHz);
+    static std::string GetProfileName(ClockProfile profile);
+    static std::uint32_t GetNearestHz(PcvModule module, ClockProfile profile, std::uint32_t inHz);
 
   protected:
     static std::uint32_t GetNearestHz(PcvModule module, std::uint32_t inHz);
     static void GetList(PcvModule module, std::uint32_t **outClocks, size_t *outClockCount);
-    static std::uint32_t GetMaxAllowedHz(PcvModule module, bool docked, ChargerType chargerType);
+    static std::uint32_t GetMaxAllowedHz(PcvModule module, ClockProfile profile);
 };

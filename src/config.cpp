@@ -15,7 +15,6 @@
 #include <sstream>
 #include <algorithm>
 #include "errors.h"
-#include "clocks.h"
 #include "file_utils.h"
 
 Config::Config(std::string path)
@@ -121,20 +120,42 @@ std::string Config::LastError()
     return "";
 }
 
-std::uint32_t Config::GetClockHz(std::uint64_t tid, PcvModule module, bool docked)
-{
-    std::uint32_t hz = 0;
+std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, PcvModule module, std::initializer_list<ClockProfile> profiles) {
+    std::uint32_t mhz = 0;
 
     if (this->Loaded())
     {
         std::map<std::uint64_t, std::string>::iterator it = this->tidSections.find(tid);
-        std::string key = Clocks::GetModeName(docked) + "_" + Clocks::GetModuleName(module);
-
         if (it != this->tidSections.end())
         {
-            hz = (std::uint32_t)this->ini->GetInteger(it->second, key, 0) * 1000000;
+            for(auto profile: profiles)
+            {
+                std::string key = Clocks::GetProfileName(profile) + "_" + Clocks::GetModuleName(module);
+                mhz = (std::uint32_t)this->ini->GetInteger(it->second, key, 0);
+
+                if(mhz > 0) {
+                    break;
+                }
+            }
         }
     }
 
-    return std::max((std::uint32_t)0, hz);
+    return std::max((std::uint32_t)0, mhz * 1000000);
+}
+
+std::uint32_t Config::GetClockHz(std::uint64_t tid, PcvModule module, ClockProfile profile)
+{
+    switch(profile) {
+        case ClockProfile_Handheld:
+            return FindClockHzFromProfiles(tid, module, {ClockProfile_Handheld});
+        case ClockProfile_HandheldCharging:
+        case ClockProfile_HandheldChargingUSB:
+            return FindClockHzFromProfiles(tid, module, {ClockProfile_HandheldChargingUSB, ClockProfile_HandheldCharging, ClockProfile_Handheld});
+        case ClockProfile_HandheldChargingOfficial:
+            return FindClockHzFromProfiles(tid, module, {ClockProfile_HandheldChargingOfficial, ClockProfile_HandheldCharging, ClockProfile_Handheld});
+        case ClockProfile_Docked:
+            return FindClockHzFromProfiles(tid, module, {ClockProfile_Docked});
+    }
+
+    return 0;
 }
