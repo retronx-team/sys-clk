@@ -1,0 +1,20 @@
+image: starcarr/libnx:latest
+
+variables:
+  PACKAGE_FOLDER: "sys-clk"
+
+stages:
+  - package
+
+nightly:
+  stage: package
+  image: starcarr/libnx:nightly
+  script:
+    - sh build.sh $PACKAGE_FOLDER develop
+  artifacts:
+    name: $PACKAGE_FOLDER
+    expire_in: 24 hours
+    paths:
+    - $PACKAGE_FOLDER
+  except:
+    - master
