@@ -19,7 +19,7 @@ static std::uint32_t g_mem_clocks[] = {
 static size_t g_mem_clock_count = sizeof(g_mem_clocks) / sizeof(g_mem_clocks[0]);
 
 static std::uint32_t g_cpu_clocks[] = {
-    //1785000000,
+    1785000000, // unstable in certain configurations
     1683000000,
     1581000000,
     1428000000,

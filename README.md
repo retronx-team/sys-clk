@@ -81,13 +81,14 @@ handheld_mem=800
 ## Clock table (MHz)
 
 ### RAM clocks
-* 1600 -> official docked
+* 1600 -> official docked, max clock
 * 1331 -> official handheld
 * 1065
 * 800
 * 665
 
 ### CPU clocks
+* 1785 → max clock, will cause instability in certain configurations
 * 1683
 * 1581
 * 1428
@@ -104,7 +105,7 @@ handheld_mem=800
 **Notes:**  
 -GPU overclock is capped at 460 if handheld  
 -Clocks higher than 768MHz need the official charger
-* 921
+* 921 → max clock
 * 844
 * 768 → official docked
 * 691
