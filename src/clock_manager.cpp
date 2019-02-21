@@ -44,15 +44,17 @@ void ClockManager::Tick()
         {
             hz = this->config->GetClockHz(this->applicationTid, g_modules[i], this->profile);
 
-            if (hz > 0)
+            if (!hz)
             {
-                hz = Clocks::GetNearestHz(g_modules[i], this->profile, hz);
+                hz = this->freqs[i];
+            }
 
-                if (hz != this->freqs[i])
-                {
-                    FileUtils::Log("* Setting %s clock to %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
-                    Clocks::SetHz(g_modules[i], hz);
-                }
+            hz = Clocks::GetNearestHz(g_modules[i], this->profile, hz);
+
+            if (hz != this->freqs[i])
+            {
+                FileUtils::Log("* Setting %s clock to %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
+                Clocks::SetHz(g_modules[i], hz);
             }
         }
     }
