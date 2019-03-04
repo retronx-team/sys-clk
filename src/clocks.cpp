@@ -41,6 +41,9 @@ void Clocks::Initialize()
     rc = pcvInitialize();
     ASSERT_RESULT_OK(rc, "pcvInitialize");
 
+    rc = apmInitialize();
+    ASSERT_RESULT_OK(rc, "apmInitialize");
+
     rc = apmExtInitialize();
     ASSERT_RESULT_OK(rc, "apmExtInitialize");
 
@@ -91,6 +94,19 @@ std::string Clocks::GetProfileName(ClockProfile profile)
     }
 
     return "";
+}
+
+void Clocks::ResetToStock() {
+    std::uint32_t mode = 0;
+    Result rc = apmExtGetPerformanceMode(&mode);
+    ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
+
+    std::uint32_t conf = 0;
+    rc = apmGetPerformanceConfiguration(mode, &conf);
+    ASSERT_RESULT_OK(rc, "apmGetPerformanceConfiguration");
+
+    rc = apmSetPerformanceConfiguration(mode, conf);
+    ASSERT_RESULT_OK(rc, "apmSetPerformanceConfiguration");
 }
 
 ClockProfile Clocks::GetCurrentProfile()

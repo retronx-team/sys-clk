@@ -26,7 +26,7 @@ class Clocks
   public:
     static void Exit();
     static void Initialize();
-    static bool IsConsoleDocked();
+    static void ResetToStock();
     static ClockProfile GetCurrentProfile();
     static std::string GetModuleName(PcvModule module);
     static std::uint32_t GetCurrentHz(PcvModule module);

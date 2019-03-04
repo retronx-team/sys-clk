@@ -75,7 +75,7 @@ void Config::Close()
 
 bool Config::Refresh()
 {
-    if (!this->Loaded() || this->mtime != this->CheckModificationTime())
+    if (!this->HasLoaded() || this->mtime != this->CheckModificationTime())
     {
         this->Load();
         return true;
@@ -83,7 +83,7 @@ bool Config::Refresh()
     return false;
 }
 
-bool Config::Loaded()
+bool Config::HasLoaded()
 {
     return this->ini != NULL;
 }
@@ -102,7 +102,7 @@ time_t Config::CheckModificationTime()
 
 std::string Config::LastError()
 {
-    if (!this->Loaded())
+    if (!this->HasLoaded())
     {
         return "Not loaded";
     }
@@ -123,7 +123,7 @@ std::string Config::LastError()
 std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, PcvModule module, std::initializer_list<ClockProfile> profiles) {
     std::uint32_t mhz = 0;
 
-    if (this->Loaded())
+    if (this->HasLoaded())
     {
         std::map<std::uint64_t, std::string>::iterator it = this->tidSections.find(tid);
         if (it != this->tidSections.end())

@@ -29,7 +29,7 @@ class Config
     void Close();
     bool Refresh();
 
-    bool Loaded();
+    bool HasLoaded();
     std::string LastError();
 
     std::uint32_t GetClockHz(std::uint64_t tid, PcvModule module, ClockProfile profile);

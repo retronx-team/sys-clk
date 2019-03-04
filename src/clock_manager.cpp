@@ -46,15 +46,13 @@ void ClockManager::Tick()
 
             if (!hz)
             {
-                hz = this->freqs[i];
-            }
+                hz = Clocks::GetNearestHz(g_modules[i], this->profile, hz);
 
-            hz = Clocks::GetNearestHz(g_modules[i], this->profile, hz);
-
-            if (hz != this->freqs[i])
-            {
-                FileUtils::Log("* Setting %s clock to %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
-                Clocks::SetHz(g_modules[i], hz);
+                if (hz != this->freqs[i])
+                {
+                    FileUtils::Log("* setting %s clock to %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
+                    Clocks::SetHz(g_modules[i], hz);
+                }
             }
         }
     }
@@ -62,22 +60,28 @@ void ClockManager::Tick()
 
 bool ClockManager::RefreshContext()
 {
-    bool changed = false;
+    bool hasChanged = false;
 
     std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTitleId();
     if (applicationTid != this->applicationTid)
     {
-        FileUtils::Log("* ApplicationTid changed to: %016lX\n", applicationTid);
+        FileUtils::Log("* applicationTid changed to: %016lX\n", applicationTid);
         this->applicationTid = applicationTid;
-        changed = true;
+        hasChanged = true;
     }
 
     ClockProfile profile = Clocks::GetCurrentProfile();
     if (profile != this->profile)
     {
-        FileUtils::Log("* Console profile changed to: %s\n", Clocks::GetProfileName(profile).c_str());
+        FileUtils::Log("* console profile changed to: %s\n", Clocks::GetProfileName(profile).c_str());
         this->profile = profile;
-        changed = true;
+        hasChanged = true;
+    }
+
+    // restore clocks to stock values on app or profile change
+    if(hasChanged)
+    {
+        Clocks::ResetToStock();
     }
 
     std::uint32_t hz = 0;
@@ -88,9 +92,9 @@ bool ClockManager::RefreshContext()
         {
             FileUtils::Log("* %s clock is now %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
             this->freqs[i] = hz;
-            changed = true;
+            hasChanged = true;
         }
     }
 
-    return changed;
+    return hasChanged;
 }
