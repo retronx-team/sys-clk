@@ -44,7 +44,7 @@ void ClockManager::Tick()
         {
             hz = this->config->GetClockHz(this->applicationTid, g_modules[i], this->profile);
 
-            if (!hz)
+            if (hz)
             {
                 hz = Clocks::GetNearestHz(g_modules[i], this->profile, hz);
 
