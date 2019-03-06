@@ -1,4 +1,4 @@
-# sys-clk
+# sys clk
 
 Switch sysmodule allowing you to set cpu/gpu/mem clocks according to the running application and docked state.
 
@@ -9,21 +9,21 @@ Copy the `config` and `atmosphere` folder at the root of your sdcard, overwritin
 
 ## Relevant files
 
-* Config file: allows one to set custom clocks per docked state and title id, described below
+* Config file  allows one to set custom clocks per docked state and title id, described below
 
-	`/config/sys-clk/config.ini`
+	`/config/sys clk/config.ini`
 
-* Log file: where the log are written if enabled
+* Log file  where the log are written if enabled
 
-	`/config/sys-clk/log.txt`
+	`/config/sys clk/log.txt`
 
-* Log flag file: enables log writing if file exists
+* Log flag file  enables log writing if file exists
 
-	`/config/sys-clk/log.flag`
+	`/config/sys clk/log.flag`
 
 ## Config
 
-Presets can be customized by adding them to the ini config file located at `/config/sys-clk/config.ini`, using the following template for each app:
+Presets can be customized by adding them to the ini config file located at `/config/sys clk/config.ini`, using the following template for each app 
 
 ```
 [Application Title ID]
@@ -45,20 +45,20 @@ handheld_mem=
 ```
 
 * Replace `Application Title ID` with the title id of the game/application you're interested in customizing.
-A list of games title id can be found in [Switchbrew wiki](https://switchbrew.org/wiki/Title_list/Games).
+A list of games title id can be found in [Switchbrew wiki](https //switchbrew.org/wiki/Title_list/Games).
 * Frequencies are expressed in mhz, and will be scaled to the nearest possible values, described in the clock table below.
 * If any key is omitted, value is empty or set to 0, it will be ignored, and stock clocks will apply.
-* If charging, sys-clk will look for the frequencies in that order, picking the first found:
-	- Charger specific config (USB or Official): `handheld_charging_usb_X` or `handheld_charging_official_X`
-	- Non-specific charging config: `handheld_charging_X`
-	- Handheld config: `handheld_X`
+* If charging, sys clk will look for the frequencies in that order, picking the first found 
+	  Charger specific config (USB or Official)  `handheld_charging_usb_X` or `handheld_charging_official_X`
+	  Non specific charging config  `handheld_charging_X`
+	  Handheld config  `handheld_X`
 
-### Example 1: Zelda BOTW
+### Example 1  Zelda BOTW
 
 * Overclock CPU when docked or charging
 * Overclock MEM to docked clocks when handheld
 
-Leads to a smoother framerate overall (ex: in the korok forest)
+Leads to a smoother framerate overall (ex  in the korok forest)
 
 ```
 [01007EF00011E000]
@@ -67,7 +67,7 @@ handheld_charging_cpu=1224
 handheld_mem=1600
 ```
 
-### Example 2: Picross
+### Example 2  Picross
 
 * Underclocks on handheld to save battery
 
@@ -78,11 +78,21 @@ handheld_gpu=153
 handheld_mem=800
 ```
 
+## Capping
+
+To protect the battery from excessive strain, clocks requested from config may be capped before applying, depending on your current profile:
+
+|       | Handheld | Charging (USB) | Charging (Official) | Docked |
+|:-----:|:--------:|:--------------:|:-------------------:|:------:|
+|**MEM**| -        | -              | -                   | -      |
+|**CPU**| -        | -              | -                   | -      |
+|**GPU**| 460      | 768            | -                   | -      |
+
 ## Clock table (MHz)
 
-### RAM clocks
-* 1600 -> official docked, max clock
-* 1331 -> official handheld
+### MEM clocks
+* 1600  > official docked, max clock
+* 1331  > official handheld
 * 1065
 * 800
 * 665
@@ -102,9 +112,9 @@ handheld_mem=800
 * 612
 
 ### GPU clocks
-**Notes:**  
--GPU overclock is capped at 460 if handheld  
--Clocks higher than 768MHz need the official charger
+**Note ** GPU overclock is capped at 460Mhz on handheld, and capped at 768Mhz if charging unless you're using the official charger.
+ GPU overclock is capped at 460 if handheld  
+ Clocks higher than 768MHz need the official charger is plugged.
 * 921 → max clock
 * 844
 * 768 → official docked
