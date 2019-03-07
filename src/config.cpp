@@ -37,7 +37,7 @@ Config *Config::CreateDefault()
 
 void Config::Load()
 {
-    FileUtils::Log("[cfg] reading %s\n", this->path.c_str());
+    FileUtils::LogLine("[cfg] reading %s", this->path.c_str());
 
     this->Close();
     this->ini = new INIReader(path);
@@ -45,7 +45,7 @@ void Config::Load()
 
     if (this->ini->ParseError() != 0)
     {
-        FileUtils::Log("[cfg] Warning: %s while reading %s\n", this->LastError().c_str(), this->path.c_str());
+        FileUtils::LogLine("[cfg] Warning: %s while reading %s", this->LastError().c_str(), this->path.c_str());
     }
 
     if (this->ini->ParseError() >= 0)
@@ -56,7 +56,7 @@ void Config::Load()
             tid = strtoul(f.c_str(), NULL, 16);
             if (tid == 0)
             {
-                FileUtils::Log("[cfg] skipped section '%s': invalid tid\n", f.c_str());
+                FileUtils::LogLine("[cfg] skipped section '%s': invalid tid", f.c_str());
                 continue;
             }
             this->tidSections[tid] = f;
@@ -130,7 +130,7 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, PcvModule modul
         {
             for(auto profile: profiles)
             {
-                std::string key = Clocks::GetProfileName(profile) + "_" + Clocks::GetModuleName(module);
+                std::string key = Clocks::GetProfileName(profile, false) + "_" + Clocks::GetModuleName(module, false);
                 mhz = (std::uint32_t)this->ini->GetInteger(it->second, key, 0);
 
                 if(mhz > 0) {

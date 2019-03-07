@@ -10,6 +10,7 @@
 
 #pragma once
 #include <switch.h>
+#include <time.h>
 #include <vector>
 #include <string>
 #include <atomic>
@@ -27,5 +28,5 @@ class FileUtils
     static bool IsInitialized();
     static void WaitSDServices();
     static void InitializeAsync();
-    static void Log(const char *format, ...);
+    static void LogLine(const char *format, ...);
 };

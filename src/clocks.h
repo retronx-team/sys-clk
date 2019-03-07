@@ -28,10 +28,10 @@ class Clocks
     static void Initialize();
     static void ResetToStock();
     static ClockProfile GetCurrentProfile();
-    static std::string GetModuleName(PcvModule module);
     static std::uint32_t GetCurrentHz(PcvModule module);
     static void SetHz(PcvModule module, std::uint32_t hz);
-    static std::string GetProfileName(ClockProfile profile);
+    static std::string GetProfileName(ClockProfile profile, bool pretty);
+    static std::string GetModuleName(PcvModule module, bool pretty);
     static std::uint32_t GetNearestHz(PcvModule module, ClockProfile profile, std::uint32_t inHz);
 
   protected:

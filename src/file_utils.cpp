@@ -14,6 +14,8 @@ static Mutex g_log_mutex;
 static std::atomic_bool g_has_initialized = false;
 static bool g_log_enabled = false;
 
+extern "C" void __libnx_init_time(void);
+
 static void _FileUtils_InitializeThreadFunc(void *args)
 {
     FileUtils::Initialize();
@@ -38,18 +40,24 @@ bool FileUtils::IsInitialized()
     return g_has_initialized;
 }
 
-void FileUtils::Log(const char *format, ...)
+void FileUtils::LogLine(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
     if (g_has_initialized && g_log_enabled)
     {
         mutexLock(&g_log_mutex);
+
         FILE *file = fopen(FILE_LOG_FILE_PATH, "a");
         if (file)
         {
+            time_t timer  = time(NULL);
+            struct tm* timerTm = localtime(&timer);
+
             va_start(args, format);
+            fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] ", timerTm->tm_year+1900, timerTm->tm_mon+1, timerTm->tm_mday, timerTm->tm_hour, timerTm->tm_min, timerTm->tm_sec);
             vfprintf(file, format, args);
+            fprintf(file, "\n");
             fclose(file);
         }
         mutexUnlock(&g_log_mutex);
@@ -73,6 +81,13 @@ Result FileUtils::Initialize()
 
     if (R_SUCCEEDED(rc))
     {
+        rc = timeInitialize();
+    }
+
+    __libnx_init_time();
+
+    if (R_SUCCEEDED(rc))
+    {
         rc = fsInitialize();
     }
 
@@ -92,7 +107,7 @@ Result FileUtils::Initialize()
 
         g_has_initialized = true;
 
-        FileUtils::Log("=== " TARGET " boot ===\n");
+        FileUtils::LogLine("=== " TARGET " " TARGET_VERSION " ===");
     }
 
     return rc;
@@ -110,4 +125,5 @@ void FileUtils::Exit()
 
     fsdevUnmountAll();
     fsExit();
+    timeExit();
 }

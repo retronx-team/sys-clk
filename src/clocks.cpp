@@ -58,16 +58,16 @@ void Clocks::Exit()
     psmExit();
 }
 
-std::string Clocks::GetModuleName(PcvModule module)
+std::string Clocks::GetModuleName(PcvModule module, bool pretty)
 {
     switch(module)
     {
         case PcvModule_Cpu:
-            return "cpu";
+            return pretty ? "CPU" : "cpu";
         case PcvModule_Gpu:
-            return "gpu";
+            return pretty ? "GPU" : "gpu";
         case PcvModule_Emc:
-            return "mem";
+            return pretty ? "Memory" : "mem";
         default:
             ERROR_THROW("No such PcvModule: %u", module);
     }
@@ -75,20 +75,20 @@ std::string Clocks::GetModuleName(PcvModule module)
     return "";
 }
 
-std::string Clocks::GetProfileName(ClockProfile profile)
+std::string Clocks::GetProfileName(ClockProfile profile, bool pretty)
 {
     switch(profile)
     {
         case ClockProfile_Docked:
-            return "docked";
+            return pretty ? "Docked" : "docked";
         case ClockProfile_Handheld:
-            return "handheld";
+            return pretty ? "Handheld" : "handheld";
         case ClockProfile_HandheldCharging:
-            return "handheld_charging";
+            return pretty ? "Handheld (Charging?)" : "handheld_charging";
         case ClockProfile_HandheldChargingUSB:
-            return "handheld_charging_usb";
+            return pretty ? "Handheld (Charging: USB)" : "handheld_charging_usb";
         case ClockProfile_HandheldChargingOfficial:
-            return "handheld_charging_official";
+            return pretty ? "Handheld (Charging: Official)" : "handheld_charging_official";
         default:
             ERROR_THROW("No such ClockProfile: %u", profile);
     }

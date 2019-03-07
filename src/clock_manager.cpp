@@ -50,7 +50,7 @@ void ClockManager::Tick()
 
                 if (hz != this->freqs[i])
                 {
-                    FileUtils::Log("* setting %s clock to %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
+                    FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName(g_modules[i], true).c_str(), hz);
                     Clocks::SetHz(g_modules[i], hz);
                 }
             }
@@ -65,7 +65,7 @@ bool ClockManager::RefreshContext()
     std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTitleId();
     if (applicationTid != this->applicationTid)
     {
-        FileUtils::Log("* applicationTid changed to: %016lX\n", applicationTid);
+        FileUtils::LogLine("[mgr] Application TitleID changed to: %016lX", applicationTid);
         this->applicationTid = applicationTid;
         hasChanged = true;
     }
@@ -73,7 +73,7 @@ bool ClockManager::RefreshContext()
     ClockProfile profile = Clocks::GetCurrentProfile();
     if (profile != this->profile)
     {
-        FileUtils::Log("* console profile changed to: %s\n", Clocks::GetProfileName(profile).c_str());
+        FileUtils::LogLine("[mgr] Console profile changed to: %s", Clocks::GetProfileName(profile, true).c_str());
         this->profile = profile;
         hasChanged = true;
     }
@@ -90,7 +90,7 @@ bool ClockManager::RefreshContext()
         hz = Clocks::GetCurrentHz(g_modules[i]);
         if (hz != 0 && hz != this->freqs[i])
         {
-            FileUtils::Log("* %s clock is now %u\n", Clocks::GetModuleName(g_modules[i]).c_str(), hz);
+            FileUtils::LogLine("[mgr] %s clock is now %u", Clocks::GetModuleName(g_modules[i], true).c_str(), hz);
             this->freqs[i] = hz;
             hasChanged = true;
         }

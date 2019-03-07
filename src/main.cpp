@@ -73,7 +73,7 @@ int main(int argc, char **argv)
         ProcessManagement::Initialize();
 
         ProcessManagement::WaitForQLaunch();
-        FileUtils::Log("Ready\n");
+        FileUtils::LogLine("Ready");
         ClockManager *clockMgr = new ClockManager();
 
         while (true)
@@ -87,12 +87,12 @@ int main(int argc, char **argv)
     }
     catch (const std::exception &ex)
     {
-        FileUtils::Log("[!] %s\n", ex.what());
+        FileUtils::LogLine("[!] %s", ex.what());
     }
     catch (...)
     {
         std::exception_ptr p = std::current_exception();
-        FileUtils::Log("[!?] %s\n", p ? p.__cxa_exception_type()->name() : "...");
+        FileUtils::LogLine("[!?] %s", p ? p.__cxa_exception_type()->name() : "...");
     }
 
     FileUtils::Exit();
