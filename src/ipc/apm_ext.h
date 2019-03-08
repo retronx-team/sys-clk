@@ -21,6 +21,7 @@ extern "C"
     void apmExtExit(void);
 
     Result apmExtGetPerformanceMode(u32 *out_mode);
+    Result apmExtSysRequestPerformanceMode(u32 mode);
 
 #ifdef __cplusplus
 }

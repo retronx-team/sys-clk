@@ -11,6 +11,7 @@
 #include "apm_ext.h"
 
 static Service g_apmSrv;
+static Service g_apmSysSrv;
 static u64 g_refCnt;
 
 Result apmExtInitialize(void)
@@ -25,6 +26,9 @@ Result apmExtInitialize(void)
     Result rc = 0;
 
     rc = smGetService(&g_apmSrv, "apm");
+    if(R_SUCCEEDED(rc)) {
+        rc = smGetService(&g_apmSysSrv, "apm:sys");
+    }
 
     if (R_FAILED(rc))
     {
@@ -39,6 +43,7 @@ void apmExtExit(void)
     if (atomicDecrement64(&g_refCnt) == 0)
     {
         serviceClose(&g_apmSrv);
+        serviceClose(&g_apmSysSrv);
     }
 }
 
@@ -78,6 +83,43 @@ Result apmExtGetPerformanceMode(u32 *out_mode)
         {
             *out_mode = resp->mode;
         }
+    }
+
+    return rc;
+}
+
+Result apmExtSysRequestPerformanceMode(u32 mode)
+{
+    IpcCommand c;
+    ipcInitialize(&c);
+
+    struct
+    {
+        u64 magic;
+        u64 cmd_id;
+        u32 mode;
+    } *raw;
+
+    raw = ipcPrepareHeader(&c, sizeof(*raw));
+
+    raw->magic = SFCI_MAGIC;
+    raw->cmd_id = 0;
+    raw->mode = mode;
+
+    Result rc = serviceIpcDispatch(&g_apmSysSrv);
+
+    if (R_SUCCEEDED(rc))
+    {
+        IpcParsedCommand r;
+        ipcParse(&r);
+
+        struct
+        {
+            u64 magic;
+            u64 result;
+        } *resp = r.Raw;
+
+        rc = resp->result;
     }
 
     return rc;

@@ -41,9 +41,6 @@ void Clocks::Initialize()
     rc = pcvInitialize();
     ASSERT_RESULT_OK(rc, "pcvInitialize");
 
-    rc = apmInitialize();
-    ASSERT_RESULT_OK(rc, "apmInitialize");
-
     rc = apmExtInitialize();
     ASSERT_RESULT_OK(rc, "apmExtInitialize");
 
@@ -54,7 +51,7 @@ void Clocks::Initialize()
 void Clocks::Exit()
 {
     pcvExit();
-    apmExit();
+    apmExtExit();
     psmExit();
 }
 
@@ -96,17 +93,15 @@ std::string Clocks::GetProfileName(ClockProfile profile, bool pretty)
     return "";
 }
 
-void Clocks::ResetToStock() {
+std::uint32_t Clocks::ResetToStock() {
     std::uint32_t mode = 0;
     Result rc = apmExtGetPerformanceMode(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
 
-    std::uint32_t conf = 0;
-    rc = apmGetPerformanceConfiguration(mode, &conf);
-    ASSERT_RESULT_OK(rc, "apmGetPerformanceConfiguration");
+    rc = apmExtSysRequestPerformanceMode(mode);
+    ASSERT_RESULT_OK(rc, "apmExtSysRequestPerformanceMode");
 
-    rc = apmSetPerformanceConfiguration(mode, conf);
-    ASSERT_RESULT_OK(rc, "apmSetPerformanceConfiguration");
+    return mode;
 }
 
 ClockProfile Clocks::GetCurrentProfile()
