@@ -45,13 +45,13 @@ handheld_mem=
 ```
 
 * Replace `Application Title ID` with the title id of the game/application you're interested in customizing.
-A list of games title id can be found in [Switchbrew wiki](https //switchbrew.org/wiki/Title_list/Games).
+A list of games title id can be found in the [Switchbrew wiki](https://switchbrew.org/wiki/Title_list/Games).
 * Frequencies are expressed in mhz, and will be scaled to the nearest possible values, described in the clock table below.
 * If any key is omitted, value is empty or set to 0, it will be ignored, and stock clocks will apply.
-* If charging, sys clk will look for the frequencies in that order, picking the first found 
-	  Charger specific config (USB or Official)  `handheld_charging_usb_X` or `handheld_charging_official_X`
-	  Non specific charging config  `handheld_charging_X`
-	  Handheld config  `handheld_X`
+* If charging in handheld-mode, sys clk will look for the frequencies in that order, picking the first found 
+	 1. Charger specific config (USB or Official)  `handheld_charging_usb_X` or `handheld_charging_official_X`
+	 2. Non specific charging config  `handheld_charging_X`
+	 3. Handheld config  `handheld_X`
 
 ### Example 1  Zelda BOTW
 
@@ -103,7 +103,7 @@ To protect the battery from excessive strain, clocks requested from config may b
 * 1581
 * 1428
 * 1326
-* 1224 → sdev oc
+* 1224 → standard clock of the SDEV development units
 * 1122
 * 1020 → official docked & handheld
 * 918
@@ -113,8 +113,6 @@ To protect the battery from excessive strain, clocks requested from config may b
 
 ### GPU clocks
 **Note ** GPU overclock is capped at 460Mhz on handheld, and capped at 768Mhz if charging unless you're using the official charger.
- GPU overclock is capped at 460 if handheld  
- Clocks higher than 768MHz need the official charger is plugged.
 * 921 → max clock
 * 844
 * 768 → official docked
