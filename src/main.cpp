@@ -50,6 +50,15 @@ extern "C"
         {
             fatalSimple(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
         }
+
+        Result rc = setsysInitialize();
+        if (R_SUCCEEDED(rc)) {
+            SetSysFirmwareVersion fw;
+            rc = setsysGetFirmwareVersion(&fw);
+            if (R_SUCCEEDED(rc))
+                hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
+            setsysExit();
+        }
     }
 
     void __appExit(void)
