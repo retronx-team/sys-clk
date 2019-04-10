@@ -26,6 +26,10 @@
 #define ini_seek(file,pos)              (fseek(*(file), *(pos), SEEK_SET) == 0)
 
 /* for floating-point support, define additional types and functions */
-#define INI_REAL                        float
-#define ini_ftoa(string,value)          sprintf((string),"%f",(value))
-#define ini_atof(string)                (INI_REAL)strtod((string),NULL)
+//#define INI_REAL                        float
+//#define ini_ftoa(string,value)          sprintf((string),"%f",(value))
+//#define ini_atof(string)                (INI_REAL)strtod((string),NULL)
+
+#define INI_ANSIONLY
+#define INI_LINETERM "\n"
+#define PORTABLE_STRNICMP

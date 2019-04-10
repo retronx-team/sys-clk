@@ -6,3 +6,8 @@
 *.o
 *.a
 *.so
+
+# Lib
+lib
+release
+debug
