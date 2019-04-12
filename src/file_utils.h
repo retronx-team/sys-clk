@@ -26,7 +26,6 @@ class FileUtils
     static void Exit();
     static Result Initialize();
     static bool IsInitialized();
-    static void WaitSDServices();
     static void InitializeAsync();
     static void LogLine(const char *format, ...);
 };
