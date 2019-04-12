@@ -10,11 +10,10 @@
 
 #pragma once
 #include <ctime>
-#include <string>
 #include <map>
 #include <initializer_list>
 #include <switch.h>
-#include <inih.h>
+#include <minIni.h>
 #include "clocks.h"
 
 class Config
@@ -32,14 +31,14 @@ class Config
     bool HasLoaded();
     std::string LastError();
 
-    std::uint32_t GetClockHz(std::uint64_t tid, PcvModule module, ClockProfile profile);
-
+    std::uint32_t GetClockHz(std::uint64_t tid, ClockModule module, ClockProfile profile);
   protected:
     time_t CheckModificationTime();
-    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, PcvModule module, std::initializer_list<ClockProfile> profiles);
+    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, ClockModule module, std::initializer_list<ClockProfile> profiles);
+    static int BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata);
 
-    std::map<std::uint64_t, std::string> tidSections;
-    INIReader *ini;
+    std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t> profileMhzMap;
+    minIni *ini;
     std::string path;
     time_t mtime;
 };

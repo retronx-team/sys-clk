@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <algorithm>
+#include <cstring>
 #include "errors.h"
 #include "file_utils.h"
 
@@ -21,7 +22,7 @@ Config::Config(std::string path)
 {
     this->path = path;
     this->ini = NULL;
-    this->tidSections = std::map<std::uint64_t, std::string>();
+    this->profileMhzMap = std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t>();
     this->mtime = 0;
 }
 
@@ -40,27 +41,16 @@ void Config::Load()
     FileUtils::LogLine("[cfg] reading %s", this->path.c_str());
 
     this->Close();
-    this->ini = new INIReader(path);
     this->mtime = this->CheckModificationTime();
-
-    if (this->ini->ParseError() != 0)
-    {
-        FileUtils::LogLine("[cfg] Warning: %s while reading %s", this->LastError().c_str(), this->path.c_str());
+    if(!this->mtime) {
+        FileUtils::LogLine("[cfg] Error finding file");
     }
 
-    if (this->ini->ParseError() >= 0)
+    this->ini = new minIni(path);
+
+    if (!this->ini->browse(&BrowseIniFunc, this))
     {
-        std::uint64_t tid = 0;
-        for (auto f : this->ini->Sections())
-        {
-            tid = strtoul(f.c_str(), NULL, 16);
-            if (tid == 0)
-            {
-                FileUtils::LogLine("[cfg] skipped section '%s': invalid tid", f.c_str());
-                continue;
-            }
-            this->tidSections[tid] = f;
-        }
+        FileUtils::LogLine("[cfg] Error loading file");
     }
 }
 
@@ -70,7 +60,7 @@ void Config::Close()
     {
         delete this->ini;
     }
-    this->tidSections.clear();
+    this->profileMhzMap.clear();
 }
 
 bool Config::Refresh()
@@ -100,38 +90,16 @@ time_t Config::CheckModificationTime()
     return mtime;
 }
 
-std::string Config::LastError()
-{
-    if (!this->HasLoaded())
-    {
-        return "Not loaded";
-    }
-
-    if (this->ini->ParseError() == -1)
-    {
-        return "File loading error";
-    }
-
-    if (this->ini->ParseError() > 0)
-    {
-        return "Parse error at line " + std::to_string(this->ini->ParseError());
-    }
-
-    return "";
-}
-
-std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, PcvModule module, std::initializer_list<ClockProfile> profiles) {
+std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule module, std::initializer_list<ClockProfile> profiles) {
     std::uint32_t mhz = 0;
 
     if (this->HasLoaded())
     {
-        std::map<std::uint64_t, std::string>::iterator it = this->tidSections.find(tid);
-        if (it != this->tidSections.end())
+        for(auto profile: profiles)
         {
-            for(auto profile: profiles)
-            {
-                std::string key = Clocks::GetProfileName(profile, false) + "_" + Clocks::GetModuleName(module, false);
-                mhz = (std::uint32_t)this->ini->GetInteger(it->second, key, 0);
+            std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t>::iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
+            if (it != this->profileMhzMap.end()) {
+                mhz = it->second;
 
                 if(mhz > 0) {
                     break;
@@ -143,7 +111,7 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, PcvModule modul
     return std::max((std::uint32_t)0, mhz * 1000000);
 }
 
-std::uint32_t Config::GetClockHz(std::uint64_t tid, PcvModule module, ClockProfile profile)
+std::uint32_t Config::GetClockHz(std::uint64_t tid, ClockModule module, ClockProfile profile)
 {
     switch(profile) {
         case ClockProfile_Handheld:
@@ -155,7 +123,55 @@ std::uint32_t Config::GetClockHz(std::uint64_t tid, PcvModule module, ClockProfi
             return FindClockHzFromProfiles(tid, module, {ClockProfile_HandheldChargingOfficial, ClockProfile_HandheldCharging, ClockProfile_Handheld});
         case ClockProfile_Docked:
             return FindClockHzFromProfiles(tid, module, {ClockProfile_Docked});
+        default:
+            ERROR_THROW("Unhandled ClockProfile: %u", profile);
     }
 
     return 0;
+}
+
+int Config::BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata) {
+    std::uint64_t tid = strtoul(section, NULL, 16);
+
+    if(!tid) {
+        FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Invalid TitleID", key, section);
+        return 1;
+    }
+
+    ClockProfile parsedProfile = ClockProfile_EnumMax;
+    ClockModule parsedModule = ClockModule_EnumMax;
+
+    for(unsigned int profile = 0; profile < ClockProfile_EnumMax; profile++) {
+        const char* profileCode = Clocks::GetProfileName((ClockProfile)profile, false);
+        size_t profileCodeLen = strlen(profileCode);
+
+        if(!strncmp(key, profileCode, profileCodeLen) && key[profileCodeLen] == '_') {
+            const char* subkey = key + profileCodeLen + 1;
+
+            for(unsigned int module = 0; module < ClockModule_EnumMax; module++) {
+                const char* moduleCode = Clocks::GetModuleName((ClockModule)module, false);
+                size_t moduleCodeLen = strlen(moduleCode);
+                if(!strncmp(subkey, moduleCode, moduleCodeLen) && subkey[moduleCodeLen] == '\0') {
+                    parsedProfile = (ClockProfile)profile;
+                    parsedModule = (ClockModule)module;
+                }
+            }
+        }
+    }
+
+    if(parsedModule == ClockModule_EnumMax || parsedProfile == ClockProfile_EnumMax) {
+        FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Unrecognized key", key, section);
+        return 1;
+    }
+
+    std::uint32_t mhz = strtoul(value, NULL, 10);
+    if(!mhz) {
+        FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Invalid value", key, section);
+        return 1;
+    }
+
+    Config* config = (Config*)userdata;
+    config->profileMhzMap[std::make_tuple(tid, parsedProfile, parsedModule)] = mhz;
+
+    return 1;
 }
