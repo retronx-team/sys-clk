@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/compuphase/minIni
+	branch = master
+	commit = 8ce144c3c287fa4e59f8ed4c405cd8b7e29f189b
+	parent = f32c0b1bca87a6d7e55fb341f8db9ef33b13819f
+	method = merge
+	cmdver = 0.4.0
