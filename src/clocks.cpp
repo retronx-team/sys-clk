@@ -177,7 +177,7 @@ std::uint32_t Clocks::GetNearestHz(ClockModule module, ClockProfile profile, std
 
 std::uint32_t Clocks::GetMaxAllowedHz(ClockModule module, ClockProfile profile)
 {
-    if(module == ClockModule_CPU)
+    if(module == ClockModule_GPU)
     {
         if(profile < ClockProfile_HandheldCharging)
         {
