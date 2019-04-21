@@ -38,8 +38,13 @@ void Clocks::Initialize()
 {
     Result rc = 0;
 
-    rc = pcvInitialize();
-    ASSERT_RESULT_OK(rc, "pcvInitialize");
+    if(hosversionAtLeast(8,0,0)) {
+        rc = clkrstInitialize();
+        ASSERT_RESULT_OK(rc, "pcvInitialize");
+    } else {
+        rc = pcvInitialize();
+        ASSERT_RESULT_OK(rc, "pcvInitialize");
+    }
 
     rc = apmExtInitialize();
     ASSERT_RESULT_OK(rc, "apmExtInitialize");
@@ -50,7 +55,11 @@ void Clocks::Initialize()
 
 void Clocks::Exit()
 {
-    pcvExit();
+    if(hosversionAtLeast(8,0,0)) {
+        pcvExit();
+    } else {
+        clkrstExit();
+    }
     apmExtExit();
     psmExit();
 }
@@ -149,15 +158,43 @@ ClockProfile Clocks::GetCurrentProfile()
 
 void Clocks::SetHz(ClockModule module, std::uint32_t hz)
 {
-    Result rc = pcvSetClockRate(Clocks::GetPcvModule(module), hz);
-    ASSERT_RESULT_OK(rc, "pcvSetClockRate");
+    Result rc = 0;
+
+    if(hosversionAtLeast(8,0,0)) {
+        ClkrstSession session = {0};
+
+        rc = clkrstOpenSession(&session, Clocks::GetPcvModule(module));
+        ASSERT_RESULT_OK(rc, "clkrstOpenSession");
+
+        rc = clkrstSetClockRate(&session, hz);
+        ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
+
+        clkrstCloseSession(&session);
+    } else {
+        rc = pcvSetClockRate(Clocks::GetPcvModule(module), hz);
+        ASSERT_RESULT_OK(rc, "pcvSetClockRate");
+    }
 }
 
 std::uint32_t Clocks::GetCurrentHz(ClockModule module)
 {
+    Result rc = 0;
     std::uint32_t hz = 0;
-    Result rc = pcvGetClockRate(Clocks::GetPcvModule(module), &hz);
-    ASSERT_RESULT_OK(rc, "pcvGetClockRate");
+
+    if(hosversionAtLeast(8,0,0)) {
+        ClkrstSession session = {0};
+
+        rc = clkrstOpenSession(&session, Clocks::GetPcvModule(module));
+        ASSERT_RESULT_OK(rc, "clkrstOpenSession");
+
+        rc = clkrstGetClockRate(&session, &hz);
+        ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
+
+        clkrstCloseSession(&session);
+    } else {
+        rc = pcvGetClockRate(Clocks::GetPcvModule(module), &hz);
+        ASSERT_RESULT_OK(rc, "pcvGetClockRate");
+    }
 
     return hz;
 }
