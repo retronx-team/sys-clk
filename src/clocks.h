@@ -45,6 +45,7 @@ class Clocks
 
   protected:
     static PcvModule GetPcvModule(ClockModule clockmodule);
+    static PcvModuleId GetPcvModuleId(ClockModule clockmodule);
     static std::uint32_t GetNearestHz(ClockModule module, std::uint32_t inHz);
     static void GetList(ClockModule module, std::uint32_t **outClocks, size_t *outClockCount);
     static std::uint32_t GetMaxAllowedHz(ClockModule module, ClockProfile profile);

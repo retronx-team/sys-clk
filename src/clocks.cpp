@@ -118,6 +118,22 @@ PcvModule Clocks::GetPcvModule(ClockModule clockmodule) {
     return (PcvModule)0;
 }
 
+PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule) {
+    switch(clockmodule)
+    {
+        case ClockModule_CPU:
+            return PcvModuleId_CpuBus;
+        case ClockModule_GPU:
+            return PcvModuleId_GPU;
+        case ClockModule_MEM:
+            return PcvModuleId_EMC;
+        default:
+            ERROR_THROW("No such ClockModule: %u", clockmodule);
+    }
+
+    return (PcvModuleId)0;
+}
+
 std::uint32_t Clocks::ResetToStock() {
     std::uint32_t mode = 0;
     Result rc = apmExtGetPerformanceMode(&mode);
@@ -163,7 +179,7 @@ void Clocks::SetHz(ClockModule module, std::uint32_t hz)
     if(hosversionAtLeast(8,0,0)) {
         ClkrstSession session = {0};
 
-        rc = clkrstOpenSession(&session, Clocks::GetPcvModule(module));
+        rc = clkrstOpenSession(&session, Clocks::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
 
         rc = clkrstSetClockRate(&session, hz);
@@ -184,7 +200,7 @@ std::uint32_t Clocks::GetCurrentHz(ClockModule module)
     if(hosversionAtLeast(8,0,0)) {
         ClkrstSession session = {0};
 
-        rc = clkrstOpenSession(&session, Clocks::GetPcvModule(module));
+        rc = clkrstOpenSession(&session, Clocks::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
 
         rc = clkrstGetClockRate(&session, &hz);
