@@ -106,11 +106,11 @@ PcvModule Clocks::GetPcvModule(ClockModule clockmodule) {
     switch(clockmodule)
     {
         case ClockModule_CPU:
-            return PcvModule_Cpu;
+            return PcvModule_CpuBus;
         case ClockModule_GPU:
-            return PcvModule_Gpu;
+            return PcvModule_GPU;
         case ClockModule_MEM:
-            return PcvModule_Emc;
+            return PcvModule_EMC;
         default:
             ERROR_THROW("No such ClockModule: %u", clockmodule);
     }
@@ -119,19 +119,11 @@ PcvModule Clocks::GetPcvModule(ClockModule clockmodule) {
 }
 
 PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule) {
-    switch(clockmodule)
-    {
-        case ClockModule_CPU:
-            return PcvModuleId_CpuBus;
-        case ClockModule_GPU:
-            return PcvModuleId_GPU;
-        case ClockModule_MEM:
-            return PcvModuleId_EMC;
-        default:
-            ERROR_THROW("No such ClockModule: %u", clockmodule);
-    }
+    PcvModuleId pcvModuleId;
+    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(clockmodule));
+    ASSERT_RESULT_OK(rc, "pcvGetModuleId");
 
-    return (PcvModuleId)0;
+    return pcvModuleId;
 }
 
 std::uint32_t Clocks::ResetToStock() {
