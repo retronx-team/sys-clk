@@ -106,6 +106,17 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule mod
                 }
             }
         }
+        for(auto profile: profiles)
+        {
+            std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t>::iterator it = this->profileMhzMap.find(std::make_tuple(std::uint64_t(0), profile, module));
+            if (it != this->profileMhzMap.end()) {
+                mhz = it->second;
+
+                if(mhz > 0) {
+                    break;
+                }
+            }
+        }
     }
 
     return std::max((std::uint32_t)0, mhz * 1000000);
