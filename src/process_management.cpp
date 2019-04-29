@@ -34,7 +34,7 @@ void ProcessManagement::WaitForQLaunch()
     } while (R_FAILED(rc));
 }
 
-std::uint64_t ProcessManagement::GetCurrentApplicationTitleId()
+std::uint64_t ProcessManagement::GetCurrentApplicationTid()
 {
     Result rc = 0;
     std::uint64_t pid = 0;

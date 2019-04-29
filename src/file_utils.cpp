@@ -9,8 +9,9 @@
  */
 
 #include "file_utils.h"
+#include "nx/lockable_mutex.h"
 
-static Mutex g_log_mutex;
+static LockableMutex g_log_mutex;
 static std::atomic_bool g_has_initialized = false;
 static bool g_log_enabled = false;
 
@@ -33,7 +34,7 @@ void FileUtils::LogLine(const char *format, ...)
     va_start(args, format);
     if (g_has_initialized && g_log_enabled)
     {
-        mutexLock(&g_log_mutex);
+        g_log_mutex.Lock();
 
         FILE *file = fopen(FILE_LOG_FILE_PATH, "a");
         if (file)
@@ -47,7 +48,8 @@ void FileUtils::LogLine(const char *format, ...)
             fprintf(file, "\n");
             fclose(file);
         }
-        mutexUnlock(&g_log_mutex);
+
+        g_log_mutex.Unlock();
     }
     va_end(args);
 }
@@ -62,8 +64,6 @@ void FileUtils::InitializeAsync()
 Result FileUtils::Initialize()
 {
     Result rc = 0;
-
-    mutexInit(&g_log_mutex);
 
     if (R_SUCCEEDED(rc))
     {

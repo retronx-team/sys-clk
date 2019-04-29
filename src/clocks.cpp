@@ -11,7 +11,7 @@
 #include "clocks.h"
 #include "clock_table.h"
 #include "errors.h"
-#include "ipc/apm_ext.h"
+#include "nx/ipc/apm_ext.h"
 
 void Clocks::GetList(ClockModule module, std::uint32_t **outClocks, size_t *outClockCount)
 {
@@ -38,10 +38,13 @@ void Clocks::Initialize()
 {
     Result rc = 0;
 
-    if(hosversionAtLeast(8,0,0)) {
+    if(hosversionAtLeast(8,0,0))
+    {
         rc = clkrstInitialize();
         ASSERT_RESULT_OK(rc, "pcvInitialize");
-    } else {
+    }
+    else
+    {
         rc = pcvInitialize();
         ASSERT_RESULT_OK(rc, "pcvInitialize");
     }
@@ -55,9 +58,12 @@ void Clocks::Initialize()
 
 void Clocks::Exit()
 {
-    if(hosversionAtLeast(8,0,0)) {
+    if(hosversionAtLeast(8,0,0))
+    {
         pcvExit();
-    } else {
+    }
+    else
+    {
         clkrstExit();
     }
     apmExtExit();
@@ -102,7 +108,8 @@ const char* Clocks::GetProfileName(ClockProfile profile, bool pretty)
     return "";
 }
 
-PcvModule Clocks::GetPcvModule(ClockModule clockmodule) {
+PcvModule Clocks::GetPcvModule(ClockModule clockmodule)
+{
     switch(clockmodule)
     {
         case ClockModule_CPU:
@@ -118,7 +125,8 @@ PcvModule Clocks::GetPcvModule(ClockModule clockmodule) {
     return (PcvModule)0;
 }
 
-PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule) {
+PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule)
+{
     PcvModuleId pcvModuleId;
     Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(clockmodule));
     ASSERT_RESULT_OK(rc, "pcvGetModuleId");
@@ -126,7 +134,8 @@ PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule) {
     return pcvModuleId;
 }
 
-std::uint32_t Clocks::ResetToStock() {
+std::uint32_t Clocks::ResetToStock()
+{
     std::uint32_t mode = 0;
     Result rc = apmExtGetPerformanceMode(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
@@ -143,7 +152,8 @@ ClockProfile Clocks::GetCurrentProfile()
     Result rc = apmExtGetPerformanceMode(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
 
-    if(mode) {
+    if(mode)
+    {
         return ClockProfile_Docked;
     }
 
@@ -168,7 +178,8 @@ void Clocks::SetHz(ClockModule module, std::uint32_t hz)
 {
     Result rc = 0;
 
-    if(hosversionAtLeast(8,0,0)) {
+    if(hosversionAtLeast(8,0,0))
+    {
         ClkrstSession session = {0};
 
         rc = clkrstOpenSession(&session, Clocks::GetPcvModuleId(module), 3);
@@ -178,7 +189,9 @@ void Clocks::SetHz(ClockModule module, std::uint32_t hz)
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
 
         clkrstCloseSession(&session);
-    } else {
+    }
+    else
+    {
         rc = pcvSetClockRate(Clocks::GetPcvModule(module), hz);
         ASSERT_RESULT_OK(rc, "pcvSetClockRate");
     }
@@ -189,7 +202,8 @@ std::uint32_t Clocks::GetCurrentHz(ClockModule module)
     Result rc = 0;
     std::uint32_t hz = 0;
 
-    if(hosversionAtLeast(8,0,0)) {
+    if(hosversionAtLeast(8,0,0))
+    {
         ClkrstSession session = {0};
 
         rc = clkrstOpenSession(&session, Clocks::GetPcvModuleId(module), 3);
@@ -199,7 +213,9 @@ std::uint32_t Clocks::GetCurrentHz(ClockModule module)
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
 
         clkrstCloseSession(&session);
-    } else {
+    }
+    else
+    {
         rc = pcvGetClockRate(Clocks::GetPcvModule(module), &hz);
         ASSERT_RESULT_OK(rc, "pcvGetClockRate");
     }

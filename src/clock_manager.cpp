@@ -13,34 +13,72 @@
 #include "clocks.h"
 #include "process_management.h"
 
+ClockManager* ClockManager::instance = NULL;
+
+ClockManager* ClockManager::GetInstance()
+{
+    return instance;
+}
+
+void ClockManager::Exit()
+{
+    if(instance)
+    {
+        delete instance;
+    }
+}
+
+void ClockManager::Initialize()
+{
+    if(!instance)
+    {
+        instance = new ClockManager();
+    }
+}
+
 ClockManager::ClockManager()
 {
-    this->config = new Config(FILE_CONFIG_DIR "/config.ini");
-    this->applicationTid = 0;
-    this->profile = ClockProfile_Handheld;
-    this->freqs = new std::uint32_t[ClockModule_EnumMax];
+    this->config = Config::CreateDefault();
+    this->context = new ClockManagerContext;
+    this->context->applicationTid = 0;
+    this->context->profile = ClockProfile_Handheld;
+    for(unsigned int i = 0; i < ClockModule_EnumMax; i++) {
+        this->context->freqs[i] = 0;
+    }
+    this->running = false;
 }
 
 ClockManager::~ClockManager()
 {
     delete this->config;
-    delete[] this->freqs;
+    delete this->context;
+}
+
+void ClockManager::SetRunning(bool running)
+{
+    this->running = running;
+}
+
+bool ClockManager::Running()
+{
+    return this->running;
 }
 
 void ClockManager::Tick()
 {
+    std::scoped_lock lock{this->contextMutex};
     if (this->RefreshContext() || this->config->Refresh())
     {
         std::uint32_t hz = 0;
         for (unsigned int module = 0; module < ClockModule_EnumMax; module++)
         {
-            hz = this->config->GetClockHz(this->applicationTid, (ClockModule)module, this->profile);
+            hz = this->config->GetClockHz(this->context->applicationTid, (ClockModule)module, this->context->profile);
 
             if (hz)
             {
-                hz = Clocks::GetNearestHz((ClockModule)module, this->profile, hz);
+                hz = Clocks::GetNearestHz((ClockModule)module, this->context->profile, hz);
 
-                if (hz != this->freqs[module])
+                if (hz != this->context->freqs[module])
                 {
                     FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName((ClockModule)module, true), hz);
                     Clocks::SetHz((ClockModule)module, hz);
@@ -54,19 +92,19 @@ bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
 
-    std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTitleId();
-    if (applicationTid != this->applicationTid)
+    std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTid();
+    if (applicationTid != this->context->applicationTid)
     {
         FileUtils::LogLine("[mgr] Application TitleID changed to: %016lX", applicationTid);
-        this->applicationTid = applicationTid;
+        this->context->applicationTid = applicationTid;
         hasChanged = true;
     }
 
     ClockProfile profile = Clocks::GetCurrentProfile();
-    if (profile != this->profile)
+    if (profile != this->context->profile)
     {
         FileUtils::LogLine("[mgr] Console profile changed to: %s", Clocks::GetProfileName(profile, true));
-        this->profile = profile;
+        this->context->profile = profile;
         hasChanged = true;
     }
 
@@ -80,13 +118,19 @@ bool ClockManager::RefreshContext()
     for (unsigned int module = 0; module < ClockModule_EnumMax; module++)
     {
         hz = Clocks::GetCurrentHz((ClockModule)module);
-        if (hz != 0 && hz != this->freqs[module])
+        if (hz != 0 && hz != this->context->freqs[module])
         {
-            FileUtils::LogLine("[mgr] %s clock is now %u", Clocks::GetModuleName((ClockModule)module, true), hz);
-            this->freqs[module] = hz;
+            FileUtils::LogLine("[mgr] %s clock changed to %u", Clocks::GetModuleName((ClockModule)module, true), hz);
+            this->context->freqs[module] = hz;
             hasChanged = true;
         }
     }
 
     return hasChanged;
+}
+
+ClockManagerContext ClockManager::GetCurrentContext()
+{
+    std::scoped_lock lock{this->contextMutex};
+    return *this->context;
 }

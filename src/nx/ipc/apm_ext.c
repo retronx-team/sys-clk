@@ -26,7 +26,8 @@ Result apmExtInitialize(void)
     Result rc = 0;
 
     rc = smGetService(&g_apmSrv, "apm");
-    if(R_SUCCEEDED(rc)) {
+    if(R_SUCCEEDED(rc))
+    {
         rc = smGetService(&g_apmSysSrv, "apm:sys");
     }
 

@@ -9,7 +9,7 @@
  */
 
 #pragma once
-#include <string>
+#include <cstdint>
 #include <switch.h>
 
 typedef enum

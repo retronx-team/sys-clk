@@ -19,6 +19,6 @@ class ProcessManagement
   public:
     static void Initialize();
     static void WaitForQLaunch();
-    static std::uint64_t GetCurrentApplicationTitleId();
+    static std::uint64_t GetCurrentApplicationTid();
     static void Exit();
 };

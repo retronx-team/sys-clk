@@ -42,7 +42,8 @@ void Config::Load()
 
     this->Close();
     this->mtime = this->CheckModificationTime();
-    if(!this->mtime) {
+    if(!this->mtime)
+    {
         FileUtils::LogLine("[cfg] Error finding file");
     }
 
@@ -90,7 +91,8 @@ time_t Config::CheckModificationTime()
     return mtime;
 }
 
-std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule module, std::initializer_list<ClockProfile> profiles) {
+std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule module, std::initializer_list<ClockProfile> profiles)
+{
     std::uint32_t mhz = 0;
 
     if (this->HasLoaded())
@@ -98,10 +100,12 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule mod
         for(auto profile: profiles)
         {
             std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t>::iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
-            if (it != this->profileMhzMap.end()) {
+            if (it != this->profileMhzMap.end())
+            {
                 mhz = it->second;
 
-                if(mhz > 0) {
+                if(mhz > 0)
+                {
                     break;
                 }
             }
@@ -113,7 +117,8 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule mod
 
 std::uint32_t Config::GetClockHz(std::uint64_t tid, ClockModule module, ClockProfile profile)
 {
-    switch(profile) {
+    switch(profile)
+    {
         case ClockProfile_Handheld:
             return FindClockHzFromProfiles(tid, module, {ClockProfile_Handheld});
         case ClockProfile_HandheldCharging:
@@ -130,10 +135,12 @@ std::uint32_t Config::GetClockHz(std::uint64_t tid, ClockModule module, ClockPro
     return 0;
 }
 
-int Config::BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata) {
+int Config::BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata)
+{
     std::uint64_t tid = strtoul(section, NULL, 16);
 
-    if(!tid) {
+    if(!tid)
+    {
         FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Invalid TitleID", key, section);
         return 1;
     }
@@ -141,17 +148,21 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
     ClockProfile parsedProfile = ClockProfile_EnumMax;
     ClockModule parsedModule = ClockModule_EnumMax;
 
-    for(unsigned int profile = 0; profile < ClockProfile_EnumMax; profile++) {
+    for(unsigned int profile = 0; profile < ClockProfile_EnumMax; profile++)
+    {
         const char* profileCode = Clocks::GetProfileName((ClockProfile)profile, false);
         size_t profileCodeLen = strlen(profileCode);
 
-        if(!strncmp(key, profileCode, profileCodeLen) && key[profileCodeLen] == '_') {
+        if(!strncmp(key, profileCode, profileCodeLen) && key[profileCodeLen] == '_')
+        {
             const char* subkey = key + profileCodeLen + 1;
 
-            for(unsigned int module = 0; module < ClockModule_EnumMax; module++) {
+            for(unsigned int module = 0; module < ClockModule_EnumMax; module++)
+            {
                 const char* moduleCode = Clocks::GetModuleName((ClockModule)module, false);
                 size_t moduleCodeLen = strlen(moduleCode);
-                if(!strncmp(subkey, moduleCode, moduleCodeLen) && subkey[moduleCodeLen] == '\0') {
+                if(!strncmp(subkey, moduleCode, moduleCodeLen) && subkey[moduleCodeLen] == '\0')
+                {
                     parsedProfile = (ClockProfile)profile;
                     parsedModule = (ClockModule)module;
                 }
@@ -159,13 +170,15 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
         }
     }
 
-    if(parsedModule == ClockModule_EnumMax || parsedProfile == ClockProfile_EnumMax) {
+    if(parsedModule == ClockModule_EnumMax || parsedProfile == ClockProfile_EnumMax)
+    {
         FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Unrecognized key", key, section);
         return 1;
     }
 
     std::uint32_t mhz = strtoul(value, NULL, 10);
-    if(!mhz) {
+    if(!mhz)
+    {
         FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Invalid value", key, section);
         return 1;
     }

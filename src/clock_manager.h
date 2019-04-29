@@ -9,23 +9,40 @@
  */
 
 #pragma once
+
+#include <atomic>
+
 #include "config.h"
 #include "clocks.h"
+#include "nx/lockable_mutex.h"
+
+typedef struct {
+    std::uint64_t applicationTid;
+    ClockProfile profile;
+    std::uint32_t freqs[ClockModule_EnumMax];
+} ClockManagerContext;
 
 class ClockManager
 {
   public:
+    static ClockManager* GetInstance();
+    static void Initialize();
+    static void Exit();
+
+    void SetRunning(bool running);
+    bool Running();
+    void Tick();
+    ClockManagerContext GetCurrentContext();
+
+  protected:
     ClockManager();
     virtual ~ClockManager();
 
-    void Tick();
-
-  protected:
     bool RefreshContext();
 
+    static ClockManager *instance;
+    std::atomic_bool running;
+    LockableMutex contextMutex;
     Config *config;
-    ClockProfile profile;
-    std::uint64_t applicationTid;
-    std::uint32_t *freqs;
-    ChargerType chargerType;
+    ClockManagerContext *context;
 };

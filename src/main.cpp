@@ -30,7 +30,7 @@ extern "C"
 
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char nx_inner_heap[INNER_HEAP_SIZE];
-    
+
     void __libnx_initheap(void)
     {
         void *addr = nx_inner_heap;
@@ -52,7 +52,8 @@ extern "C"
         }
 
         Result rc = setsysInitialize();
-        if (R_SUCCEEDED(rc)) {
+        if (R_SUCCEEDED(rc))
+        {
             SetSysFirmwareVersion fw;
             rc = setsysGetFirmwareVersion(&fw);
             if (R_SUCCEEDED(rc))
@@ -82,15 +83,19 @@ int main(int argc, char **argv)
         ProcessManagement::Initialize();
 
         ProcessManagement::WaitForQLaunch();
+        ClockManager::Initialize();
         FileUtils::LogLine("Ready");
-        ClockManager *clockMgr = new ClockManager();
 
-        while (true)
+        ClockManager *clockMgr = ClockManager::GetInstance();
+        clockMgr->SetRunning(true);
+
+        while (clockMgr->Running())
         {
             clockMgr->Tick();
-            svcSleepThread(250000000ULL);
+            svcSleepThread(300000000ULL);
         }
 
+        ClockManager::Exit();
         ProcessManagement::Exit();
         Clocks::Exit();
     }
@@ -104,6 +109,8 @@ int main(int argc, char **argv)
         FileUtils::LogLine("[!?] %s", p ? p.__cxa_exception_type()->name() : "...");
     }
 
+    FileUtils::LogLine("Exit");
+    svcSleepThread(1000000ULL);
     FileUtils::Exit();
     return 0;
 }

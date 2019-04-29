@@ -21,9 +21,9 @@ TARGET		:=	sys-clk
 BUILD		:=	build
 OUTDIR		:=	out
 RESOURCES	:=	res
-SOURCES		:=	src src/ipc
+SOURCES		:=	src src/nx/ipc
 DATA		:=	data
-INCLUDES	:=	src
+INCLUDES	:=	
 EXEFS_SRC	:=	exefs_src
 LIBNAMES	:=	minIni
 
