@@ -88,7 +88,7 @@ int main(int argc, char **argv)
         while (true)
         {
             clockMgr->Tick();
-            svcSleepThread(3000000000ULL);
+            svcSleepThread(250000000ULL);
         }
 
         ProcessManagement::Exit();
