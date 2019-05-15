@@ -11,19 +11,19 @@ Copy the `config` and `atmosphere` folder at the root of your sdcard, overwritin
 
 * Config file  allows one to set custom clocks per docked state and title id, described below
 
-	`/config/sys clk/config.ini`
+	`/config/sys-clk/config.ini`
 
 * Log file  where the log are written if enabled
 
-	`/config/sys clk/log.txt`
+	`/config/sys-clk/log.txt`
 
 * Log flag file  enables log writing if file exists
 
-	`/config/sys clk/log.flag`
+	`/config/sys-clk/log.flag`
 
 ## Config
 
-Presets can be customized by adding them to the ini config file located at `/config/sys clk/config.ini`, using the following template for each app 
+Presets can be customized by adding them to the ini config file located at `/config/sys-clk/config.ini`, using the following template for each app 
 
 ```
 [Application Title ID]
@@ -112,7 +112,6 @@ To protect the battery from excessive strain, clocks requested from config may b
 * 612
 
 ### GPU clocks
-**Note ** GPU overclock is capped at 460Mhz on handheld, and capped at 768Mhz if charging unless you're using the official charger.
 * 921 → max clock
 * 844
 * 768 → official docked
@@ -125,3 +124,4 @@ To protect the battery from excessive strain, clocks requested from config may b
 * 230
 * 153
 * 76
+=======

@@ -22,19 +22,6 @@ static void _FileUtils_InitializeThreadFunc(void *args)
     svcExitThread();
 }
 
-void FileUtils::WaitSDServices()
-{
-    Handle temporaryHandle = 0;
-    std::vector<std::string> requiredServices = {"pcv", "gpio", "pinmux", "psc:c"};
-    for (auto serviceName : requiredServices)
-    {
-        if (R_SUCCEEDED(smGetServiceOriginal(&temporaryHandle, smEncodeName(serviceName.c_str()))))
-        {
-            svcCloseHandle(temporaryHandle);
-        }
-    }
-}
-
 bool FileUtils::IsInitialized()
 {
     return g_has_initialized;
@@ -77,7 +64,6 @@ Result FileUtils::Initialize()
     Result rc = 0;
 
     mutexInit(&g_log_mutex);
-    WaitSDServices();
 
     if (R_SUCCEEDED(rc))
     {

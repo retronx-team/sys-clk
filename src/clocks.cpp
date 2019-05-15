@@ -13,19 +13,19 @@
 #include "errors.h"
 #include "ipc/apm_ext.h"
 
-void Clocks::GetList(PcvModule module, std::uint32_t **outClocks, size_t *outClockCount)
+void Clocks::GetList(ClockModule module, std::uint32_t **outClocks, size_t *outClockCount)
 {
     switch(module)
     {
-        case PcvModule_Cpu:
+        case ClockModule_CPU:
             *outClocks = &g_cpu_clocks[0];
             *outClockCount = g_cpu_clock_count;
             break;
-        case PcvModule_Gpu:
+        case ClockModule_GPU:
             *outClocks = &g_gpu_clocks[0];
             *outClockCount = g_gpu_clock_count;
             break;
-        case PcvModule_Emc:
+        case ClockModule_MEM:
             *outClocks = &g_mem_clocks[0];
             *outClockCount = g_mem_clock_count;
             break;
@@ -38,8 +38,13 @@ void Clocks::Initialize()
 {
     Result rc = 0;
 
-    rc = pcvInitialize();
-    ASSERT_RESULT_OK(rc, "pcvInitialize");
+    if(hosversionAtLeast(8,0,0)) {
+        rc = clkrstInitialize();
+        ASSERT_RESULT_OK(rc, "pcvInitialize");
+    } else {
+        rc = pcvInitialize();
+        ASSERT_RESULT_OK(rc, "pcvInitialize");
+    }
 
     rc = apmExtInitialize();
     ASSERT_RESULT_OK(rc, "apmExtInitialize");
@@ -50,20 +55,24 @@ void Clocks::Initialize()
 
 void Clocks::Exit()
 {
-    pcvExit();
+    if(hosversionAtLeast(8,0,0)) {
+        pcvExit();
+    } else {
+        clkrstExit();
+    }
     apmExtExit();
     psmExit();
 }
 
-std::string Clocks::GetModuleName(PcvModule module, bool pretty)
+const char* Clocks::GetModuleName(ClockModule module, bool pretty)
 {
     switch(module)
     {
-        case PcvModule_Cpu:
+        case ClockModule_CPU:
             return pretty ? "CPU" : "cpu";
-        case PcvModule_Gpu:
+        case ClockModule_GPU:
             return pretty ? "GPU" : "gpu";
-        case PcvModule_Emc:
+        case ClockModule_MEM:
             return pretty ? "Memory" : "mem";
         default:
             ERROR_THROW("No such PcvModule: %u", module);
@@ -72,7 +81,7 @@ std::string Clocks::GetModuleName(PcvModule module, bool pretty)
     return "";
 }
 
-std::string Clocks::GetProfileName(ClockProfile profile, bool pretty)
+const char* Clocks::GetProfileName(ClockProfile profile, bool pretty)
 {
     switch(profile)
     {
@@ -91,6 +100,38 @@ std::string Clocks::GetProfileName(ClockProfile profile, bool pretty)
     }
 
     return "";
+}
+
+PcvModule Clocks::GetPcvModule(ClockModule clockmodule) {
+    switch(clockmodule)
+    {
+        case ClockModule_CPU:
+            return PcvModule_Cpu;
+        case ClockModule_GPU:
+            return PcvModule_Gpu;
+        case ClockModule_MEM:
+            return PcvModule_Emc;
+        default:
+            ERROR_THROW("No such ClockModule: %u", clockmodule);
+    }
+
+    return (PcvModule)0;
+}
+
+PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule) {
+    switch(clockmodule)
+    {
+        case ClockModule_CPU:
+            return PcvModuleId_CpuBus;
+        case ClockModule_GPU:
+            return PcvModuleId_GPU;
+        case ClockModule_MEM:
+            return PcvModuleId_EMC;
+        default:
+            ERROR_THROW("No such ClockModule: %u", clockmodule);
+    }
+
+    return (PcvModuleId)0;
 }
 
 std::uint32_t Clocks::ResetToStock() {
@@ -131,22 +172,50 @@ ClockProfile Clocks::GetCurrentProfile()
     return ClockProfile_Handheld;
 }
 
-void Clocks::SetHz(PcvModule module, std::uint32_t hz)
+void Clocks::SetHz(ClockModule module, std::uint32_t hz)
 {
-    Result rc = pcvSetClockRate(module, hz);
-    ASSERT_RESULT_OK(rc, "pcvSetClockRate");
+    Result rc = 0;
+
+    if(hosversionAtLeast(8,0,0)) {
+        ClkrstSession session = {0};
+
+        rc = clkrstOpenSession(&session, Clocks::GetPcvModuleId(module), 3);
+        ASSERT_RESULT_OK(rc, "clkrstOpenSession");
+
+        rc = clkrstSetClockRate(&session, hz);
+        ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
+
+        clkrstCloseSession(&session);
+    } else {
+        rc = pcvSetClockRate(Clocks::GetPcvModule(module), hz);
+        ASSERT_RESULT_OK(rc, "pcvSetClockRate");
+    }
 }
 
-std::uint32_t Clocks::GetCurrentHz(PcvModule module)
+std::uint32_t Clocks::GetCurrentHz(ClockModule module)
 {
+    Result rc = 0;
     std::uint32_t hz = 0;
-    Result rc = pcvGetClockRate(module, &hz);
-    ASSERT_RESULT_OK(rc, "pcvGetClockRate");
+
+    if(hosversionAtLeast(8,0,0)) {
+        ClkrstSession session = {0};
+
+        rc = clkrstOpenSession(&session, Clocks::GetPcvModuleId(module), 3);
+        ASSERT_RESULT_OK(rc, "clkrstOpenSession");
+
+        rc = clkrstGetClockRate(&session, &hz);
+        ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
+
+        clkrstCloseSession(&session);
+    } else {
+        rc = pcvGetClockRate(Clocks::GetPcvModule(module), &hz);
+        ASSERT_RESULT_OK(rc, "pcvGetClockRate");
+    }
 
     return hz;
 }
 
-std::uint32_t Clocks::GetNearestHz(PcvModule module, ClockProfile profile, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(ClockModule module, ClockProfile profile, std::uint32_t inHz)
 {
     std::uint32_t hz = GetNearestHz(module, inHz);
     std::uint32_t maxHz = GetMaxAllowedHz(module, profile);
@@ -159,9 +228,9 @@ std::uint32_t Clocks::GetNearestHz(PcvModule module, ClockProfile profile, std::
     return hz;
 }
 
-std::uint32_t Clocks::GetMaxAllowedHz(PcvModule module, ClockProfile profile)
+std::uint32_t Clocks::GetMaxAllowedHz(ClockModule module, ClockProfile profile)
 {
-    if(module == PcvModule_Gpu)
+    if(module == ClockModule_GPU)
     {
         if(profile < ClockProfile_HandheldCharging)
         {
@@ -176,7 +245,7 @@ std::uint32_t Clocks::GetMaxAllowedHz(PcvModule module, ClockProfile profile)
     return 0;
 }
 
-std::uint32_t Clocks::GetNearestHz(PcvModule module, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(ClockModule module, std::uint32_t inHz)
 {
     std::uint32_t *clocks = NULL;
     size_t clockCount = 0;
@@ -184,7 +253,7 @@ std::uint32_t Clocks::GetNearestHz(PcvModule module, std::uint32_t inHz)
 
     if (!clockCount)
     {
-        ERROR_THROW("clockCount == 0 for PcvModule: %u", module);
+        ERROR_THROW("clockCount == 0 for ClockModule: %u", module);
     }
 
     for (int i = clockCount - 1; i > 0; i--)

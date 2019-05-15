@@ -7,7 +7,15 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
+#pragma once
 
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#include "inih/INIReader.h"
-#pragma GCC diagnostic warning "-Wstringop-truncation"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include "../dev/minIni.h"
+
+#ifdef __cplusplus
+}
+#endif

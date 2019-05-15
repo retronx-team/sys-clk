@@ -14,12 +14,21 @@
 
 typedef enum
 {
-    ClockProfile_Handheld,
+    ClockProfile_Handheld = 0,
     ClockProfile_HandheldCharging,
     ClockProfile_HandheldChargingUSB,
     ClockProfile_HandheldChargingOfficial,
     ClockProfile_Docked,
+    ClockProfile_EnumMax
 } ClockProfile;
+
+typedef enum
+{
+    ClockModule_CPU = 0,
+    ClockModule_GPU,
+    ClockModule_MEM,
+    ClockModule_EnumMax
+} ClockModule;
 
 class Clocks
 {
@@ -28,14 +37,16 @@ class Clocks
     static void Initialize();
     static std::uint32_t ResetToStock();
     static ClockProfile GetCurrentProfile();
-    static std::uint32_t GetCurrentHz(PcvModule module);
-    static void SetHz(PcvModule module, std::uint32_t hz);
-    static std::string GetProfileName(ClockProfile profile, bool pretty);
-    static std::string GetModuleName(PcvModule module, bool pretty);
-    static std::uint32_t GetNearestHz(PcvModule module, ClockProfile profile, std::uint32_t inHz);
+    static std::uint32_t GetCurrentHz(ClockModule module);
+    static void SetHz(ClockModule module, std::uint32_t hz);
+    static const char* GetProfileName(ClockProfile profile, bool pretty);
+    static const char* GetModuleName(ClockModule module, bool pretty);
+    static std::uint32_t GetNearestHz(ClockModule module, ClockProfile profile, std::uint32_t inHz);
 
   protected:
-    static std::uint32_t GetNearestHz(PcvModule module, std::uint32_t inHz);
-    static void GetList(PcvModule module, std::uint32_t **outClocks, size_t *outClockCount);
-    static std::uint32_t GetMaxAllowedHz(PcvModule module, ClockProfile profile);
+    static PcvModule GetPcvModule(ClockModule clockmodule);
+    static PcvModuleId GetPcvModuleId(ClockModule clockmodule);
+    static std::uint32_t GetNearestHz(ClockModule module, std::uint32_t inHz);
+    static void GetList(ClockModule module, std::uint32_t **outClocks, size_t *outClockCount);
+    static std::uint32_t GetMaxAllowedHz(ClockModule module, ClockProfile profile);
 };
