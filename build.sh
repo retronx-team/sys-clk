@@ -1,9 +1,30 @@
-#!/bin/sh
-PACKAGE_FOLDER=$1
-BRANCH=$2
-TITLE_ID=00FF0000636C6BFF
+#!/bin/bash
+set -e
 
-mkdir -p $PACKAGE_FOLDER/$TITLE_ID
-make -j12
-mv out/sys-clk.nsp $PACKAGE_FOLDER/$TITLE_ID/exefs.nsp
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIST_DIR="$ROOT_DIR/dist"
+CORES="$(nproc --all)"
 
+if [[ -n "$1" ]]; then
+    DIST_DIR="$1"
+fi
+
+echo "DIST_DIR: $DIST_DIR"
+echo "CORES: $CORES"
+
+echo "*** sysmodule ***"
+TITLE_ID="$(grep -oP '"title_id":\s*"0x\K(\w+)' "$ROOT_DIR/sysmodule/perms.json")"
+
+pushd "$ROOT_DIR/sysmodule"
+make -j$CORES
+popd > /dev/null
+
+mkdir -p "$DIST_DIR/$TITLE_ID/flags"
+cp -vf "$ROOT_DIR/sysmodule/out/sys-clk.nsp" "$DIST_DIR/$TITLE_ID/exefs.nsp"
+>"$DIST_DIR/$TITLE_ID/flags/boot2.flag"
+
+echo "*** assets ***"
+mkdir -p "$DIST_DIR/config/sys-clk"
+cp -vf "$ROOT_DIR/config.ini.template" "$DIST_DIR/config/sys-clk/config.ini"
+>"$DIST_DIR/config/sys-clk/log.flag"
+cp -vf "$ROOT_DIR/README.md" "$DIST_DIR/README.md"

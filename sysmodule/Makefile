@@ -102,7 +102,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export BUILD_EXEFS_SRC := $(TOPDIR)/$(EXEFS_SRC)
 
-export APP_JSON := $(TOPDIR)/$(RESOURCES)/sysmodule.json
+export APP_JSON := $(TOPDIR)/perms.json
 
 .PHONY: $(BUILD) clean clean-libs clean-build all libs
 

@@ -10,7 +10,7 @@ nightly:
   stage: package
   image: starcarr/libnx:nightly
   script:
-    - sh build.sh $PACKAGE_FOLDER develop
+    - bash build.sh $PACKAGE_FOLDER develop
   artifacts:
     name: $PACKAGE_FOLDER
     expire_in: 24 hours
