@@ -5,19 +5,19 @@ Switch sysmodule allowing you to set cpu/gpu/mem clocks according to the running
 ## Installation
 
 The following instructions assumes you have a Nintendo Switch running Atmosphère, updated to at least the latest stable version.
-Copy the `config` and `atmosphere` folder at the root of your sdcard, overwriting files if prompted.
+Copy the `atmosphere` folder at the root of your sdcard, overwriting files if prompted. Also copy the `config` folder if you're not updating, to include default settings.
 
 ## Relevant files
 
-* Config file  allows one to set custom clocks per docked state and title id, described below
+* Config file allows one to set custom clocks per docked state and title id, described below
 
 	`/config/sys-clk/config.ini`
 
-* Log file  where the log are written if enabled
+* Log file where the log are written if enabled
 
 	`/config/sys-clk/log.txt`
 
-* Log flag file  enables log writing if file exists
+* Log flag file enables log writing if file exists
 
 	`/config/sys-clk/log.flag`
 
@@ -45,20 +45,20 @@ handheld_mem=
 ```
 
 * Replace `Application Title ID` with the title id of the game/application you're interested in customizing.
-A list of games title id can be found in [Switchbrew wiki](https //switchbrew.org/wiki/Title_list/Games).
+A list of games title id can be found in the [Switchbrew wiki](https://switchbrew.org/wiki/Title_list/Games).
 * Frequencies are expressed in mhz, and will be scaled to the nearest possible values, described in the clock table below.
 * If any key is omitted, value is empty or set to 0, it will be ignored, and stock clocks will apply.
 * If charging, sys clk will look for the frequencies in that order, picking the first found 
-	  Charger specific config (USB or Official)  `handheld_charging_usb_X` or `handheld_charging_official_X`
-	  Non specific charging config  `handheld_charging_X`
-	  Handheld config  `handheld_X`
+	1. Charger specific config (USB or Official) `handheld_charging_usb_X` or `handheld_charging_official_X`
+	2. Non specific charging config `handheld_charging_X`
+	3. Handheld config `handheld_X`
 
-### Example 1  Zelda BOTW
+### Example 1: Zelda BOTW
 
 * Overclock CPU when docked or charging
 * Overclock MEM to docked clocks when handheld
 
-Leads to a smoother framerate overall (ex  in the korok forest)
+Leads to a smoother framerate overall (ex: in the korok forest)
 
 ```
 [01007EF00011E000]
@@ -67,7 +67,7 @@ handheld_charging_cpu=1224
 handheld_mem=1600
 ```
 
-### Example 2  Picross
+### Example 2: Picross
 
 * Underclocks on handheld to save battery
 
@@ -91,14 +91,14 @@ To protect the battery from excessive strain, clocks requested from config may b
 ## Clock table (MHz)
 
 ### MEM clocks
-* 1600  > official docked, max clock
-* 1331  > official handheld
+* 1600 → official docked, boost mode, max clock
+* 1331 → official handheld
 * 1065
 * 800
 * 665
 
 ### CPU clocks
-* 1785 → max clock, will cause instability in certain configurations
+* 1785 → max clock, boost mode
 * 1683
 * 1581
 * 1428
@@ -114,7 +114,7 @@ To protect the battery from excessive strain, clocks requested from config may b
 ### GPU clocks
 * 921 → max clock
 * 844
-* 768 → official docked
+* 768 → official docked, boost mode
 * 691
 * 614
 * 537
