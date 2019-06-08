@@ -31,13 +31,13 @@ class Config
     bool HasLoaded();
     std::string LastError();
 
-    std::uint32_t GetClockHz(std::uint64_t tid, ClockModule module, ClockProfile profile);
+    std::uint32_t GetClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
   protected:
     time_t CheckModificationTime();
-    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, ClockModule module, std::initializer_list<ClockProfile> profiles);
+    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles);
     static int BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata);
 
-    std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t> profileMhzMap;
+    std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t> profileMhzMap;
     minIni *ini;
     std::string path;
     time_t mtime;

@@ -22,7 +22,7 @@ Config::Config(std::string path)
 {
     this->path = path;
     this->ini = NULL;
-    this->profileMhzMap = std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t>();
+    this->profileMhzMap = std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>();
     this->mtime = 0;
 }
 
@@ -91,7 +91,7 @@ time_t Config::CheckModificationTime()
     return mtime;
 }
 
-std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule module, std::initializer_list<ClockProfile> profiles)
+std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles)
 {
     std::uint32_t mhz = 0;
 
@@ -99,7 +99,7 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule mod
     {
         for(auto profile: profiles)
         {
-            std::map<std::tuple<std::uint64_t, ClockProfile, ClockModule>, std::uint32_t>::iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
+            std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>::iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
             if (it != this->profileMhzMap.end())
             {
                 mhz = it->second;
@@ -115,21 +115,21 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, ClockModule mod
     return std::max((std::uint32_t)0, mhz * 1000000);
 }
 
-std::uint32_t Config::GetClockHz(std::uint64_t tid, ClockModule module, ClockProfile profile)
+std::uint32_t Config::GetClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
     switch(profile)
     {
-        case ClockProfile_Handheld:
-            return FindClockHzFromProfiles(tid, module, {ClockProfile_Handheld});
-        case ClockProfile_HandheldCharging:
-        case ClockProfile_HandheldChargingUSB:
-            return FindClockHzFromProfiles(tid, module, {ClockProfile_HandheldChargingUSB, ClockProfile_HandheldCharging, ClockProfile_Handheld});
-        case ClockProfile_HandheldChargingOfficial:
-            return FindClockHzFromProfiles(tid, module, {ClockProfile_HandheldChargingOfficial, ClockProfile_HandheldCharging, ClockProfile_Handheld});
-        case ClockProfile_Docked:
-            return FindClockHzFromProfiles(tid, module, {ClockProfile_Docked});
+        case SysClkProfile_Handheld:
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_Handheld});
+        case SysClkProfile_HandheldCharging:
+        case SysClkProfile_HandheldChargingUSB:
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_HandheldChargingUSB, SysClkProfile_HandheldCharging, SysClkProfile_Handheld});
+        case SysClkProfile_HandheldChargingOfficial:
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_HandheldChargingOfficial, SysClkProfile_HandheldCharging, SysClkProfile_Handheld});
+        case SysClkProfile_Docked:
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_Docked});
         default:
-            ERROR_THROW("Unhandled ClockProfile: %u", profile);
+            ERROR_THROW("Unhandled SysClkProfile: %u", profile);
     }
 
     return 0;
@@ -145,32 +145,32 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
         return 1;
     }
 
-    ClockProfile parsedProfile = ClockProfile_EnumMax;
-    ClockModule parsedModule = ClockModule_EnumMax;
+    SysClkProfile parsedProfile = SysClkProfile_EnumMax;
+    SysClkModule parsedModule = SysClkModule_EnumMax;
 
-    for(unsigned int profile = 0; profile < ClockProfile_EnumMax; profile++)
+    for(unsigned int profile = 0; profile < SysClkProfile_EnumMax; profile++)
     {
-        const char* profileCode = Clocks::GetProfileName((ClockProfile)profile, false);
+        const char* profileCode = Clocks::GetProfileName((SysClkProfile)profile, false);
         size_t profileCodeLen = strlen(profileCode);
 
         if(!strncmp(key, profileCode, profileCodeLen) && key[profileCodeLen] == '_')
         {
             const char* subkey = key + profileCodeLen + 1;
 
-            for(unsigned int module = 0; module < ClockModule_EnumMax; module++)
+            for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
             {
-                const char* moduleCode = Clocks::GetModuleName((ClockModule)module, false);
+                const char* moduleCode = Clocks::GetModuleName((SysClkModule)module, false);
                 size_t moduleCodeLen = strlen(moduleCode);
                 if(!strncmp(subkey, moduleCode, moduleCodeLen) && subkey[moduleCodeLen] == '\0')
                 {
-                    parsedProfile = (ClockProfile)profile;
-                    parsedModule = (ClockModule)module;
+                    parsedProfile = (SysClkProfile)profile;
+                    parsedModule = (SysClkModule)module;
                 }
             }
         }
     }
 
-    if(parsedModule == ClockModule_EnumMax || parsedProfile == ClockProfile_EnumMax)
+    if(parsedModule == SysClkModule_EnumMax || parsedProfile == SysClkProfile_EnumMax)
     {
         FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Unrecognized key", key, section);
         return 1;

@@ -13,19 +13,19 @@
 #include "errors.h"
 #include "nx/ipc/apm_ext.h"
 
-void Clocks::GetList(ClockModule module, std::uint32_t **outClocks, size_t *outClockCount)
+void Clocks::GetList(SysClkModule module, std::uint32_t **outClocks, size_t *outClockCount)
 {
     switch(module)
     {
-        case ClockModule_CPU:
+        case SysClkModule_CPU:
             *outClocks = &g_cpu_clocks[0];
             *outClockCount = g_cpu_clock_count;
             break;
-        case ClockModule_GPU:
+        case SysClkModule_GPU:
             *outClocks = &g_gpu_clocks[0];
             *outClockCount = g_gpu_clock_count;
             break;
-        case ClockModule_MEM:
+        case SysClkModule_MEM:
             *outClocks = &g_mem_clocks[0];
             *outClockCount = g_mem_clock_count;
             break;
@@ -70,15 +70,15 @@ void Clocks::Exit()
     psmExit();
 }
 
-const char* Clocks::GetModuleName(ClockModule module, bool pretty)
+const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
 {
     switch(module)
     {
-        case ClockModule_CPU:
+        case SysClkModule_CPU:
             return pretty ? "CPU" : "cpu";
-        case ClockModule_GPU:
+        case SysClkModule_GPU:
             return pretty ? "GPU" : "gpu";
-        case ClockModule_MEM:
+        case SysClkModule_MEM:
             return pretty ? "Memory" : "mem";
         default:
             ERROR_THROW("No such PcvModule: %u", module);
@@ -87,48 +87,48 @@ const char* Clocks::GetModuleName(ClockModule module, bool pretty)
     return "";
 }
 
-const char* Clocks::GetProfileName(ClockProfile profile, bool pretty)
+const char* Clocks::GetProfileName(SysClkProfile profile, bool pretty)
 {
     switch(profile)
     {
-        case ClockProfile_Docked:
+        case SysClkProfile_Docked:
             return pretty ? "Docked" : "docked";
-        case ClockProfile_Handheld:
+        case SysClkProfile_Handheld:
             return pretty ? "Handheld" : "handheld";
-        case ClockProfile_HandheldCharging:
+        case SysClkProfile_HandheldCharging:
             return pretty ? "Handheld (Charging?)" : "handheld_charging";
-        case ClockProfile_HandheldChargingUSB:
+        case SysClkProfile_HandheldChargingUSB:
             return pretty ? "Handheld (Charging: USB)" : "handheld_charging_usb";
-        case ClockProfile_HandheldChargingOfficial:
+        case SysClkProfile_HandheldChargingOfficial:
             return pretty ? "Handheld (Charging: Official)" : "handheld_charging_official";
         default:
-            ERROR_THROW("No such ClockProfile: %u", profile);
+            ERROR_THROW("No such SysClkProfile: %u", profile);
     }
 
     return "";
 }
 
-PcvModule Clocks::GetPcvModule(ClockModule clockmodule)
+PcvModule Clocks::GetPcvModule(SysClkModule SysClkModule)
 {
-    switch(clockmodule)
+    switch(SysClkModule)
     {
-        case ClockModule_CPU:
+        case SysClkModule_CPU:
             return PcvModule_CpuBus;
-        case ClockModule_GPU:
+        case SysClkModule_GPU:
             return PcvModule_GPU;
-        case ClockModule_MEM:
+        case SysClkModule_MEM:
             return PcvModule_EMC;
         default:
-            ERROR_THROW("No such ClockModule: %u", clockmodule);
+            ERROR_THROW("No such SysClkModule: %u", SysClkModule);
     }
 
     return (PcvModule)0;
 }
 
-PcvModuleId Clocks::GetPcvModuleId(ClockModule clockmodule)
+PcvModuleId Clocks::GetPcvModuleId(SysClkModule SysClkModule)
 {
     PcvModuleId pcvModuleId;
-    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(clockmodule));
+    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(SysClkModule));
     ASSERT_RESULT_OK(rc, "pcvGetModuleId");
 
     return pcvModuleId;
@@ -146,7 +146,7 @@ std::uint32_t Clocks::ResetToStock()
     return mode;
 }
 
-ClockProfile Clocks::GetCurrentProfile()
+SysClkProfile Clocks::GetCurrentProfile()
 {
     std::uint32_t mode = 0;
     Result rc = apmExtGetPerformanceMode(&mode);
@@ -154,7 +154,7 @@ ClockProfile Clocks::GetCurrentProfile()
 
     if(mode)
     {
-        return ClockProfile_Docked;
+        return SysClkProfile_Docked;
     }
 
     ChargerType chargerType;
@@ -164,17 +164,17 @@ ClockProfile Clocks::GetCurrentProfile()
 
     if(chargerType == ChargerType_Charger)
     {
-        return ClockProfile_HandheldChargingOfficial;
+        return SysClkProfile_HandheldChargingOfficial;
     }
     else if(chargerType == ChargerType_Usb)
     {
-        return ClockProfile_HandheldChargingUSB;
+        return SysClkProfile_HandheldChargingUSB;
     }
 
-    return ClockProfile_Handheld;
+    return SysClkProfile_Handheld;
 }
 
-void Clocks::SetHz(ClockModule module, std::uint32_t hz)
+void Clocks::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
 
@@ -197,7 +197,7 @@ void Clocks::SetHz(ClockModule module, std::uint32_t hz)
     }
 }
 
-std::uint32_t Clocks::GetCurrentHz(ClockModule module)
+std::uint32_t Clocks::GetCurrentHz(SysClkModule module)
 {
     Result rc = 0;
     std::uint32_t hz = 0;
@@ -223,7 +223,7 @@ std::uint32_t Clocks::GetCurrentHz(ClockModule module)
     return hz;
 }
 
-std::uint32_t Clocks::GetNearestHz(ClockModule module, ClockProfile profile, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(SysClkModule module, SysClkProfile profile, std::uint32_t inHz)
 {
     std::uint32_t hz = GetNearestHz(module, inHz);
     std::uint32_t maxHz = GetMaxAllowedHz(module, profile);
@@ -236,15 +236,15 @@ std::uint32_t Clocks::GetNearestHz(ClockModule module, ClockProfile profile, std
     return hz;
 }
 
-std::uint32_t Clocks::GetMaxAllowedHz(ClockModule module, ClockProfile profile)
+std::uint32_t Clocks::GetMaxAllowedHz(SysClkModule module, SysClkProfile profile)
 {
-    if(module == ClockModule_GPU)
+    if(module == SysClkModule_GPU)
     {
-        if(profile < ClockProfile_HandheldCharging)
+        if(profile < SysClkProfile_HandheldCharging)
         {
             return g_gpu_handheld_max;
         }
-        else if(profile <= ClockProfile_HandheldChargingUSB)
+        else if(profile <= SysClkProfile_HandheldChargingUSB)
         {
             return g_gpu_unofficial_charger_max;
         }
@@ -253,7 +253,7 @@ std::uint32_t Clocks::GetMaxAllowedHz(ClockModule module, ClockProfile profile)
     return 0;
 }
 
-std::uint32_t Clocks::GetNearestHz(ClockModule module, std::uint32_t inHz)
+std::uint32_t Clocks::GetNearestHz(SysClkModule module, std::uint32_t inHz)
 {
     std::uint32_t *clocks = NULL;
     size_t clockCount = 0;
@@ -261,7 +261,7 @@ std::uint32_t Clocks::GetNearestHz(ClockModule module, std::uint32_t inHz)
 
     if (!clockCount)
     {
-        ERROR_THROW("clockCount == 0 for ClockModule: %u", module);
+        ERROR_THROW("clockCount == 0 for SysClkModule: %u", module);
     }
 
     for (int i = clockCount - 1; i > 0; i--)

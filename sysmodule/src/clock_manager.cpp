@@ -39,10 +39,10 @@ void ClockManager::Initialize()
 ClockManager::ClockManager()
 {
     this->config = Config::CreateDefault();
-    this->context = new ClockManagerContext;
+    this->context = new SysClkContext;
     this->context->applicationTid = 0;
-    this->context->profile = ClockProfile_Handheld;
-    for(unsigned int i = 0; i < ClockModule_EnumMax; i++) {
+    this->context->profile = SysClkProfile_Handheld;
+    for(unsigned int i = 0; i < SysClkModule_EnumMax; i++) {
         this->context->freqs[i] = 0;
     }
     this->running = false;
@@ -70,18 +70,18 @@ void ClockManager::Tick()
     if (this->RefreshContext() || this->config->Refresh())
     {
         std::uint32_t hz = 0;
-        for (unsigned int module = 0; module < ClockModule_EnumMax; module++)
+        for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
-            hz = this->config->GetClockHz(this->context->applicationTid, (ClockModule)module, this->context->profile);
+            hz = this->config->GetClockHz(this->context->applicationTid, (SysClkModule)module, this->context->profile);
 
             if (hz)
             {
-                hz = Clocks::GetNearestHz((ClockModule)module, this->context->profile, hz);
+                hz = Clocks::GetNearestHz((SysClkModule)module, this->context->profile, hz);
 
                 if (hz != this->context->freqs[module])
                 {
-                    FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName((ClockModule)module, true), hz);
-                    Clocks::SetHz((ClockModule)module, hz);
+                    FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
+                    Clocks::SetHz((SysClkModule)module, hz);
                 }
             }
         }
@@ -100,7 +100,7 @@ bool ClockManager::RefreshContext()
         hasChanged = true;
     }
 
-    ClockProfile profile = Clocks::GetCurrentProfile();
+    SysClkProfile profile = Clocks::GetCurrentProfile();
     if (profile != this->context->profile)
     {
         FileUtils::LogLine("[mgr] Console profile changed to: %s", Clocks::GetProfileName(profile, true));
@@ -115,12 +115,12 @@ bool ClockManager::RefreshContext()
     }
 
     std::uint32_t hz = 0;
-    for (unsigned int module = 0; module < ClockModule_EnumMax; module++)
+    for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
     {
-        hz = Clocks::GetCurrentHz((ClockModule)module);
+        hz = Clocks::GetCurrentHz((SysClkModule)module);
         if (hz != 0 && hz != this->context->freqs[module])
         {
-            FileUtils::LogLine("[mgr] %s clock changed to %u", Clocks::GetModuleName((ClockModule)module, true), hz);
+            FileUtils::LogLine("[mgr] %s clock changed to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
             this->context->freqs[module] = hz;
             hasChanged = true;
         }
@@ -129,7 +129,7 @@ bool ClockManager::RefreshContext()
     return hasChanged;
 }
 
-ClockManagerContext ClockManager::GetCurrentContext()
+SysClkContext ClockManager::GetCurrentContext()
 {
     std::scoped_lock lock{this->contextMutex};
     return *this->context;

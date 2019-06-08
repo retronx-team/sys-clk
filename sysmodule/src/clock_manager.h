@@ -11,16 +11,11 @@
 #pragma once
 
 #include <atomic>
+#include <sysclk.h>
 
 #include "config.h"
 #include "clocks.h"
 #include "nx/lockable_mutex.h"
-
-typedef struct {
-    std::uint64_t applicationTid;
-    ClockProfile profile;
-    std::uint32_t freqs[ClockModule_EnumMax];
-} ClockManagerContext;
 
 class ClockManager
 {
@@ -32,7 +27,7 @@ class ClockManager
     void SetRunning(bool running);
     bool Running();
     void Tick();
-    ClockManagerContext GetCurrentContext();
+    SysClkContext GetCurrentContext();
 
   protected:
     ClockManager();
@@ -44,5 +39,5 @@ class ClockManager
     std::atomic_bool running;
     LockableMutex contextMutex;
     Config *config;
-    ClockManagerContext *context;
+    SysClkContext *context;
 };

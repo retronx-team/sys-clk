@@ -23,7 +23,7 @@ OUTDIR		:=	out
 RESOURCES	:=	res
 SOURCES		:=	src src/nx/ipc
 DATA		:=	data
-INCLUDES	:=	
+INCLUDES	:=	../common/include
 EXEFS_SRC	:=	exefs_src
 LIBNAMES	:=	minIni
 

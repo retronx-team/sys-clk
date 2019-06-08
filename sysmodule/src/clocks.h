@@ -11,24 +11,7 @@
 #pragma once
 #include <cstdint>
 #include <switch.h>
-
-typedef enum
-{
-    ClockProfile_Handheld = 0,
-    ClockProfile_HandheldCharging,
-    ClockProfile_HandheldChargingUSB,
-    ClockProfile_HandheldChargingOfficial,
-    ClockProfile_Docked,
-    ClockProfile_EnumMax
-} ClockProfile;
-
-typedef enum
-{
-    ClockModule_CPU = 0,
-    ClockModule_GPU,
-    ClockModule_MEM,
-    ClockModule_EnumMax
-} ClockModule;
+#include <sysclk.h>
 
 class Clocks
 {
@@ -36,17 +19,17 @@ class Clocks
     static void Exit();
     static void Initialize();
     static std::uint32_t ResetToStock();
-    static ClockProfile GetCurrentProfile();
-    static std::uint32_t GetCurrentHz(ClockModule module);
-    static void SetHz(ClockModule module, std::uint32_t hz);
-    static const char* GetProfileName(ClockProfile profile, bool pretty);
-    static const char* GetModuleName(ClockModule module, bool pretty);
-    static std::uint32_t GetNearestHz(ClockModule module, ClockProfile profile, std::uint32_t inHz);
+    static SysClkProfile GetCurrentProfile();
+    static std::uint32_t GetCurrentHz(SysClkModule module);
+    static void SetHz(SysClkModule module, std::uint32_t hz);
+    static const char* GetProfileName(SysClkProfile profile, bool pretty);
+    static const char* GetModuleName(SysClkModule module, bool pretty);
+    static std::uint32_t GetNearestHz(SysClkModule module, SysClkProfile profile, std::uint32_t inHz);
 
   protected:
-    static PcvModule GetPcvModule(ClockModule clockmodule);
-    static PcvModuleId GetPcvModuleId(ClockModule clockmodule);
-    static std::uint32_t GetNearestHz(ClockModule module, std::uint32_t inHz);
-    static void GetList(ClockModule module, std::uint32_t **outClocks, size_t *outClockCount);
-    static std::uint32_t GetMaxAllowedHz(ClockModule module, ClockProfile profile);
+    static PcvModule GetPcvModule(SysClkModule SysClkModule);
+    static PcvModuleId GetPcvModuleId(SysClkModule SysClkModule);
+    static std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz);
+    static void GetList(SysClkModule module, std::uint32_t **outClocks, size_t *outClockCount);
+    static std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
 };
