@@ -49,6 +49,12 @@ std::uint64_t ProcessManagement::GetCurrentApplicationTid()
     ASSERT_RESULT_OK(rc, "pmdmntGetApplicationPid");
 
     rc = pminfoGetTitleId(&tid, pid);
+
+    if (rc == 0x20f)
+    {
+        return PROCESS_MANAGEMENT_QLAUNCH_TID;
+    }
+
     ASSERT_RESULT_OK(rc, "pminfoGetTitleId");
 
     return tid;
