@@ -35,3 +35,9 @@ typedef struct {
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];
 } SysClkContext;
+
+typedef struct {
+    uint64_t applicationTid;
+    SysClkModule module;
+    SysClkProfile profile;
+} SysClkProfileKey;

@@ -11,10 +11,12 @@
 #pragma once
 #include <ctime>
 #include <map>
+#include <mutex>
 #include <initializer_list>
 #include <switch.h>
 #include <minIni.h>
 #include "clocks.h"
+#include "nx/lockable_mutex.h"
 
 class Config
 {
@@ -24,21 +26,27 @@ class Config
 
     static Config *CreateDefault();
 
-    void Load();
-    void Close();
     bool Refresh();
 
     bool HasLoaded();
-    std::string LastError();
 
-    std::uint32_t GetClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
+    std::uint8_t GetProfileCount(std::uint64_t tid);
+    std::uint32_t GetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
+    std::uint32_t GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
+    bool SetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, std::uint32_t mhz);
   protected:
+    void Load();
+    void Close();
+
     time_t CheckModificationTime();
+    std::uint32_t FindClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
     std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles);
     static int BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata);
 
     std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t> profileMhzMap;
-    minIni *ini;
+    std::map<std::uint64_t, std::uint8_t> profileCountMap;
+    bool loaded;
     std::string path;
     time_t mtime;
+    LockableMutex configMutex;
 };

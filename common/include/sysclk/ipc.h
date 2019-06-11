@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include <stdint.h>
+#include "clocks.h"
+
 #define SYSCLK_IPC_API_VERSION 0
 #define SYSCLK_IPC_SERVICE_NAME "sys:clk"
 
@@ -19,4 +22,20 @@ enum SysClkIpcCmd
     SysClkIpcCmd_GetVersionString = 1,
     SysClkIpcCmd_GetCurrentContext = 2,
     SysClkIpcCmd_Exit = 3,
+    SysClkIpcCmd_GetProfileCount = 4,
+    SysClkIpcCmd_GetProfile = 5,
+    SysClkIpcCmd_SetProfile = 6
 };
+
+typedef struct {
+    uint64_t tid;
+    SysClkModule module;
+    SysClkProfile profile;
+} SysClkIpc_GetProfile_Args;
+
+typedef struct {
+    uint64_t tid;
+    SysClkModule module;
+    SysClkProfile profile;
+    uint32_t mhz;
+} SysClkIpc_SetProfile_Args;

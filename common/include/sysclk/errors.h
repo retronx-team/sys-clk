@@ -10,14 +10,14 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <switch/result.h>
 
-#include "sysclk/ipc.h"
-#include "sysclk/clocks.h"
-#include "sysclk/errors.h"
+#define SYSCLK_ERROR_MODULE 388
+#define SYSCLK_ERROR(desc) MAKERESULT(SYSCLK_ERROR_MODULE, SysClkError_##desc)
 
-#ifdef __cplusplus
-}
-#endif
+typedef enum
+{
+    SysClkError_Generic = 0,
+    SysClkError_ConfigNotLoaded = 1,
+    SysClkError_ConfigSaveFailed = 2,
+} SysClkError;

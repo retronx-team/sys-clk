@@ -28,6 +28,7 @@ class ClockManager
     bool Running();
     void Tick();
     SysClkContext GetCurrentContext();
+    Config* GetConfig();
 
   protected:
     ClockManager();

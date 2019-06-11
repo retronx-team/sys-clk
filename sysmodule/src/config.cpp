@@ -21,13 +21,15 @@
 Config::Config(std::string path)
 {
     this->path = path;
-    this->ini = NULL;
+    this->loaded = false;
     this->profileMhzMap = std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>();
+    this->profileCountMap = std::map<std::uint64_t, std::uint8_t>();
     this->mtime = 0;
 }
 
 Config::~Config()
 {
+    std::scoped_lock lock{this->configMutex};
     this->Close();
 }
 
@@ -46,27 +48,25 @@ void Config::Load()
     {
         FileUtils::LogLine("[cfg] Error finding file");
     }
-
-    this->ini = new minIni(path);
-
-    if (!this->ini->browse(&BrowseIniFunc, this))
+    else if (!ini_browse(&BrowseIniFunc, this, this->path.c_str()))
     {
         FileUtils::LogLine("[cfg] Error loading file");
     }
+
+    this->loaded = true;
 }
 
 void Config::Close()
 {
-    if (this->ini)
-    {
-        delete this->ini;
-    }
+    this->loaded = false;
     this->profileMhzMap.clear();
+    this->profileCountMap.clear();
 }
 
 bool Config::Refresh()
 {
-    if (!this->HasLoaded() || this->mtime != this->CheckModificationTime())
+    std::scoped_lock lock{this->configMutex};
+    if (!this->loaded || this->mtime != this->CheckModificationTime())
     {
         this->Load();
         return true;
@@ -76,7 +76,8 @@ bool Config::Refresh()
 
 bool Config::HasLoaded()
 {
-    return this->ini != NULL;
+    std::scoped_lock lock{this->configMutex};
+    return this->loaded;
 }
 
 time_t Config::CheckModificationTime()
@@ -91,23 +92,33 @@ time_t Config::CheckModificationTime()
     return mtime;
 }
 
+std::uint32_t Config::FindClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
+{
+    if (this->loaded)
+    {
+        std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>::const_iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
+        if (it != this->profileMhzMap.end())
+        {
+            return it->second;
+        }
+    }
+
+    return 0;
+}
+
 std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles)
 {
     std::uint32_t mhz = 0;
 
-    if (this->HasLoaded())
+    if (this->loaded)
     {
         for(auto profile: profiles)
         {
-            std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>::iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
-            if (it != this->profileMhzMap.end())
-            {
-                mhz = it->second;
+            mhz = FindClockMhz(tid, module, profile);
 
-                if(mhz > 0)
-                {
-                    break;
-                }
+            if(mhz)
+            {
+                break;
             }
         }
     }
@@ -115,8 +126,9 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule mo
     return std::max((std::uint32_t)0, mhz * 1000000);
 }
 
-std::uint32_t Config::GetClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
+std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
+    std::scoped_lock lock{this->configMutex};
     switch(profile)
     {
         case SysClkProfile_Handheld:
@@ -135,11 +147,49 @@ std::uint32_t Config::GetClockHz(std::uint64_t tid, SysClkModule module, SysClkP
     return 0;
 }
 
+std::uint32_t Config::GetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
+{
+    std::scoped_lock lock{this->configMutex};
+    return FindClockMhz(tid, module, profile);
+}
+
+bool Config::SetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, std::uint32_t mhz)
+{
+    std::scoped_lock lock{this->configMutex};
+    char key[0x100] = {0};
+    char section[17] = {0};
+    char val[11] = {0};
+
+    snprintf(section, sizeof(section), "%016lX", tid);
+    snprintf(key, sizeof(key), "%s_%s", Clocks::GetProfileName(profile, false), Clocks::GetModuleName(module, false));
+
+    if(mhz)
+    {
+        snprintf(val, sizeof(val), "%d", mhz);
+        return ini_puts(section, key, val, this->path.c_str());
+    }
+    else
+    {
+        return ini_puts(section, key, 0, this->path.c_str());
+    }
+}
+
+std::uint8_t Config::GetProfileCount(std::uint64_t tid)
+{
+    std::map<std::uint64_t, std::uint8_t>::iterator it = this->profileCountMap.find(tid);
+    if (it == this->profileCountMap.end())
+    {
+        return 0;
+    }
+
+    return it->second;
+}
+
 int Config::BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata)
 {
     std::uint64_t tid = strtoul(section, NULL, 16);
 
-    if(!tid)
+    if(!tid || strlen(section) != 16)
     {
         FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Invalid TitleID", key, section);
         return 1;
@@ -185,6 +235,15 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
 
     Config* config = (Config*)userdata;
     config->profileMhzMap[std::make_tuple(tid, parsedProfile, parsedModule)] = mhz;
+    std::map<std::uint64_t, std::uint8_t>::iterator it = config->profileCountMap.find(tid);
+    if (it == config->profileCountMap.end())
+    {
+        config->profileCountMap[tid] = 1;
+    }
+    else
+    {
+        it->second++;
+    }
 
     return 1;
 }

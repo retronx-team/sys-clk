@@ -42,7 +42,8 @@ ClockManager::ClockManager()
     this->context = new SysClkContext;
     this->context->applicationTid = 0;
     this->context->profile = SysClkProfile_Handheld;
-    for(unsigned int i = 0; i < SysClkModule_EnumMax; i++) {
+    for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
+    {
         this->context->freqs[i] = 0;
     }
     this->running = false;
@@ -72,7 +73,7 @@ void ClockManager::Tick()
         std::uint32_t hz = 0;
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
-            hz = this->config->GetClockHz(this->context->applicationTid, (SysClkModule)module, this->context->profile);
+            hz = this->config->GetAutoClockHz(this->context->applicationTid, (SysClkModule)module, this->context->profile);
 
             if (hz)
             {
@@ -133,4 +134,9 @@ SysClkContext ClockManager::GetCurrentContext()
 {
     std::scoped_lock lock{this->contextMutex};
     return *this->context;
+}
+
+Config* ClockManager::GetConfig()
+{
+    return this->config;
 }

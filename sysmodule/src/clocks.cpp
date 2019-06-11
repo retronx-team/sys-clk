@@ -9,7 +9,7 @@
  */
 
 #include "clocks.h"
-#include "clock_table.h"
+#include <sysclk/clock_table.hpp>
 #include "errors.h"
 #include "nx/ipc/apm_ext.h"
 
