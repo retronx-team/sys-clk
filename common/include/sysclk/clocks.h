@@ -31,6 +31,7 @@ typedef enum
 } SysClkModule;
 
 typedef struct {
+    uint8_t enabled;
     uint64_t applicationTid;
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];

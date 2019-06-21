@@ -24,7 +24,8 @@ enum SysClkIpcCmd
     SysClkIpcCmd_Exit = 3,
     SysClkIpcCmd_GetProfileCount = 4,
     SysClkIpcCmd_GetProfile = 5,
-    SysClkIpcCmd_SetProfile = 6
+    SysClkIpcCmd_SetProfile = 6,
+    SysClkIpcCmd_SetEnabled = 7,
 };
 
 typedef struct {

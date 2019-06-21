@@ -42,11 +42,13 @@ ClockManager::ClockManager()
     this->context = new SysClkContext;
     this->context->applicationTid = 0;
     this->context->profile = SysClkProfile_Handheld;
+    this->context->enabled = false;
     for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
     {
         this->context->freqs[i] = 0;
     }
     this->running = false;
+    this->enabled = false;
 }
 
 ClockManager::~ClockManager()
@@ -65,6 +67,16 @@ bool ClockManager::Running()
     return this->running;
 }
 
+void ClockManager::SetEnabled(bool enabled)
+{
+    this->enabled = enabled;
+}
+
+bool ClockManager::Enabled()
+{
+    return this->enabled;
+}
+
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
@@ -79,10 +91,11 @@ void ClockManager::Tick()
             {
                 hz = Clocks::GetNearestHz((SysClkModule)module, this->context->profile, hz);
 
-                if (hz != this->context->freqs[module])
+                if (hz != this->context->freqs[module] && this->enabled)
                 {
                     FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
                     Clocks::SetHz((SysClkModule)module, hz);
+                    this->context->freqs[module] = hz;
                 }
             }
         }
@@ -92,6 +105,13 @@ void ClockManager::Tick()
 bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
+
+    if(this->enabled != this->context->enabled)
+    {
+        this->context->enabled = enabled;
+        FileUtils::LogLine("[mgr] " TARGET " was %s", this->context->enabled ? "enabled" : "disabled");
+        hasChanged = true;
+    }
 
     std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTid();
     if (applicationTid != this->context->applicationTid)
