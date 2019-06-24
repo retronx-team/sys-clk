@@ -10,10 +10,8 @@
 
 #pragma once
 
-#include <switch/result.h>
-
 #define SYSCLK_ERROR_MODULE 388
-#define SYSCLK_ERROR(desc) MAKERESULT(SYSCLK_ERROR_MODULE, SysClkError_##desc)
+#define SYSCLK_ERROR(desc) ((SYSCLK_ERROR_MODULE & 0x1FF) | (SysClkError_##desc & 0x1FFF)<<9)
 
 typedef enum
 {
