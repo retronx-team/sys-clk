@@ -30,6 +30,6 @@ class Clocks
     static PcvModule GetPcvModule(SysClkModule SysClkModule);
     static PcvModuleId GetPcvModuleId(SysClkModule SysClkModule);
     static std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz);
-    static void GetList(SysClkModule module, std::uint32_t **outClocks, size_t *outClockCount);
+    static void GetList(SysClkModule module, std::uint32_t **outClocks);
     static std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
 };

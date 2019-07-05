@@ -30,15 +30,58 @@ typedef enum
     SysClkModule_EnumMax
 } SysClkModule;
 
-typedef struct {
+typedef struct
+{
     uint8_t enabled;
     uint64_t applicationTid;
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];
 } SysClkContext;
 
-typedef struct {
+typedef struct
+{
     uint64_t applicationTid;
     SysClkModule module;
     SysClkProfile profile;
 } SysClkProfileKey;
+
+#define SYSCLK_GPU_HANDHELD_MAX_HZ 460800000
+#define SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ 768000000
+
+extern uint32_t sysclk_g_freq_table_mem_hz[];
+extern uint32_t sysclk_g_freq_table_cpu_hz[];
+extern uint32_t sysclk_g_freq_table_gpu_hz[];
+
+static inline const char* SysClkFormatModule(SysClkModule module, bool pretty)
+{
+    switch(module)
+    {
+        case SysClkModule_CPU:
+            return pretty ? "CPU" : "cpu";
+        case SysClkModule_GPU:
+            return pretty ? "GPU" : "gpu";
+        case SysClkModule_MEM:
+            return pretty ? "Memory" : "mem";
+        default:
+            return NULL;
+    }
+}
+
+static inline const char* SysClkFormatProfile(SysClkProfile profile, bool pretty)
+{
+    switch(profile)
+    {
+        case SysClkProfile_Docked:
+            return pretty ? "Docked" : "docked";
+        case SysClkProfile_Handheld:
+            return pretty ? "Handheld" : "handheld";
+        case SysClkProfile_HandheldCharging:
+            return pretty ? "Handheld (Charging?)" : "handheld_charging";
+        case SysClkProfile_HandheldChargingUSB:
+            return pretty ? "Handheld (Charging: USB)" : "handheld_charging_usb";
+        case SysClkProfile_HandheldChargingOfficial:
+            return pretty ? "Handheld (Charging: Official)" : "handheld_charging_official";
+        default:
+            return NULL;
+    }
+}

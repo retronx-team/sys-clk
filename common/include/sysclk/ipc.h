@@ -28,13 +28,15 @@ enum SysClkIpcCmd
     SysClkIpcCmd_SetEnabled = 7,
 };
 
-typedef struct {
+typedef struct
+{
     uint64_t tid;
     SysClkModule module;
     SysClkProfile profile;
 } SysClkIpc_GetProfile_Args;
 
-typedef struct {
+typedef struct
+{
     uint64_t tid;
     SysClkModule module;
     SysClkProfile profile;

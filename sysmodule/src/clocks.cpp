@@ -9,27 +9,24 @@
  */
 
 #include "clocks.h"
-#include <sysclk/clock_table.hpp>
 #include "errors.h"
 #include "nx/ipc/apm_ext.h"
 
-void Clocks::GetList(SysClkModule module, std::uint32_t **outClocks, size_t *outClockCount)
+void Clocks::GetList(SysClkModule module, std::uint32_t **outClocks)
 {
     switch(module)
     {
         case SysClkModule_CPU:
-            *outClocks = &g_cpu_clocks[0];
-            *outClockCount = g_cpu_clock_count;
+            *outClocks = sysclk_g_freq_table_cpu_hz;
             break;
         case SysClkModule_GPU:
-            *outClocks = &g_gpu_clocks[0];
-            *outClockCount = g_gpu_clock_count;
+            *outClocks = sysclk_g_freq_table_gpu_hz;
             break;
         case SysClkModule_MEM:
-            *outClocks = &g_mem_clocks[0];
-            *outClockCount = g_mem_clock_count;
+            *outClocks = sysclk_g_freq_table_mem_hz;
             break;
         default:
+            *outClocks = NULL;
             ERROR_THROW("No such PcvModule: %u", module);
     }
 }
@@ -72,40 +69,26 @@ void Clocks::Exit()
 
 const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
 {
-    switch(module)
+    const char* result = SysClkFormatModule(module, pretty);
+
+    if(!result)
     {
-        case SysClkModule_CPU:
-            return pretty ? "CPU" : "cpu";
-        case SysClkModule_GPU:
-            return pretty ? "GPU" : "gpu";
-        case SysClkModule_MEM:
-            return pretty ? "Memory" : "mem";
-        default:
-            ERROR_THROW("No such PcvModule: %u", module);
+        ERROR_THROW("No such SysClkModule: %u", module);
     }
 
-    return "";
+    return result;
 }
 
 const char* Clocks::GetProfileName(SysClkProfile profile, bool pretty)
 {
-    switch(profile)
+    const char* result = SysClkFormatProfile(profile, pretty);
+
+    if(!result)
     {
-        case SysClkProfile_Docked:
-            return pretty ? "Docked" : "docked";
-        case SysClkProfile_Handheld:
-            return pretty ? "Handheld" : "handheld";
-        case SysClkProfile_HandheldCharging:
-            return pretty ? "Handheld (Charging?)" : "handheld_charging";
-        case SysClkProfile_HandheldChargingUSB:
-            return pretty ? "Handheld (Charging: USB)" : "handheld_charging_usb";
-        case SysClkProfile_HandheldChargingOfficial:
-            return pretty ? "Handheld (Charging: Official)" : "handheld_charging_official";
-        default:
-            ERROR_THROW("No such SysClkProfile: %u", profile);
+        ERROR_THROW("No such SysClkProfile: %u", profile);
     }
 
-    return "";
+    return result;
 }
 
 PcvModule Clocks::GetPcvModule(SysClkModule SysClkModule)
@@ -242,11 +225,11 @@ std::uint32_t Clocks::GetMaxAllowedHz(SysClkModule module, SysClkProfile profile
     {
         if(profile < SysClkProfile_HandheldCharging)
         {
-            return g_gpu_handheld_max;
+            return SYSCLK_GPU_HANDHELD_MAX_HZ;
         }
         else if(profile <= SysClkProfile_HandheldChargingUSB)
         {
-            return g_gpu_unofficial_charger_max;
+            return SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ;
         }
     }
 
@@ -255,22 +238,23 @@ std::uint32_t Clocks::GetMaxAllowedHz(SysClkModule module, SysClkProfile profile
 
 std::uint32_t Clocks::GetNearestHz(SysClkModule module, std::uint32_t inHz)
 {
-    std::uint32_t *clocks = NULL;
-    size_t clockCount = 0;
-    GetList(module, &clocks, &clockCount);
+    std::uint32_t *clockTable = NULL;
+    GetList(module, &clockTable);
 
-    if (!clockCount)
+    if (!clockTable || !clockTable[0])
     {
-        ERROR_THROW("clockCount == 0 for SysClkModule: %u", module);
+        ERROR_THROW("table lookup failed for SysClkModule: %u", module);
     }
 
-    for (int i = clockCount - 1; i > 0; i--)
+    int i = 0;
+    while(clockTable[i + 1])
     {
-        if (inHz <= (clocks[i] + clocks[i - 1]) / 2)
+        if (inHz <= (clockTable[i] + clockTable[i + 1]) / 2)
         {
-            return clocks[i];
+            break;
         }
+        i++;
     }
 
-    return clocks[0];
+    return clockTable[i];
 }
