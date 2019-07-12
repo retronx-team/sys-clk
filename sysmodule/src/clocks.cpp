@@ -8,9 +8,9 @@
  * --------------------------------------------------------------------------
  */
 
+#include <nxExt.h>
 #include "clocks.h"
 #include "errors.h"
-#include "nx/ipc/apm_ext.h"
 
 void Clocks::GetList(SysClkModule module, std::uint32_t **outClocks)
 {

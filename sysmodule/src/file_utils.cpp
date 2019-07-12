@@ -9,7 +9,7 @@
  */
 
 #include "file_utils.h"
-#include "nx/lockable_mutex.h"
+#include <nxExt.h>
 
 static LockableMutex g_log_mutex;
 static std::atomic_bool g_has_initialized = false;

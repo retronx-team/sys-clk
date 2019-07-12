@@ -15,7 +15,7 @@
 
 #include "config.h"
 #include "clocks.h"
-#include "nx/lockable_mutex.h"
+#include <nxExt/cpp/lockable_mutex.h>
 
 class ClockManager
 {

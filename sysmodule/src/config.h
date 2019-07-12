@@ -15,8 +15,8 @@
 #include <initializer_list>
 #include <switch.h>
 #include <minIni.h>
+#include <nxExt.h>
 #include "clocks.h"
-#include "nx/lockable_mutex.h"
 
 class Config
 {

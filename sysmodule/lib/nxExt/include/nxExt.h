@@ -10,19 +10,5 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#include <switch.h>
-
-    Result apmExtInitialize(void);
-    void apmExtExit(void);
-
-    Result apmExtGetPerformanceMode(u32 *out_mode);
-    Result apmExtSysRequestPerformanceMode(u32 mode);
-
-#ifdef __cplusplus
-}
-#endif
+#include "nxExt/apm_ext.h"
+#include "nxExt/cpp/lockable_mutex.h"

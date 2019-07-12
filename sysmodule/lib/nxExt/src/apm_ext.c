@@ -8,7 +8,7 @@
  * --------------------------------------------------------------------------
  */
 
-#include "apm_ext.h"
+#include "nxExt/apm_ext.h"
 
 static Service g_apmSrv;
 static Service g_apmSysSrv;

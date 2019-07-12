@@ -10,6 +10,8 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <mutex>
 #include <switch.h>
 
@@ -58,3 +60,5 @@ public:
 private:
     Mutex m;
 };
+
+#endif
