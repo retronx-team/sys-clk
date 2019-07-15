@@ -80,7 +80,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD)
 
-.PHONY: clean all
+.PHONY: clean all lib/lib$(TARGET).a lib/lib$(TARGET)d.a
 
 #---------------------------------------------------------------------------------
 all: lib/lib$(TARGET).a lib/lib$(TARGET)d.a
@@ -101,25 +101,10 @@ lib/lib$(TARGET).a : lib release $(SOURCES) $(INCLUDES)
 	--no-print-directory -C release \
 	-f $(CURDIR)/Makefile
 
-lib/lib$(TARGET)d.a : lib debug $(SOURCES) $(INCLUDES)
-	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ \
-	BUILD_CFLAGS="-DDEBUG=1 -Og" \
-	DEPSDIR=$(CURDIR)/debug \
-	--no-print-directory -C debug \
-	-f $(CURDIR)/Makefile
-
-dist-bin: all
-	@tar --exclude=*~ -cjf lib$(TARGET).tar.bz2 include lib
-
-dist-src:
-	@tar --exclude=*~ -cjf lib$(TARGET)-src.tar.bz2 include source Makefile
-
-dist: dist-src dist-bin
-
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr release debug lib *.bz2
+	@rm -fr release debug lib
 
 #---------------------------------------------------------------------------------
 else

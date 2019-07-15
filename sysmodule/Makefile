@@ -134,9 +134,10 @@ clean: clean-libs clean-build
 
 #---------------------------------------------------------------------------------
 else
-.PHONY:	all
+.PHONY:	all $(LIBFILES)
 
-DEPENDS	:=	$(OFILES:.o=.d)
+LIBFILES	:= $(foreach lib,$(LIBNAMES),$(TOPDIR)/lib/$(lib)/lib/lib$(lib).a)
+DEPENDS		:=	$(OFILES:.o=.d)
 
 #---------------------------------------------------------------------------------
 # main targets
@@ -146,7 +147,7 @@ all: $(OUTPUT).nsp
 
 $(OUTPUT).nsp: $(OUTPUT).nso $(OUTPUT).npdm
 
-$(OUTPUT).elf: $(OFILES)
+$(OUTPUT).elf: $(OFILES) $(LIBFILES)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
