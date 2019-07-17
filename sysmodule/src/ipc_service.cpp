@@ -69,7 +69,9 @@ void IpcService::ProcessThreadFunc(void *arg)
             {
                 return;
             }
-            FileUtils::LogLine("[ipc] ipcServerProcess: [0x%x] %04d-%04d", rc, R_MODULE(rc), R_DESCRIPTION(rc));
+            if(rc != KERNELRESULT(ConnectionClosed)) {
+                FileUtils::LogLine("[ipc] ipcServerProcess: [0x%x] %04d-%04d", rc, R_MODULE(rc), R_DESCRIPTION(rc));
+            }
         }
     }
 }
