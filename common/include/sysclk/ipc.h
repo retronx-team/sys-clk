@@ -26,6 +26,7 @@ enum SysClkIpcCmd
     SysClkIpcCmd_GetProfile = 5,
     SysClkIpcCmd_SetProfile = 6,
     SysClkIpcCmd_SetEnabled = 7,
+    SysClkIpcCmd_SetOverride = 8,
 };
 
 typedef struct
@@ -42,3 +43,9 @@ typedef struct
     SysClkProfile profile;
     uint32_t mhz;
 } SysClkIpc_SetProfile_Args;
+
+typedef struct
+{
+    SysClkModule module;
+    uint32_t hz;
+} SysClkIpc_SetOverride_Args;

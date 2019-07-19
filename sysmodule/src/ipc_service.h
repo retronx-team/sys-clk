@@ -33,6 +33,7 @@ class IpcService
     Result GetProfile(SysClkIpc_GetProfile_Args* args, std::uint32_t* out_mhz);
     Result SetProfile(SysClkIpc_SetProfile_Args* args);
     Result SetEnabled(std::uint8_t* enabled);
+    Result SetOverride(SysClkIpc_SetOverride_Args* args);
 
     bool running;
     Thread thread;

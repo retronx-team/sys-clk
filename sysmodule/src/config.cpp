@@ -25,11 +25,16 @@ Config::Config(std::string path)
     this->profileMhzMap = std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>();
     this->profileCountMap = std::map<std::uint64_t, std::uint8_t>();
     this->mtime = 0;
+    this->enabled = false;
+    for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
+    {
+        this->overrideFreqs[i] = 0;
+    }
 }
 
 Config::~Config()
 {
-    std::scoped_lock lock{this->configMutex};
+    std::scoped_lock lock{this->profileMutex};
     this->Close();
 }
 
@@ -65,7 +70,7 @@ void Config::Close()
 
 bool Config::Refresh()
 {
-    std::scoped_lock lock{this->configMutex};
+    std::scoped_lock lock{this->profileMutex};
     if (!this->loaded || this->mtime != this->CheckModificationTime())
     {
         this->Load();
@@ -74,9 +79,9 @@ bool Config::Refresh()
     return false;
 }
 
-bool Config::HasLoaded()
+bool Config::HasProfilesLoaded()
 {
-    std::scoped_lock lock{this->configMutex};
+    std::scoped_lock lock{this->profileMutex};
     return this->loaded;
 }
 
@@ -128,7 +133,7 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule mo
 
 std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
-    std::scoped_lock lock{this->configMutex};
+    std::scoped_lock lock{this->profileMutex};
     switch(profile)
     {
         case SysClkProfile_Handheld:
@@ -149,13 +154,13 @@ std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, Sys
 
 std::uint32_t Config::GetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
-    std::scoped_lock lock{this->configMutex};
+    std::scoped_lock lock{this->profileMutex};
     return FindClockMhz(tid, module, profile);
 }
 
 bool Config::SetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, std::uint32_t mhz)
 {
-    std::scoped_lock lock{this->configMutex};
+    std::scoped_lock lock{this->profileMutex};
     char key[0x100] = {0};
     char section[17] = {0};
     char val[11] = {0};
@@ -246,4 +251,34 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
     }
 
     return 1;
+}
+
+void Config::SetEnabled(bool enabled)
+{
+    this->enabled = enabled;
+}
+
+bool Config::Enabled()
+{
+    return this->enabled;
+}
+
+void Config::SetOverrideHz(SysClkModule module, std::uint32_t hz)
+{
+    std::scoped_lock lock{this->overrideMutex};
+    if(!SYSCLK_ENUM_VALID(SysClkModule, module))
+    {
+        ERROR_THROW("Unhandled SysClkModule: %u", module);
+    }
+    this->overrideFreqs[module] = hz;
+}
+
+std::uint32_t Config::GetOverrideHz(SysClkModule module)
+{
+    std::scoped_lock lock{this->overrideMutex};
+    if(!SYSCLK_ENUM_VALID(SysClkModule, module))
+    {
+        ERROR_THROW("Unhandled SysClkModule: %u", module);
+    }
+    return this->overrideFreqs[module];
 }

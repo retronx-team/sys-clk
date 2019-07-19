@@ -20,7 +20,7 @@ IpcService::IpcService()
     std::uint32_t priority;
     Result rc = svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
     ASSERT_RESULT_OK(rc, "svcGetThreadPriority");
-    rc = ipcServerInit(&this->server, SYSCLK_IPC_SERVICE_NAME, 4);
+    rc = ipcServerInit(&this->server, SYSCLK_IPC_SERVICE_NAME, 42);
     ASSERT_RESULT_OK(rc, "ipcServerInit");
     rc = threadCreate(&this->thread, &IpcService::ProcessThreadFunc, this, 0x2000, priority, -2);
     ASSERT_RESULT_OK(rc, "threadCreate");
@@ -69,7 +69,8 @@ void IpcService::ProcessThreadFunc(void *arg)
             {
                 return;
             }
-            if(rc != KERNELRESULT(ConnectionClosed)) {
+            if(rc != KERNELRESULT(ConnectionClosed))
+            {
                 FileUtils::LogLine("[ipc] ipcServerProcess: [0x%x] %04d-%04d", rc, R_MODULE(rc), R_DESCRIPTION(rc));
             }
         }
@@ -129,6 +130,13 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->SetEnabled((std::uint8_t*)r->data.ptr);
             }
             break;
+
+        case SysClkIpcCmd_SetOverride:
+            if(r->data.size >= sizeof(SysClkIpc_SetOverride_Args))
+            {
+                return ipcSrv->SetOverride((SysClkIpc_SetOverride_Args*)r->data.ptr);
+            }
+            break;
     }
 
     return SYSCLK_ERROR(Generic);
@@ -170,7 +178,7 @@ Result IpcService::Exit()
 Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
 {
     Config* config = ClockManager::GetInstance()->GetConfig();
-    if(!config->HasLoaded())
+    if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
     }
@@ -182,8 +190,13 @@ Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
 
 Result IpcService::GetProfile(SysClkIpc_GetProfile_Args* args, std::uint32_t* out_mhz)
 {
+    if(!SYSCLK_ENUM_VALID(SysClkModule, args->module) || !SYSCLK_ENUM_VALID(SysClkProfile, args->profile))
+    {
+        return SYSCLK_ERROR(Generic);
+    }
+
     Config* config = ClockManager::GetInstance()->GetConfig();
-    if(!config->HasLoaded())
+    if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
     }
@@ -195,8 +208,13 @@ Result IpcService::GetProfile(SysClkIpc_GetProfile_Args* args, std::uint32_t* ou
 
 Result IpcService::SetProfile(SysClkIpc_SetProfile_Args* args)
 {
+    if(!SYSCLK_ENUM_VALID(SysClkModule, args->module) || !SYSCLK_ENUM_VALID(SysClkProfile, args->profile))
+    {
+        return SYSCLK_ERROR(Generic);
+    }
+
     Config* config = ClockManager::GetInstance()->GetConfig();
-    if(!config->HasLoaded())
+    if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
     }
@@ -211,8 +229,21 @@ Result IpcService::SetProfile(SysClkIpc_SetProfile_Args* args)
 
 Result IpcService::SetEnabled(std::uint8_t* enabled)
 {
-    ClockManager* clockMgr = ClockManager::GetInstance();
-    clockMgr->SetEnabled(*enabled);
+    Config* config = ClockManager::GetInstance()->GetConfig();
+    config->SetEnabled(*enabled);
+
+    return 0;
+}
+
+Result IpcService::SetOverride(SysClkIpc_SetOverride_Args* args)
+{
+    if(!SYSCLK_ENUM_VALID(SysClkModule, args->module))
+    {
+        return SYSCLK_ERROR(Generic);
+    }
+
+    Config* config = ClockManager::GetInstance()->GetConfig();
+    config->SetOverrideHz(args->module, args->hz);
 
     return 0;
 }

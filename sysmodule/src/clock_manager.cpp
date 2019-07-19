@@ -46,9 +46,9 @@ ClockManager::ClockManager()
     for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
     {
         this->context->freqs[i] = 0;
+        this->context->overrideFreqs[i] = 0;
     }
     this->running = false;
-    this->enabled = false;
 }
 
 ClockManager::~ClockManager()
@@ -67,16 +67,6 @@ bool ClockManager::Running()
     return this->running;
 }
 
-void ClockManager::SetEnabled(bool enabled)
-{
-    this->enabled = enabled;
-}
-
-bool ClockManager::Enabled()
-{
-    return this->enabled;
-}
-
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
@@ -85,13 +75,18 @@ void ClockManager::Tick()
         std::uint32_t hz = 0;
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
-            hz = this->config->GetAutoClockHz(this->context->applicationTid, (SysClkModule)module, this->context->profile);
+            hz = this->context->overrideFreqs[module];
+
+            if(!hz)
+            {
+                hz = this->config->GetAutoClockHz(this->context->applicationTid, (SysClkModule)module, this->context->profile);
+            }
 
             if (hz)
             {
                 hz = Clocks::GetNearestHz((SysClkModule)module, this->context->profile, hz);
 
-                if (hz != this->context->freqs[module] && this->enabled)
+                if (hz != this->context->freqs[module] && this->context->enabled)
                 {
                     FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
                     Clocks::SetHz((SysClkModule)module, hz);
@@ -106,10 +101,11 @@ bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
 
-    if(this->enabled != this->context->enabled)
+    bool enabled = this->GetConfig()->Enabled();
+    if(enabled != this->context->enabled)
     {
         this->context->enabled = enabled;
-        FileUtils::LogLine("[mgr] " TARGET " was %s", this->context->enabled ? "enabled" : "disabled");
+        FileUtils::LogLine("[mgr] " TARGET " was %s", enabled ? "enabled" : "disabled");
         hasChanged = true;
     }
 
@@ -143,6 +139,21 @@ bool ClockManager::RefreshContext()
         {
             FileUtils::LogLine("[mgr] %s clock changed to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
             this->context->freqs[module] = hz;
+            hasChanged = true;
+        }
+
+        hz = this->GetConfig()->GetOverrideHz((SysClkModule)module);
+        if (hz != this->context->overrideFreqs[module])
+        {
+            if(hz)
+            {
+                FileUtils::LogLine("[mgr] %s override changed to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
+            }
+            else
+            {
+                FileUtils::LogLine("[mgr] %s override disabled", Clocks::GetModuleName((SysClkModule)module, true));
+            }
+            this->context->overrideFreqs[module] = hz;
             hasChanged = true;
         }
     }

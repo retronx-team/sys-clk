@@ -26,8 +26,6 @@ class ClockManager
 
     void SetRunning(bool running);
     bool Running();
-    void SetEnabled(bool enabled);
-    bool Enabled();
     void Tick();
     SysClkContext GetCurrentContext();
     Config* GetConfig();
@@ -40,7 +38,6 @@ class ClockManager
 
     static ClockManager *instance;
     std::atomic_bool running;
-    std::atomic_bool enabled;
     LockableMutex contextMutex;
     Config *config;
     SysClkContext *context;

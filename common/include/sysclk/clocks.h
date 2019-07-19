@@ -37,6 +37,7 @@ typedef struct
     uint64_t applicationTid;
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];
+    uint32_t overrideFreqs[SysClkModule_EnumMax];
 } SysClkContext;
 
 typedef struct
@@ -52,6 +53,8 @@ typedef struct
 extern uint32_t sysclk_g_freq_table_mem_hz[];
 extern uint32_t sysclk_g_freq_table_cpu_hz[];
 extern uint32_t sysclk_g_freq_table_gpu_hz[];
+
+#define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* SysClkFormatModule(SysClkModule module, bool pretty)
 {

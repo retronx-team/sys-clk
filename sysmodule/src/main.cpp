@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
         ClockManager *clockMgr = ClockManager::GetInstance();
         clockMgr->SetRunning(true);
-        clockMgr->SetEnabled(true);
+        clockMgr->GetConfig()->SetEnabled(true);
 
         while (clockMgr->Running())
         {
