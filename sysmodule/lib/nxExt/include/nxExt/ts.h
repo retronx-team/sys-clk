@@ -10,7 +10,18 @@
 
 #pragma once
 
-#include "nxExt/apm_ext.h"
-#include "nxExt/ts.h"
-#include "nxExt/ipc_server.h"
-#include "nxExt/cpp/lockable_mutex.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <switch.h>
+
+void tsExit(void);
+Result tsInitialize(void);
+Result tsGetPcbThermInt(u32 *out_therm);
+Result tsGetSocThermMilli(u32 *out_therm);
+
+#ifdef __cplusplus
+}
+#endif
