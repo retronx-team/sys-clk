@@ -51,6 +51,9 @@ void Clocks::Initialize()
 
     rc = psmInitialize();
     ASSERT_RESULT_OK(rc, "psmInitialize");
+
+    rc = tsInitialize();
+    ASSERT_RESULT_OK(rc, "tsInitialize");
 }
 
 void Clocks::Exit()
@@ -65,11 +68,12 @@ void Clocks::Exit()
     }
     apmExtExit();
     psmExit();
+    tsExit();
 }
 
 const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
 {
-    const char* result = SysClkFormatModule(module, pretty);
+    const char* result = sysClkFormatModule(module, pretty);
 
     if(!result)
     {
@@ -81,7 +85,7 @@ const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
 
 const char* Clocks::GetProfileName(SysClkProfile profile, bool pretty)
 {
-    const char* result = SysClkFormatProfile(profile, pretty);
+    const char* result = sysClkFormatProfile(profile, pretty);
 
     if(!result)
     {
@@ -91,9 +95,21 @@ const char* Clocks::GetProfileName(SysClkProfile profile, bool pretty)
     return result;
 }
 
-PcvModule Clocks::GetPcvModule(SysClkModule SysClkModule)
+const char* Clocks::GetThermalSensorName(SysClkThermalSensor sensor, bool pretty)
 {
-    switch(SysClkModule)
+    const char* result = sysClkFormatThermalSensor(sensor, pretty);
+
+    if(!result)
+    {
+        ERROR_THROW("No such SysClkThermalSensor: %u", sensor);
+    }
+
+    return result;
+}
+
+PcvModule Clocks::GetPcvModule(SysClkModule sysClkModule)
+{
+    switch(sysClkModule)
     {
         case SysClkModule_CPU:
             return PcvModule_CpuBus;
@@ -102,16 +118,16 @@ PcvModule Clocks::GetPcvModule(SysClkModule SysClkModule)
         case SysClkModule_MEM:
             return PcvModule_EMC;
         default:
-            ERROR_THROW("No such SysClkModule: %u", SysClkModule);
+            ERROR_THROW("No such SysClkModule: %u", sysClkModule);
     }
 
     return (PcvModule)0;
 }
 
-PcvModuleId Clocks::GetPcvModuleId(SysClkModule SysClkModule)
+PcvModuleId Clocks::GetPcvModuleId(SysClkModule sysClkModule)
 {
     PcvModuleId pcvModuleId;
-    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(SysClkModule));
+    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(sysClkModule));
     ASSERT_RESULT_OK(rc, "pcvGetModuleId");
 
     return pcvModuleId;
@@ -257,4 +273,28 @@ std::uint32_t Clocks::GetNearestHz(SysClkModule module, std::uint32_t inHz)
     }
 
     return clockTable[i];
+}
+
+std::uint32_t Clocks::GetTemperatureMilli(SysClkThermalSensor sensor)
+{
+    Result rc;
+    std::uint32_t millis = 0;
+
+    if(sensor == SysClkThermalSensor_SOC)
+    {
+        rc = tsGetSocThermMilli(&millis);
+        ASSERT_RESULT_OK(rc, "tsGetSocThermMilli");
+    }
+    else if(sensor == SysClkThermalSensor_PCB)
+    {
+        rc = tsGetPcbThermInt(&millis);
+        ASSERT_RESULT_OK(rc, "tsGetPcbThermInt");
+        millis *= 1000;
+    }
+    else
+    {
+        ERROR_THROW("No such SysClkThermalSensor: %u", sensor);
+    }
+
+    return millis;
 }

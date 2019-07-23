@@ -158,6 +158,24 @@ bool ClockManager::RefreshContext()
         }
     }
 
+    // temperatures do not and should not force a refresh, hasChanged untouched
+    std::uint32_t millis = 0;
+    std::uint64_t ns = armTicksToNs(armGetSystemTick());
+    bool shouldLogTemp = ((ns - this->lastTempLogNs) > CLOCK_MANAGER_TEMP_LOG_INTERVAL_NS);
+    for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
+    {
+        millis = Clocks::GetTemperatureMilli((SysClkThermalSensor)sensor);
+        if(shouldLogTemp)
+        {
+            FileUtils::LogLine("[mgr] %s temp: %u.%u °C", Clocks::GetThermalSensorName((SysClkThermalSensor)sensor, true), millis/1000, (millis - millis/1000*1000) / 100);
+        }
+        this->context->temps[sensor] = millis;
+    }
+    if(shouldLogTemp)
+    {
+        this->lastTempLogNs = ns;
+    }
+
     return hasChanged;
 }
 

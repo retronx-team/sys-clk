@@ -41,7 +41,9 @@ void IpcService::SetRunning(bool running)
     {
         Result rc = threadStart(&this->thread);
         ASSERT_RESULT_OK(rc, "threadStart");
-    } else {
+    }
+    else
+    {
         svcCancelSynchronization(this->thread.handle);
         threadWaitForExit(&this->thread);
     }

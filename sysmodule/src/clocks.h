@@ -24,11 +24,13 @@ class Clocks
     static void SetHz(SysClkModule module, std::uint32_t hz);
     static const char* GetProfileName(SysClkProfile profile, bool pretty);
     static const char* GetModuleName(SysClkModule module, bool pretty);
+    static const char* GetThermalSensorName(SysClkThermalSensor sensor, bool pretty);
     static std::uint32_t GetNearestHz(SysClkModule module, SysClkProfile profile, std::uint32_t inHz);
+    static std::uint32_t GetTemperatureMilli(SysClkThermalSensor sensor);
 
   protected:
-    static PcvModule GetPcvModule(SysClkModule SysClkModule);
-    static PcvModuleId GetPcvModuleId(SysClkModule SysClkModule);
+    static PcvModule GetPcvModule(SysClkModule sysClkModule);
+    static PcvModuleId GetPcvModuleId(SysClkModule sysClkModule);
     static std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz);
     static void GetList(SysClkModule module, std::uint32_t **outClocks);
     static std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);

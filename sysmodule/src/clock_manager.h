@@ -17,6 +17,8 @@
 #include "clocks.h"
 #include <nxExt/cpp/lockable_mutex.h>
 
+#define CLOCK_MANAGER_TEMP_LOG_INTERVAL_NS 3000000000ULL
+
 class ClockManager
 {
   public:
@@ -41,4 +43,5 @@ class ClockManager
     LockableMutex contextMutex;
     Config *config;
     SysClkContext *context;
+    std::uint64_t lastTempLogNs;
 };

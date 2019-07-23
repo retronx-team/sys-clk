@@ -64,7 +64,7 @@ extern uint32_t sysclk_g_freq_table_gpu_hz[];
 
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
-static inline const char* SysClkFormatModule(SysClkModule module, bool pretty)
+static inline const char* sysClkFormatModule(SysClkModule module, bool pretty)
 {
     switch(module)
     {
@@ -79,7 +79,7 @@ static inline const char* SysClkFormatModule(SysClkModule module, bool pretty)
     }
 }
 
-static inline const char* SysClkFormatThermalSensor(SysClkThermalSensor thermSensor, bool pretty)
+static inline const char* sysClkFormatThermalSensor(SysClkThermalSensor thermSensor, bool pretty)
 {
     switch(thermSensor)
     {
@@ -92,7 +92,7 @@ static inline const char* SysClkFormatThermalSensor(SysClkThermalSensor thermSen
     }
 }
 
-static inline const char* SysClkFormatProfile(SysClkProfile profile, bool pretty)
+static inline const char* sysClkFormatProfile(SysClkProfile profile, bool pretty)
 {
     switch(profile)
     {
