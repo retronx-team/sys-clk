@@ -88,7 +88,7 @@ void ClockManager::Tick()
 
                 if (hz != this->context->freqs[module] && this->context->enabled)
                 {
-                    FileUtils::LogLine("[mgr] Setting %s clock to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
+                    FileUtils::LogLine("[mgr] Setting %s clock to %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
                     Clocks::SetHz((SysClkModule)module, hz);
                     this->context->freqs[module] = hz;
                 }
@@ -137,7 +137,7 @@ bool ClockManager::RefreshContext()
         hz = Clocks::GetCurrentHz((SysClkModule)module);
         if (hz != 0 && hz != this->context->freqs[module])
         {
-            FileUtils::LogLine("[mgr] %s clock changed to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
+            FileUtils::LogLine("[mgr] %s clock changed to %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
             this->context->freqs[module] = hz;
             hasChanged = true;
         }
@@ -147,7 +147,7 @@ bool ClockManager::RefreshContext()
         {
             if(hz)
             {
-                FileUtils::LogLine("[mgr] %s override changed to %u", Clocks::GetModuleName((SysClkModule)module, true), hz);
+                FileUtils::LogLine("[mgr] %s override changed to %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
             }
             else
             {
