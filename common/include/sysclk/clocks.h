@@ -101,11 +101,11 @@ static inline const char* SysClkFormatProfile(SysClkProfile profile, bool pretty
         case SysClkProfile_Handheld:
             return pretty ? "Handheld" : "handheld";
         case SysClkProfile_HandheldCharging:
-            return pretty ? "Handheld (Charging?)" : "handheld_charging";
+            return pretty ? "Charging" : "handheld_charging";
         case SysClkProfile_HandheldChargingUSB:
-            return pretty ? "Handheld (Charging: USB)" : "handheld_charging_usb";
+            return pretty ? "USB Charger" : "handheld_charging_usb";
         case SysClkProfile_HandheldChargingOfficial:
-            return pretty ? "Handheld (Charging: Official)" : "handheld_charging_official";
+            return pretty ? "Official Charger" : "handheld_charging_official";
         default:
             return NULL;
     }
