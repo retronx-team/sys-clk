@@ -31,6 +31,13 @@ typedef enum
     SysClkModule_EnumMax
 } SysClkModule;
 
+typedef enum
+{
+    SysClkThermalSensor_SOC = 0,
+    SysClkThermalSensor_PCB,
+    SysClkThermalSensor_EnumMax
+} SysClkThermalSensor;
+
 typedef struct
 {
     uint8_t enabled;
@@ -38,6 +45,7 @@ typedef struct
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];
     uint32_t overrideFreqs[SysClkModule_EnumMax];
+    uint32_t temps[SysClkThermalSensor_EnumMax];
 } SysClkContext;
 
 typedef struct
@@ -66,6 +74,19 @@ static inline const char* SysClkFormatModule(SysClkModule module, bool pretty)
             return pretty ? "GPU" : "gpu";
         case SysClkModule_MEM:
             return pretty ? "Memory" : "mem";
+        default:
+            return NULL;
+    }
+}
+
+static inline const char* SysClkFormatThermalSensor(SysClkThermalSensor thermSensor, bool pretty)
+{
+    switch(thermSensor)
+    {
+        case SysClkThermalSensor_SOC:
+            return pretty ? "SOC" : "soc";
+        case SysClkThermalSensor_PCB:
+            return pretty ? "PCB" : "pcb";
         default:
             return NULL;
     }
