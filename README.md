@@ -45,7 +45,7 @@ handheld_mem=
 ```
 
 * Replace `Application Title ID` with the title id of the game/application you're interested in customizing.
-A list of games title id can be found in [Switchbrew wiki](https //switchbrew.org/wiki/Title_list/Games).
+A list of games title id can be found in [Switchbrew wiki](https://switchbrew.org/wiki/Title_list/Games).
 * Frequencies are expressed in mhz, and will be scaled to the nearest possible values, described in the clock table below.
 * If any key is omitted, value is empty or set to 0, it will be ignored, and stock clocks will apply.
 * If charging, sys clk will look for the frequencies in that order, picking the first found 
