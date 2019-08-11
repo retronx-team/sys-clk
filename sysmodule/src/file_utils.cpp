@@ -14,13 +14,13 @@
 static LockableMutex g_log_mutex;
 static std::atomic_bool g_has_initialized = false;
 static bool g_log_enabled = false;
+static std::uint64_t g_last_flag_check = 0;
 
 extern "C" void __libnx_init_time(void);
 
 static void _FileUtils_InitializeThreadFunc(void *args)
 {
     FileUtils::Initialize();
-    svcExitThread();
 }
 
 bool FileUtils::IsInitialized()
@@ -32,26 +32,51 @@ void FileUtils::LogLine(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    if (g_has_initialized && g_log_enabled)
+    if (g_has_initialized)
     {
         g_log_mutex.Lock();
 
-        FILE *file = fopen(FILE_LOG_FILE_PATH, "a");
-        if (file)
-        {
-            time_t timer  = time(NULL);
-            struct tm* timerTm = localtime(&timer);
+        FileUtils::RefreshFlags(false);
 
-            va_start(args, format);
-            fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] ", timerTm->tm_year+1900, timerTm->tm_mon+1, timerTm->tm_mday, timerTm->tm_hour, timerTm->tm_min, timerTm->tm_sec);
-            vfprintf(file, format, args);
-            fprintf(file, "\n");
-            fclose(file);
+        if(g_log_enabled)
+        {
+            FILE *file = fopen(FILE_LOG_FILE_PATH, "a");
+            if (file)
+            {
+                time_t timer  = time(NULL);
+                struct tm* timerTm = localtime(&timer);
+
+                va_start(args, format);
+                fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] ", timerTm->tm_year+1900, timerTm->tm_mon+1, timerTm->tm_mday, timerTm->tm_hour, timerTm->tm_min, timerTm->tm_sec);
+                vfprintf(file, format, args);
+                fprintf(file, "\n");
+                fclose(file);
+            }
         }
 
         g_log_mutex.Unlock();
     }
     va_end(args);
+}
+
+void FileUtils::RefreshFlags(bool force)
+{
+    std::uint64_t now = armTicksToNs(armGetSystemTick());
+    if(!force && (now - g_last_flag_check) < FILE_FLAG_CHECK_INTERVAL_NS)
+    {
+        return;
+    }
+
+    FILE *file = fopen(FILE_LOG_FLAG_PATH, "r");
+    if (file)
+    {
+        g_log_enabled = true;
+        fclose(file);
+    } else {
+        g_log_enabled = false;
+    }
+
+    g_last_flag_check = now;
 }
 
 void FileUtils::InitializeAsync()
@@ -84,16 +109,9 @@ Result FileUtils::Initialize()
 
     if (R_SUCCEEDED(rc))
     {
-        FILE *file = fopen(FILE_LOG_FLAG_PATH, "r");
-        if (file)
-        {
-            g_log_enabled = true;
-            fclose(file);
-        }
-
-        g_has_initialized = true;
-
+        FileUtils::RefreshFlags(true);
         FileUtils::LogLine("=== " TARGET " " TARGET_VERSION " ===");
+        g_has_initialized = true;
     }
 
     return rc;

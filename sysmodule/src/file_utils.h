@@ -17,6 +17,7 @@
 #include <cstdarg>
 
 #define FILE_CONFIG_DIR "/config/" TARGET
+#define FILE_FLAG_CHECK_INTERVAL_NS 5000000000ULL
 #define FILE_LOG_FLAG_PATH FILE_CONFIG_DIR "/log.flag"
 #define FILE_LOG_FILE_PATH FILE_CONFIG_DIR "/log.txt"
 
@@ -26,6 +27,9 @@ class FileUtils
     static void Exit();
     static Result Initialize();
     static bool IsInitialized();
+    static bool IsLogEnabled();
     static void InitializeAsync();
     static void LogLine(const char *format, ...);
+  protected:
+    static void RefreshFlags(bool force);
 };
