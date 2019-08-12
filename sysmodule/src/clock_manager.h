@@ -17,8 +17,6 @@
 #include "clocks.h"
 #include <nxExt/cpp/lockable_mutex.h>
 
-#define CLOCK_MANAGER_TEMP_LOG_INTERVAL_NS 3000000000ULL
-
 class ClockManager
 {
   public:
@@ -29,6 +27,7 @@ class ClockManager
     void SetRunning(bool running);
     bool Running();
     void Tick();
+    void WaitForNextTick();
     SysClkContext GetCurrentContext();
     Config* GetConfig();
 

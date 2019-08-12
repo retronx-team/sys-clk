@@ -78,6 +78,16 @@ handheld_gpu=153
 handheld_mem=800
 ```
 
+### Advanced
+
+The `[values]` section allows you to alter timings in sys-clk, you should not need to edit any of these. Possible values are:
+
+| Key                    | Desc                                                                         | Default |
+|:----------------------:|------------------------------------------------------------------------------|:-------:|
+|**temp_log_interval_ms**| Defines how often sys-clk log temperatures, in milliseconds (`0` to disable) | 3000 ms |
+|**poll_interval_ms**    | Defines how fast sys-clk checks and applies profiles, in milliseconds        | 300 ms  |
+
+
 ## Capping
 
 To protect the battery from excessive strain, clocks requested from config may be capped before applying, depending on your current profile:

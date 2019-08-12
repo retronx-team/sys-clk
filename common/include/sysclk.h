@@ -16,6 +16,7 @@ extern "C" {
 
 #include "sysclk/ipc.h"
 #include "sysclk/clocks.h"
+#include "sysclk/config.h"
 #include "sysclk/errors.h"
 
 #ifdef __cplusplus

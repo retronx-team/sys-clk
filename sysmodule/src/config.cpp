@@ -30,11 +30,16 @@ Config::Config(std::string path)
     {
         this->overrideFreqs[i] = 0;
     }
+
+    for(unsigned int i = 0; i < SysClkConfigValue_EnumMax; i++)
+    {
+        this->configValues[i] = sysClkDefaultConfigValue((SysClkConfigValue)i);
+    }
 }
 
 Config::~Config()
 {
-    std::scoped_lock lock{this->profileMutex};
+    std::scoped_lock lock{this->configMutex};
     this->Close();
 }
 
@@ -70,7 +75,7 @@ void Config::Close()
 
 bool Config::Refresh()
 {
-    std::scoped_lock lock{this->profileMutex};
+    std::scoped_lock lock{this->configMutex};
     if (!this->loaded || this->mtime != this->CheckModificationTime())
     {
         this->Load();
@@ -81,7 +86,7 @@ bool Config::Refresh()
 
 bool Config::HasProfilesLoaded()
 {
-    std::scoped_lock lock{this->profileMutex};
+    std::scoped_lock lock{this->configMutex};
     return this->loaded;
 }
 
@@ -133,7 +138,7 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule mo
 
 std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
-    std::scoped_lock lock{this->profileMutex};
+    std::scoped_lock lock{this->configMutex};
     switch(profile)
     {
         case SysClkProfile_Handheld:
@@ -154,13 +159,13 @@ std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, Sys
 
 std::uint32_t Config::GetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
-    std::scoped_lock lock{this->profileMutex};
+    std::scoped_lock lock{this->configMutex};
     return FindClockMhz(tid, module, profile);
 }
 
 bool Config::SetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, std::uint32_t mhz)
 {
-    std::scoped_lock lock{this->profileMutex};
+    std::scoped_lock lock{this->configMutex};
     char key[0x100] = {0};
     char section[17] = {0};
     char val[11] = {0};
@@ -192,6 +197,28 @@ std::uint8_t Config::GetProfileCount(std::uint64_t tid)
 
 int Config::BrowseIniFunc(const char* section, const char* key, const char* value, void *userdata)
 {
+    Config* config = (Config*)userdata;
+    std::uint64_t input;
+    if(!strcmp(section, CONFIG_VAL_SECTION)) {
+        for(unsigned int val = 0; val < SysClkConfigValue_EnumMax; val++)
+        {
+            if(!strcmp(key, sysClkFormatConfigValue((SysClkConfigValue)val, false)))
+            {
+                input = strtoul(value, NULL, 0);
+                if(!sysClkValidConfigValue((SysClkConfigValue)val, input))
+                {
+                    input = sysClkDefaultConfigValue((SysClkConfigValue)val);
+                    FileUtils::LogLine("[cfg] Invalid value for key '%s' in section '%s': using default %d", key, section, input);
+                }
+                config->configValues[val] = input;
+                return 1;
+            }
+        }
+
+        FileUtils::LogLine("[cfg] Skipping key '%s' in section '%s': Unrecognized config value", key, section);
+        return 1;
+    }
+
     std::uint64_t tid = strtoul(section, NULL, 16);
 
     if(!tid || strlen(section) != 16)
@@ -238,7 +265,6 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
         return 1;
     }
 
-    Config* config = (Config*)userdata;
     config->profileMhzMap[std::make_tuple(tid, parsedProfile, parsedModule)] = mhz;
     std::map<std::uint64_t, std::uint8_t>::iterator it = config->profileCountMap.find(tid);
     if (it == config->profileCountMap.end())
@@ -280,5 +306,17 @@ std::uint32_t Config::GetOverrideHz(SysClkModule module)
     {
         ERROR_THROW("Unhandled SysClkModule: %u", module);
     }
+
     return this->overrideFreqs[module];
+}
+
+std::uint64_t Config::GetConfigValue(SysClkConfigValue val)
+{
+    std::scoped_lock lock{this->configMutex};
+    if(!SYSCLK_ENUM_VALID(SysClkConfigValue, val))
+    {
+        ERROR_THROW("Unhandled SysClkConfigValue: %u", val);
+    }
+
+    return this->configValues[val];
 }

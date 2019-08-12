@@ -19,6 +19,8 @@
 #include <nxExt.h>
 #include "clocks.h"
 
+#define CONFIG_VAL_SECTION "values"
+
 class Config
 {
   public:
@@ -40,6 +42,8 @@ class Config
     bool Enabled();
     void SetOverrideHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetOverrideHz(SysClkModule module);
+
+    std::uint64_t GetConfigValue(SysClkConfigValue val);
   protected:
     void Load();
     void Close();
@@ -54,8 +58,9 @@ class Config
     bool loaded;
     std::string path;
     time_t mtime;
-    LockableMutex profileMutex;
+    LockableMutex configMutex;
     LockableMutex overrideMutex;
     std::atomic_bool enabled;
-    uint32_t overrideFreqs[SysClkModule_EnumMax];
+    std::uint32_t overrideFreqs[SysClkModule_EnumMax];
+    std::uint64_t configValues[SysClkConfigValue_EnumMax];
 };

@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         while (clockMgr->Running())
         {
             clockMgr->Tick();
-            svcSleepThread(300000000ULL);
+            clockMgr->WaitForNextTick();
         }
 
         ClockManager::Exit();

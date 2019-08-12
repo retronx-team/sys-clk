@@ -1,0 +1,59 @@
+/*
+ * --------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
+ * wrote this file. As long as you retain this notice you can do whatever you
+ * want with this stuff. If you meet any of us some day, and you think this
+ * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
+ * --------------------------------------------------------------------------
+ */
+
+#pragma once
+
+#include <stdint.h>
+#include <stddef.h>
+
+typedef enum {
+    SysClkConfigValue_PollingIntervalMs = 0,
+    SysClkConfigValue_TempLogIntervalMs,
+    SysClkConfigValue_EnumMax,
+} SysClkConfigValue;
+
+static inline const char* sysClkFormatConfigValue(SysClkConfigValue val, bool pretty)
+{
+    switch(val)
+    {
+        case SysClkConfigValue_PollingIntervalMs:
+            return pretty ? "Polling Interval (ms)" : "poll_interval_ms";
+        case SysClkConfigValue_TempLogIntervalMs:
+            return pretty ? "Temperature logging interval (ms)" : "temp_log_interval_ms";
+        default:
+            return NULL;
+    }
+}
+
+static inline uint64_t sysClkDefaultConfigValue(SysClkConfigValue val)
+{
+    switch(val)
+    {
+        case SysClkConfigValue_PollingIntervalMs:
+            return 300ULL;
+        case SysClkConfigValue_TempLogIntervalMs:
+            return 0ULL;
+        default:
+            return 0ULL;
+    }
+}
+
+static inline uint64_t sysClkValidConfigValue(SysClkConfigValue val, uint64_t input)
+{
+    switch(val)
+    {
+        case SysClkConfigValue_PollingIntervalMs:
+            return input > 0;
+        case SysClkConfigValue_TempLogIntervalMs:
+            return true;
+        default:
+            return false;
+    }
+}

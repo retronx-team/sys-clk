@@ -97,6 +97,10 @@ void ClockManager::Tick()
     }
 }
 
+void ClockManager::WaitForNextTick() {
+    svcSleepThread(this->GetConfig()->GetConfigValue(SysClkConfigValue_PollingIntervalMs) * 1000000ULL);
+}
+
 bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
@@ -161,7 +165,8 @@ bool ClockManager::RefreshContext()
     // temperatures do not and should not force a refresh, hasChanged untouched
     std::uint32_t millis = 0;
     std::uint64_t ns = armTicksToNs(armGetSystemTick());
-    bool shouldLogTemp = ((ns - this->lastTempLogNs) > CLOCK_MANAGER_TEMP_LOG_INTERVAL_NS);
+    std::uint64_t interval = this->GetConfig()->GetConfigValue(SysClkConfigValue_TempLogIntervalMs) * 1000000ULL;
+    bool shouldLogTemp = interval && ((ns - this->lastTempLogNs) > interval);
     for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
     {
         millis = Clocks::GetTemperatureMilli((SysClkThermalSensor)sensor);
