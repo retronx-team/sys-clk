@@ -304,18 +304,17 @@ std::uint32_t Clocks::GetNearestHz(SysClkModule module, std::uint32_t inHz)
 std::uint32_t Clocks::GetTemperatureMilli(SysClkThermalSensor sensor)
 {
     Result rc;
-    std::uint32_t millis = 0;
+    std::int32_t millis = 0;
 
     if(sensor == SysClkThermalSensor_SOC)
     {
-        rc = tsGetSocThermMilli(&millis);
-        ASSERT_RESULT_OK(rc, "tsGetSocThermMilli");
+        rc = tsGetTemperatureMilliC(TsLocation_External, &millis);
+        ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC");
     }
     else if(sensor == SysClkThermalSensor_PCB)
     {
-        rc = tsGetPcbThermInt(&millis);
-        ASSERT_RESULT_OK(rc, "tsGetPcbThermInt");
-        millis *= 1000;
+        rc = tsGetTemperatureMilliC(TsLocation_Internal, &millis);
+        ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC");
     }
     else
     {
