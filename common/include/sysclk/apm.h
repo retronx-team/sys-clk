@@ -10,16 +10,13 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "clocks.h"
 
-#include "sysclk/ipc.h"
-#include "sysclk/clocks.h"
-#include "sysclk/apm.h"
-#include "sysclk/config.h"
-#include "sysclk/errors.h"
+typedef struct {
+    uint32_t id;
+    uint32_t cpu_hz;
+    uint32_t gpu_hz;
+    uint32_t mem_hz;
+} SysClkApmConfiguration;
 
-#ifdef __cplusplus
-}
-#endif
+extern SysClkApmConfiguration sysclk_g_apm_configurations[];

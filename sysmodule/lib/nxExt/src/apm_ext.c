@@ -125,3 +125,44 @@ Result apmExtSysRequestPerformanceMode(u32 mode)
 
     return rc;
 }
+
+Result apmExtGetCurrentPerformanceConfiguration(u32 *out_conf)
+{
+    IpcCommand c;
+    ipcInitialize(&c);
+
+    struct
+    {
+        u64 magic;
+        u64 cmd_id;
+    } *raw;
+
+    raw = ipcPrepareHeader(&c, sizeof(*raw));
+
+    raw->magic = SFCI_MAGIC;
+    raw->cmd_id = 7;
+
+    Result rc = serviceIpcDispatch(&g_apmSysSrv);
+
+    if (R_SUCCEEDED(rc))
+    {
+        IpcParsedCommand r;
+        ipcParse(&r);
+
+        struct
+        {
+            u64 magic;
+            u64 result;
+            u32 conf;
+        } *resp = r.Raw;
+
+        rc = resp->result;
+
+        if (R_SUCCEEDED(rc))
+        {
+            *out_conf = resp->conf;
+        }
+    }
+
+    return rc;
+}

@@ -133,16 +133,42 @@ PcvModuleId Clocks::GetPcvModuleId(SysClkModule sysClkModule)
     return pcvModuleId;
 }
 
-std::uint32_t Clocks::ResetToStock()
+void Clocks::ResetToStock()
 {
-    std::uint32_t mode = 0;
-    Result rc = apmExtGetPerformanceMode(&mode);
-    ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
+    Result rc = 0;
+    if(hosversionAtLeast(9,0,0))
+    {
+        std::uint32_t confId = 0;
+        rc = apmExtGetCurrentPerformanceConfiguration(&confId);
+        ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
-    rc = apmExtSysRequestPerformanceMode(mode);
-    ASSERT_RESULT_OK(rc, "apmExtSysRequestPerformanceMode");
+        SysClkApmConfiguration* apmConfiguration = NULL;
+        for(size_t i = 0; sysclk_g_apm_configurations[i].id; i++)
+        {
+            if(sysclk_g_apm_configurations[i].id == confId)
+            {
+                apmConfiguration = &sysclk_g_apm_configurations[i];
+                break;
+            }
+        }
 
-    return mode;
+        if(!apmConfiguration) {
+            ERROR_THROW("Unknown apm configuration: %x", confId);
+        }
+
+        Clocks::SetHz(SysClkModule_CPU, apmConfiguration->cpu_hz);
+        Clocks::SetHz(SysClkModule_GPU, apmConfiguration->gpu_hz);
+        Clocks::SetHz(SysClkModule_MEM, apmConfiguration->mem_hz);
+    }
+    else
+    {
+        std::uint32_t mode = 0;
+        rc = apmExtGetPerformanceMode(&mode);
+        ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
+
+        rc = apmExtSysRequestPerformanceMode(mode);
+        ASSERT_RESULT_OK(rc, "apmExtSysRequestPerformanceMode");
+    }
 }
 
 SysClkProfile Clocks::GetCurrentProfile()

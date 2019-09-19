@@ -22,6 +22,7 @@ void apmExtExit(void);
 
 Result apmExtGetPerformanceMode(u32 *out_mode);
 Result apmExtSysRequestPerformanceMode(u32 mode);
+Result apmExtGetCurrentPerformanceConfiguration(u32 *out_conf);
 
 #ifdef __cplusplus
 }
