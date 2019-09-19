@@ -71,6 +71,11 @@ void Config::Close()
     this->loaded = false;
     this->profileMhzMap.clear();
     this->profileCountMap.clear();
+
+    for(unsigned int i = 0; i < SysClkConfigValue_EnumMax; i++)
+    {
+        this->configValues[i] = sysClkDefaultConfigValue((SysClkConfigValue)i);
+    }
 }
 
 bool Config::Refresh()
