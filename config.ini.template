@@ -1,3 +1,9 @@
+[values]
+; Defines how often sys-clk log temperatures, in milliseconds (set 0 to disable)
+temp_log_interval_ms=0
+; Defines how often sys-clk writes to the CSV, in milliseconds (set 0 to disable)
+csv_write_interval_ms=0
+
 ; Example #1: BOTW
 ; Overclock CPU when docked
 ; Overclock MEM to docked clocks when handheld
