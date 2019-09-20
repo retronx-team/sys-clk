@@ -44,11 +44,11 @@ void FileUtils::LogLine(const char *format, ...)
 
             if (file)
             {
-                time_t timer  = time(NULL);
-                struct tm* timerTm = localtime(&timer);
+                struct timespec now;
+                clock_gettime(CLOCK_REALTIME, &now);
+                struct tm* nowTm = localtime(&now.tv_sec);
 
-                va_start(args, format);
-                fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] ", timerTm->tm_year+1900, timerTm->tm_mon+1, timerTm->tm_mday, timerTm->tm_hour, timerTm->tm_min, timerTm->tm_sec);
+                fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d.%03ld] ", nowTm->tm_year+1900, nowTm->tm_mon+1, nowTm->tm_mday, nowTm->tm_hour, nowTm->tm_min, nowTm->tm_sec, now.tv_nsec / 1000000UL);
                 vfprintf(file, format, args);
                 fprintf(file, "\n");
                 fclose(file);
@@ -111,8 +111,8 @@ Result FileUtils::Initialize()
     if (R_SUCCEEDED(rc))
     {
         FileUtils::RefreshFlags(true);
-        FileUtils::LogLine("=== " TARGET " " TARGET_VERSION " ===");
         g_has_initialized = true;
+        FileUtils::LogLine("=== " TARGET " " TARGET_VERSION " ===");
     }
 
     return rc;

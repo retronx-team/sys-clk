@@ -50,7 +50,7 @@ Config *Config::CreateDefault()
 
 void Config::Load()
 {
-    FileUtils::LogLine("[cfg] reading %s", this->path.c_str());
+    FileUtils::LogLine("[cfg] Reading %s", this->path.c_str());
 
     this->Close();
     this->mtime = this->CheckModificationTime();
