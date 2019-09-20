@@ -49,6 +49,8 @@ ClockManager::ClockManager()
         this->context->overrideFreqs[i] = 0;
     }
     this->running = false;
+    this->lastTempLogNs = 0;
+    this->lastCsvWriteNs = 0;
 }
 
 ClockManager::~ClockManager()
@@ -166,8 +168,8 @@ bool ClockManager::RefreshContext()
     // temperatures do not and should not force a refresh, hasChanged untouched
     std::uint32_t millis = 0;
     std::uint64_t ns = armTicksToNs(armGetSystemTick());
-    std::uint64_t interval = this->GetConfig()->GetConfigValue(SysClkConfigValue_TempLogIntervalMs) * 1000000ULL;
-    bool shouldLogTemp = interval && ((ns - this->lastTempLogNs) > interval);
+    std::uint64_t tempLogInterval = this->GetConfig()->GetConfigValue(SysClkConfigValue_TempLogIntervalMs) * 1000000ULL;
+    bool shouldLogTemp = tempLogInterval && ((ns - this->lastTempLogNs) > tempLogInterval);
     for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
     {
         millis = Clocks::GetTemperatureMilli((SysClkThermalSensor)sensor);
@@ -177,9 +179,18 @@ bool ClockManager::RefreshContext()
         }
         this->context->temps[sensor] = millis;
     }
+
     if(shouldLogTemp)
     {
         this->lastTempLogNs = ns;
+    }
+
+    std::uint64_t csvWriteInterval = this->GetConfig()->GetConfigValue(SysClkConfigValue_CsvWriteIntervalMs) * 1000000ULL;
+
+    if(csvWriteInterval && ((ns - this->lastCsvWriteNs) > csvWriteInterval))
+    {
+        FileUtils::WriteContextToCsv(this->context);
+        this->lastCsvWriteNs = ns;
     }
 
     return hasChanged;

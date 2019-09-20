@@ -12,6 +12,7 @@
 #include <nxExt.h>
 
 static LockableMutex g_log_mutex;
+static LockableMutex g_csv_mutex;
 static std::atomic_bool g_has_initialized = false;
 static bool g_log_enabled = false;
 static std::uint64_t g_last_flag_check = 0;
@@ -58,6 +59,52 @@ void FileUtils::LogLine(const char *format, ...)
         g_log_mutex.Unlock();
     }
     va_end(args);
+}
+
+void FileUtils::WriteContextToCsv(const SysClkContext* context)
+{
+    std::scoped_lock lock{g_csv_mutex};
+
+    FILE *file = fopen(FILE_CONTEXT_CSV_PATH, "a");
+
+    if (file)
+    {
+        // Print header
+        if(!ftell(file))
+        {
+            fprintf(file, "timestamp,profile,app_tid");
+
+            for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+            {
+                fprintf(file, ",%s_hz", sysClkFormatModule((SysClkModule)module, false));
+            }
+
+            for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
+            {
+                fprintf(file, ",%s_milliC", sysClkFormatThermalSensor((SysClkThermalSensor)sensor, false));
+            }
+
+            fprintf(file, "\n");
+        }
+
+        struct timespec now;
+        clock_gettime(CLOCK_REALTIME, &now);
+
+        fprintf(file, "%ld%03ld,%s,%016lx", now.tv_sec, now.tv_nsec / 1000000UL, sysClkFormatProfile(context->profile, false), context->applicationTid);
+
+        for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+        {
+            fprintf(file, ",%d", context->freqs[module]);
+        }
+
+        for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
+        {
+            fprintf(file, ",%d", context->temps[sensor]);
+        }
+
+        fprintf(file, "\n");
+        fclose(file);
+    }
 }
 
 void FileUtils::RefreshFlags(bool force)

@@ -13,13 +13,17 @@ Copy the `atmosphere` folder at the root of your sdcard, overwriting files if pr
 
 	`/config/sys-clk/config.ini`
 
-* Log file where the log are written if enabled
+* Log file where the logs are written if enabled
 
 	`/config/sys-clk/log.txt`
 
 * Log flag file enables log writing if file exists
 
 	`/config/sys-clk/log.flag`
+
+* CSV file where the title id, profile, clocks and temperatures are written if enabled
+
+	`/config/sys-clk/context.csv`
 
 ## Config
 
@@ -80,12 +84,13 @@ handheld_mem=800
 
 ### Advanced
 
-The `[values]` section allows you to alter timings in sys-clk, you should not need to edit any of these. Possible values are:
+The `[values]` section allows you to alter timings in sys-clk, you should not need to edit any of these unless you know what you are doing. Possible values are:
 
-| Key                    | Desc                                                                         | Default |
-|:----------------------:|------------------------------------------------------------------------------|:-------:|
-|**temp_log_interval_ms**| Defines how often sys-clk log temperatures, in milliseconds (`0` to disable) | 3000 ms |
-|**poll_interval_ms**    | Defines how fast sys-clk checks and applies profiles, in milliseconds        | 300 ms  |
+| Key                     | Desc                                                                          | Default |
+|:-----------------------:|-------------------------------------------------------------------------------|:-------:|
+|**temp_log_interval_ms** | Defines how often sys-clk log temperatures, in milliseconds (`0` to disable)  | 0 ms    |
+|**csv_write_interval_ms**| Defines how often sys-clk writes to the CSV, in milliseconds (`0` to disable) | 0 ms    |
+|**poll_interval_ms**     | Defines how fast sys-clk checks and applies profiles, in milliseconds         | 300 ms  |
 
 
 ## Capping

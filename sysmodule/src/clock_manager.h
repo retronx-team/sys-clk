@@ -43,4 +43,5 @@ class ClockManager
     Config *config;
     SysClkContext *context;
     std::uint64_t lastTempLogNs;
+    std::uint64_t lastCsvWriteNs;
 };
