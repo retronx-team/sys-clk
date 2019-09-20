@@ -36,6 +36,7 @@ typedef enum
 {
     SysClkThermalSensor_SOC = 0,
     SysClkThermalSensor_PCB,
+    SysClkThermalSensor_Skin,
     SysClkThermalSensor_EnumMax
 } SysClkThermalSensor;
 
@@ -88,6 +89,8 @@ static inline const char* sysClkFormatThermalSensor(SysClkThermalSensor thermSen
             return pretty ? "SOC" : "soc";
         case SysClkThermalSensor_PCB:
             return pretty ? "PCB" : "pcb";
+        case SysClkThermalSensor_Skin:
+            return pretty ? "Skin" : "skin";
         default:
             return NULL;
     }

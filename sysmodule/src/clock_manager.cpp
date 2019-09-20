@@ -97,7 +97,8 @@ void ClockManager::Tick()
     }
 }
 
-void ClockManager::WaitForNextTick() {
+void ClockManager::WaitForNextTick()
+{
     svcSleepThread(this->GetConfig()->GetConfigValue(SysClkConfigValue_PollingIntervalMs) * 1000000ULL);
 }
 

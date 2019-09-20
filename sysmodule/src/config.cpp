@@ -204,7 +204,8 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
 {
     Config* config = (Config*)userdata;
     std::uint64_t input;
-    if(!strcmp(section, CONFIG_VAL_SECTION)) {
+    if(!strcmp(section, CONFIG_VAL_SECTION))
+    {
         for(unsigned int val = 0; val < SysClkConfigValue_EnumMax; val++)
         {
             if(!strcmp(key, sysClkFormatConfigValue((SysClkConfigValue)val, false)))

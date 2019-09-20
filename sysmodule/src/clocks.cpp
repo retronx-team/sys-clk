@@ -54,6 +54,12 @@ void Clocks::Initialize()
 
     rc = tsInitialize();
     ASSERT_RESULT_OK(rc, "tsInitialize");
+
+    if(hosversionAtLeast(5,0,0))
+    {
+        rc = tcInitialize();
+        ASSERT_RESULT_OK(rc, "tcInitialize");
+    }
 }
 
 void Clocks::Exit()
@@ -66,9 +72,15 @@ void Clocks::Exit()
     {
         clkrstExit();
     }
+
     apmExtExit();
     psmExit();
     tsExit();
+
+    if(hosversionAtLeast(5,0,0))
+    {
+        tcExit();
+    }
 }
 
 const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
@@ -152,7 +164,8 @@ void Clocks::ResetToStock()
             }
         }
 
-        if(!apmConfiguration) {
+        if(!apmConfiguration)
+        {
             ERROR_THROW("Unknown apm configuration: %x", confId);
         }
 
@@ -316,10 +329,18 @@ std::uint32_t Clocks::GetTemperatureMilli(SysClkThermalSensor sensor)
         rc = tsGetTemperatureMilliC(TsLocation_Internal, &millis);
         ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC");
     }
+    else if(sensor == SysClkThermalSensor_Skin)
+    {
+        if(hosversionAtLeast(5,0,0))
+        {
+            rc = tcGetSkinTemperatureMilliC(&millis);
+            ASSERT_RESULT_OK(rc, "tcGetSkinTemperatureMilliC");
+        }
+    }
     else
     {
         ERROR_THROW("No such SysClkThermalSensor: %u", sensor);
     }
 
-    return millis;
+    return std::max(0, millis);
 }

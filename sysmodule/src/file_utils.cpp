@@ -41,6 +41,7 @@ void FileUtils::LogLine(const char *format, ...)
         if(g_log_enabled)
         {
             FILE *file = fopen(FILE_LOG_FILE_PATH, "a");
+
             if (file)
             {
                 time_t timer  = time(NULL);

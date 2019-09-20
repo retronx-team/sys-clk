@@ -10,7 +10,18 @@
 
 #pragma once
 
-#include "nxExt/apm_ext.h"
-#include "nxExt/tc.h"
-#include "nxExt/ipc_server.h"
-#include "nxExt/cpp/lockable_mutex.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <switch.h>
+
+Result tcInitialize(void);
+void tcExit(void);
+
+Result tcGetSkinTemperatureMilliC(s32 *out_millis);
+
+#ifdef __cplusplus
+}
+#endif
