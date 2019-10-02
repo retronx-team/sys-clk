@@ -11,6 +11,7 @@
 #include <nxExt.h>
 #include "clocks.h"
 #include "errors.h"
+#include <filesystem>
 
 void Clocks::GetList(SysClkModule module, std::uint32_t **outClocks)
 {
@@ -276,18 +277,23 @@ std::uint32_t Clocks::GetNearestHz(SysClkModule module, SysClkProfile profile, s
 
 std::uint32_t Clocks::GetMaxAllowedHz(SysClkModule module, SysClkProfile profile)
 {
-    if(module == SysClkModule_GPU)
+    FILE *file = fopen(FILE_FLAG_DISABLE_GPU_CAP, "r");
+    if (!file)
     {
-        if(profile < SysClkProfile_HandheldCharging)
+        if(module == SysClkModule_GPU)
         {
-            return SYSCLK_GPU_HANDHELD_MAX_HZ;
-        }
-        else if(profile <= SysClkProfile_HandheldChargingUSB)
-        {
-            return SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ;
+            if(profile < SysClkProfile_HandheldCharging)
+            {
+                return SYSCLK_GPU_HANDHELD_MAX_HZ;
+            }
+            else if(profile <= SysClkProfile_HandheldChargingUSB)
+            {
+                return SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ;
+            }
         }
     }
-
+    else fclose(file);
+    
     return 0;
 }
 
