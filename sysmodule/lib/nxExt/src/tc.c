@@ -8,6 +8,8 @@
  * --------------------------------------------------------------------------
  */
 
+#define NX_SERVICE_ASSUME_NON_DOMAIN
+
 #include "nxExt/tc.h"
 
 static Service g_tcSrv;
@@ -42,42 +44,6 @@ void tcExit(void)
 
 Result tcGetSkinTemperatureMilliC(s32 *out_millis)
 {
-    IpcCommand c;
-    ipcInitialize(&c);
-
-    struct
-    {
-        u64 magic;
-        u64 cmd_id;
-    } *raw;
-
-    raw = ipcPrepareHeader(&c, sizeof(*raw));
-
-    raw->magic = SFCI_MAGIC;
-    raw->cmd_id = 9;
-
-    Result rc = serviceIpcDispatch(&g_tcSrv);
-
-    if (R_SUCCEEDED(rc))
-    {
-        IpcParsedCommand r;
-        ipcParse(&r);
-
-        struct
-        {
-            u64 magic;
-            u64 result;
-            s32 millis;
-        } *resp = r.Raw;
-
-        rc = resp->result;
-
-        if (R_SUCCEEDED(rc))
-        {
-            *out_millis = resp->millis;
-        }
-    }
-
-    return rc;
+    return serviceDispatchOut(&g_tcSrv, 9, *out_millis);
 }
 

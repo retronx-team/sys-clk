@@ -50,119 +50,15 @@ void apmExtExit(void)
 
 Result apmExtGetPerformanceMode(u32 *out_mode)
 {
-    IpcCommand c;
-    ipcInitialize(&c);
-
-    struct
-    {
-        u64 magic;
-        u64 cmd_id;
-    } *raw;
-
-    raw = ipcPrepareHeader(&c, sizeof(*raw));
-
-    raw->magic = SFCI_MAGIC;
-    raw->cmd_id = 1;
-
-    Result rc = serviceIpcDispatch(&g_apmSrv);
-
-    if (R_SUCCEEDED(rc))
-    {
-        IpcParsedCommand r;
-        ipcParse(&r);
-
-        struct
-        {
-            u64 magic;
-            u64 result;
-            u32 mode;
-        } *resp = r.Raw;
-
-        rc = resp->result;
-
-        if (R_SUCCEEDED(rc))
-        {
-            *out_mode = resp->mode;
-        }
-    }
-
-    return rc;
+    return serviceDispatchOut(&g_apmSrv, 1, *out_mode);
 }
 
 Result apmExtSysRequestPerformanceMode(u32 mode)
 {
-    IpcCommand c;
-    ipcInitialize(&c);
-
-    struct
-    {
-        u64 magic;
-        u64 cmd_id;
-        u32 mode;
-    } *raw;
-
-    raw = ipcPrepareHeader(&c, sizeof(*raw));
-
-    raw->magic = SFCI_MAGIC;
-    raw->cmd_id = 0;
-    raw->mode = mode;
-
-    Result rc = serviceIpcDispatch(&g_apmSysSrv);
-
-    if (R_SUCCEEDED(rc))
-    {
-        IpcParsedCommand r;
-        ipcParse(&r);
-
-        struct
-        {
-            u64 magic;
-            u64 result;
-        } *resp = r.Raw;
-
-        rc = resp->result;
-    }
-
-    return rc;
+    return serviceDispatchIn(&g_apmSysSrv, 0, mode);
 }
 
 Result apmExtGetCurrentPerformanceConfiguration(u32 *out_conf)
 {
-    IpcCommand c;
-    ipcInitialize(&c);
-
-    struct
-    {
-        u64 magic;
-        u64 cmd_id;
-    } *raw;
-
-    raw = ipcPrepareHeader(&c, sizeof(*raw));
-
-    raw->magic = SFCI_MAGIC;
-    raw->cmd_id = 7;
-
-    Result rc = serviceIpcDispatch(&g_apmSysSrv);
-
-    if (R_SUCCEEDED(rc))
-    {
-        IpcParsedCommand r;
-        ipcParse(&r);
-
-        struct
-        {
-            u64 magic;
-            u64 result;
-            u32 conf;
-        } *resp = r.Raw;
-
-        rc = resp->result;
-
-        if (R_SUCCEEDED(rc))
-        {
-            *out_conf = resp->conf;
-        }
-    }
-
-    return rc;
+    return serviceDispatchOut(&g_apmSysSrv, 7, *out_conf);
 }
