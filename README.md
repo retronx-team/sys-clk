@@ -1,4 +1,4 @@
-# sys clk
+# sys-clk
 
 Switch sysmodule allowing you to set cpu/gpu/mem clocks according to the running application and docked state.
 
@@ -129,7 +129,7 @@ To protect the battery from excessive strain, clocks requested from config may b
 ### GPU clocks
 * 921 → max clock
 * 844
-* 768 → official docked, boost mode
+* 768 → official docked
 * 691
 * 614
 * 537
@@ -138,7 +138,7 @@ To protect the battery from excessive strain, clocks requested from config may b
 * 307 → official handheld
 * 230
 * 153
-* 76
+* 76 → boost mode
 
 **Notes:**
 1. GPU overclock is capped at 460Mhz in handheld and capped at 768Mhz if charging, unless you're using the official charger.
