@@ -90,9 +90,12 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
             return ipcSrv->GetApiVersion((u32*)out_data);
 
         case SysClkIpcCmd_GetVersionString:
-            if(r->command.NumBuffers >= 1 && r->command.BufferDirections[0] == BufferDirection_Recv)
+            if(r->hipc.meta.num_recv_buffers >= 1)
             {
-                return ipcSrv->GetVersionString((char*)r->command.Buffers[0], r->command.BufferSizes[0]);
+                return ipcSrv->GetVersionString(
+                    (char*)hipcGetBufferAddress(r->hipc.data.recv_buffers),
+                    hipcGetBufferSize(r->hipc.data.recv_buffers)
+                );
             }
             break;
 
