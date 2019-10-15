@@ -873,4 +873,137 @@ int ini_putf(const TCHAR *Section, const TCHAR *Key, INI_REAL Value, const TCHAR
   return ini_puts(Section, Key, LocalBuffer, Filename);
 }
 #endif /* INI_REAL */
+
+static void putsection(TCHAR *LocalBuffer, const TCHAR *Section, const TCHAR **Keys, const TCHAR **Values, INI_FILETYPE *fp) {
+  if(Keys && Values && *Keys && *Values) {
+    writesection(LocalBuffer, Section, fp);
+    while(*Keys && *Values) {
+      writekey(LocalBuffer, *Keys, *Values, fp);
+      Keys++;
+      Values++;
+    }
+    (void)ini_write(INI_LINETERM, fp);  /* force a new line behind the last line of the section */
+  }
+}
+
+int ini_putsection(const TCHAR *Section, const TCHAR **Keys, const TCHAR **Values, const TCHAR *Filename)
+{
+  INI_FILETYPE rfp;
+  INI_FILETYPE wfp;
+  INI_FILEPOS mark;
+  TCHAR *sp = NULL;
+  TCHAR *ep;
+  TCHAR LocalBuffer[INI_BUFFERSIZE];
+  int len, match, flag, cachelen;
+
+  assert(Filename != NULL);
+  if (!ini_openread(Filename, &rfp)) {
+    /* If the .ini file doesn't exist, make a new file */
+    if (!ini_openwrite(Filename, &wfp))
+      return 0;
+    putsection(LocalBuffer, Section, Keys, Values, &wfp);
+    (void)ini_close(&wfp);
+    return 1;
+  } /* if */
+
+  /* Get a temporary file name to copy to. Use the existing name, but with
+   * the last character set to a '~'.
+   */
+  ini_tempname(LocalBuffer, Filename, INI_BUFFERSIZE);
+  if (!ini_openwrite(LocalBuffer, &wfp)) {
+    (void)ini_close(&rfp);
+    return 0;
+  } /* if */
+  (void)ini_tell(&rfp, &mark);
+  cachelen = 0;
+
+  /* Move through the file one line at a time until a section is
+   * matched or until EOF. Copy to temp file as it is read.
+   */
+  len = (Section != NULL) ? (int)_tcslen(Section) : 0;
+  if (len > 0) {
+    do {
+      if (!ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp)) {
+        /* Failed to find section, so add one to the end */
+        flag = cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+          if (!flag)
+            (void)ini_write(INI_LINETERM, &wfp);  /* force a new line behind the last line of the INI file */
+
+        putsection(LocalBuffer, Section, Keys, Values, &wfp);
+
+        return close_rename(&rfp, &wfp, Filename, LocalBuffer);  /* clean up and rename */
+      } /* if */
+      /* Copy the line from source to dest, but not if this is the section that
+       * we are looking for
+       */
+      sp = skipleading(LocalBuffer);
+      ep = _tcsrchr(sp, ']');
+      match = (*sp == '[' && ep != NULL && (int)(ep-sp-1) == len && _tcsnicmp(sp + 1,Section,len) == 0);
+      if (!match) {
+        if (!cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE)) {
+          cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+          (void)ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp);
+          cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE);
+        } /* if */
+      } /* if */
+    } while (!match);
+  } /* if */
+  cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+  /* when deleting a section, the section head that was just found has not been
+   * copied to the output file, but because this line was not "accumulated" in
+   * the cache, the position in the input file was reset to the point just
+   * before the section; this must now be skipped (again)
+   */
+  (void)ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp);
+  (void)ini_tell(&rfp, &mark);
+
+  /* Now that the section has been found, find the entry. Stop searching
+   * upon leaving the section's area. Copy the file as it is read
+   * and create an entry if one is not found.
+   */
+  len = 0;
+  for( ;; ) {
+    if (!ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp)) {
+      /* EOF without an entry */
+      cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+      (void)ini_tell(&rfp, &mark);  /* we are deleting the entire section, so update the read position */
+      break;
+    } /* if */
+    sp = skipleading(LocalBuffer);
+    if (*sp == '[')
+      break;  /* found a new section */
+    /* copy other keys in the section */
+    (void)ini_tell(&rfp, &mark);  /* we are deleting the entire section, so update the read position */
+  } /* for */
+  /* we just dropped on the next section
+   * we also need to write the line starting the new section after writing
+   */
+  flag = (sp && *sp == '[');
+  cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+  putsection(LocalBuffer, Section, Keys, Values, &wfp);
+
+  /* cache_flush() reset the "read pointer" to the start of the line with the
+   * previous key or the new section; read it again (because writekey() destroyed
+   * the buffer)
+   */
+  (void)ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp);
+  if (flag) {
+    /* the new section heading needs to be copied to the output file */
+    cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE);
+  } else {
+    /* forget the old key line */
+    (void)ini_tell(&rfp, &mark);
+  } /* if */
+  /* Copy the rest of the INI file */
+  while (ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp)) {
+    if (!cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE)) {
+      cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+      (void)ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp);
+      cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE);
+    } /* if */
+  } /* while */
+  cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
+  return close_rename(&rfp, &wfp, Filename, LocalBuffer);  /* clean up and rename */
+}
+
 #endif /* !INI_READONLY */
