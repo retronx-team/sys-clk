@@ -34,9 +34,9 @@ class Config
     bool HasProfilesLoaded();
 
     std::uint8_t GetProfileCount(std::uint64_t tid);
-    std::uint32_t GetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
+    void GetProfiles(std::uint64_t tid, SysClkTitleProfiles* out_profiles);
+    bool SetProfiles(std::uint64_t tid, SysClkTitleProfiles* profiles, bool immediate);
     std::uint32_t GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
-    bool SetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, std::uint32_t mhz);
 
     void SetEnabled(bool enabled);
     bool Enabled();

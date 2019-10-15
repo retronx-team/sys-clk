@@ -162,31 +162,100 @@ std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, Sys
     return 0;
 }
 
-std::uint32_t Config::GetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
+void Config::GetProfiles(std::uint64_t tid, SysClkTitleProfiles* out_profiles)
 {
     std::scoped_lock lock{this->configMutex};
-    return FindClockMhz(tid, module, profile);
+
+    for(unsigned int profile = 0; profile < SysClkProfile_EnumMax; profile++)
+    {
+        for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+        {
+            out_profiles->mhzMap[profile][module] = FindClockMhz(tid, (SysClkModule)module, (SysClkProfile)profile);
+        }
+    }
 }
 
-bool Config::SetClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, std::uint32_t mhz)
+bool Config::SetProfiles(std::uint64_t tid, SysClkTitleProfiles* profiles, bool immediate)
 {
     std::scoped_lock lock{this->configMutex};
-    char key[0x100] = {0};
+    uint8_t numProfiles = 0;
+
+    // String pointer array passed to ini
+    char* iniKeys[SysClkProfile_EnumMax * SysClkModule_EnumMax + 1];
+    char* iniValues[SysClkProfile_EnumMax * SysClkModule_EnumMax + 1];
+
+    // char arrays to build strings
+    char keysStr[SysClkProfile_EnumMax * SysClkModule_EnumMax * 0x40];
+    char valuesStr[SysClkProfile_EnumMax * SysClkModule_EnumMax * 0x10];
     char section[17] = {0};
-    char val[11] = {0};
+
+    // iteration pointers
+    char** ik = &iniKeys[0];
+    char** iv = &iniValues[0];
+    char* sk = &keysStr[0];
+    char* sv = &valuesStr[0];
+    std::uint32_t* mhz = &profiles->mhz[0];
 
     snprintf(section, sizeof(section), "%016lX", tid);
-    snprintf(key, sizeof(key), "%s_%s", Clocks::GetProfileName(profile, false), Clocks::GetModuleName(module, false));
 
-    if(mhz)
+    for(unsigned int profile = 0; profile < SysClkProfile_EnumMax; profile++)
     {
-        snprintf(val, sizeof(val), "%d", mhz);
-        return ini_puts(section, key, val, this->path.c_str());
+        for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+        {
+            if(*mhz)
+            {
+                numProfiles++;
+
+                // Put key and value as string
+                snprintf(sk, 0x40, "%s_%s", Clocks::GetProfileName((SysClkProfile)profile, false), Clocks::GetModuleName((SysClkModule)module, false));
+                snprintf(sv, 0x10, "%d", *mhz);
+
+                // Add them to the ini key/value str arrays
+                *ik = sk;
+                *iv = sv;
+                ik++;
+                iv++;
+
+                // We used those chars, take the next one
+                sk += 0x40;
+                sv += 0x10;
+            }
+
+            mhz++;
+        }
     }
-    else
+
+    *ik = NULL;
+    *iv = NULL;
+
+    if(!ini_putsection(section, (const char**)iniKeys, (const char**)iniValues, this->path.c_str()))
     {
-        return ini_puts(section, key, 0, this->path.c_str());
+        return false;
     }
+
+    // Only actually apply changes in memory after a succesful save
+    if(immediate)
+    {
+        mhz = &profiles->mhz[0];
+        this->profileCountMap[tid] = numProfiles;
+        for(unsigned int profile = 0; profile < SysClkProfile_EnumMax; profile++)
+        {
+            for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+            {
+                if(*mhz)
+                {
+                    this->profileMhzMap[std::make_tuple(tid, (SysClkProfile)profile, (SysClkModule)module)] = *mhz;
+                }
+                else
+                {
+                    this->profileMhzMap.erase(std::make_tuple(tid, (SysClkProfile)profile, (SysClkModule)module));
+                }
+                mhz++;
+            }
+        }
+    }
+
+    return true;
 }
 
 std::uint8_t Config::GetProfileCount(std::uint64_t tid)

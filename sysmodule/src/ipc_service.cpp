@@ -114,18 +114,18 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
             }
             break;
 
-        case SysClkIpcCmd_GetProfile:
-            if(r->data.size >= sizeof(SysClkIpc_GetProfile_Args))
+        case SysClkIpcCmd_GetProfiles:
+            if(r->data.size >= sizeof(std::uint64_t))
             {
-                *out_dataSize = sizeof(std::uint32_t);
-                return ipcSrv->GetProfile((SysClkIpc_GetProfile_Args*)r->data.ptr, (std::uint32_t*)out_data);
+                *out_dataSize = sizeof(SysClkTitleProfiles);
+                return ipcSrv->GetProfiles((std::uint64_t*)r->data.ptr, (SysClkTitleProfiles*)out_data);
             }
             break;
 
-        case SysClkIpcCmd_SetProfile:
-            if(r->data.size >= sizeof(SysClkIpc_SetProfile_Args))
+        case SysClkIpcCmd_SetProfiles:
+            if(r->data.size >= sizeof(SysClkIpc_SetProfiles_Args))
             {
-                return ipcSrv->SetProfile((SysClkIpc_SetProfile_Args*)r->data.ptr);
+                return ipcSrv->SetProfiles((SysClkIpc_SetProfiles_Args*)r->data.ptr);
             }
             break;
 
@@ -193,38 +193,30 @@ Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
     return 0;
 }
 
-Result IpcService::GetProfile(SysClkIpc_GetProfile_Args* args, std::uint32_t* out_mhz)
+Result IpcService::GetProfiles(std::uint64_t* tid, SysClkTitleProfiles* out_profiles)
 {
-    if(!SYSCLK_ENUM_VALID(SysClkModule, args->module) || !SYSCLK_ENUM_VALID(SysClkProfile, args->profile))
-    {
-        return SYSCLK_ERROR(Generic);
-    }
-
     Config* config = ClockManager::GetInstance()->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
     }
 
-    *out_mhz = config->GetClockMhz(args->tid, args->module, args->profile);
+    config->GetProfiles(*tid, out_profiles);
 
     return 0;
 }
 
-Result IpcService::SetProfile(SysClkIpc_SetProfile_Args* args)
+Result IpcService::SetProfiles(SysClkIpc_SetProfiles_Args* args)
 {
-    if(!SYSCLK_ENUM_VALID(SysClkModule, args->module) || !SYSCLK_ENUM_VALID(SysClkProfile, args->profile))
-    {
-        return SYSCLK_ERROR(Generic);
-    }
-
     Config* config = ClockManager::GetInstance()->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
     }
 
-    if(!config->SetClockMhz(args->tid, args->module, args->profile, args->mhz))
+    SysClkTitleProfiles profiles = args->profiles;
+
+    if(!config->SetProfiles(args->tid, &profiles, true))
     {
         return SYSCLK_ERROR(ConfigSaveFailed);
     }

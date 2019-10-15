@@ -23,26 +23,18 @@ enum SysClkIpcCmd
     SysClkIpcCmd_GetCurrentContext = 2,
     SysClkIpcCmd_Exit = 3,
     SysClkIpcCmd_GetProfileCount = 4,
-    SysClkIpcCmd_GetProfile = 5,
-    SysClkIpcCmd_SetProfile = 6,
+    SysClkIpcCmd_GetProfiles = 5,
+    SysClkIpcCmd_SetProfiles = 6,
     SysClkIpcCmd_SetEnabled = 7,
     SysClkIpcCmd_SetOverride = 8,
 };
 
-typedef struct
-{
-    uint64_t tid;
-    SysClkModule module;
-    SysClkProfile profile;
-} SysClkIpc_GetProfile_Args;
 
 typedef struct
 {
     uint64_t tid;
-    SysClkModule module;
-    SysClkProfile profile;
-    uint32_t mhz;
-} SysClkIpc_SetProfile_Args;
+    SysClkTitleProfiles profiles;
+} SysClkIpc_SetProfiles_Args;
 
 typedef struct
 {

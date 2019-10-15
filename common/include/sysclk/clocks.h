@@ -52,10 +52,11 @@ typedef struct
 
 typedef struct
 {
-    uint64_t applicationTid;
-    SysClkModule module;
-    SysClkProfile profile;
-} SysClkProfileKey;
+    union {
+        uint32_t mhz[SysClkProfile_EnumMax * SysClkModule_EnumMax];
+        uint32_t mhzMap[SysClkProfile_EnumMax][SysClkModule_EnumMax];
+    };
+} SysClkTitleProfiles;
 
 #define SYSCLK_GPU_HANDHELD_MAX_HZ 460800000
 #define SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ 768000000
