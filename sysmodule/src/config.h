@@ -34,8 +34,8 @@ class Config
     bool HasProfilesLoaded();
 
     std::uint8_t GetProfileCount(std::uint64_t tid);
-    void GetProfiles(std::uint64_t tid, SysClkTitleProfiles* out_profiles);
-    bool SetProfiles(std::uint64_t tid, SysClkTitleProfiles* profiles, bool immediate);
+    void GetProfiles(std::uint64_t tid, SysClkTitleProfileList* out_profiles);
+    bool SetProfiles(std::uint64_t tid, SysClkTitleProfileList* profiles, bool immediate);
     std::uint32_t GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
 
     void SetEnabled(bool enabled);
@@ -44,6 +44,9 @@ class Config
     std::uint32_t GetOverrideHz(SysClkModule module);
 
     std::uint64_t GetConfigValue(SysClkConfigValue val);
+    const char* GetConfigValueName(SysClkConfigValue val, bool pretty);
+    void GetConfigValues(SysClkConfigValueList* out_configValues);
+    bool SetConfigValues(SysClkConfigValueList* configValues, bool immediate);
   protected:
     void Load();
     void Close();

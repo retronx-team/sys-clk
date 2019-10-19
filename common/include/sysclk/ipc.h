@@ -27,13 +27,15 @@ enum SysClkIpcCmd
     SysClkIpcCmd_SetProfiles = 6,
     SysClkIpcCmd_SetEnabled = 7,
     SysClkIpcCmd_SetOverride = 8,
+    SysClkIpcCmd_GetConfigValues = 9,
+    SysClkIpcCmd_SetConfigValues = 10,
 };
 
 
 typedef struct
 {
     uint64_t tid;
-    SysClkTitleProfiles profiles;
+    SysClkTitleProfileList profiles;
 } SysClkIpc_SetProfiles_Args;
 
 typedef struct

@@ -56,7 +56,7 @@ typedef struct
         uint32_t mhz[SysClkProfile_EnumMax * SysClkModule_EnumMax];
         uint32_t mhzMap[SysClkProfile_EnumMax][SysClkModule_EnumMax];
     };
-} SysClkTitleProfiles;
+} SysClkTitleProfileList;
 
 #define SYSCLK_GPU_HANDHELD_MAX_HZ 460800000
 #define SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ 768000000

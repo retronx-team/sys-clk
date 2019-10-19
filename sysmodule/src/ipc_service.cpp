@@ -117,8 +117,8 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
         case SysClkIpcCmd_GetProfiles:
             if(r->data.size >= sizeof(std::uint64_t))
             {
-                *out_dataSize = sizeof(SysClkTitleProfiles);
-                return ipcSrv->GetProfiles((std::uint64_t*)r->data.ptr, (SysClkTitleProfiles*)out_data);
+                *out_dataSize = sizeof(SysClkTitleProfileList);
+                return ipcSrv->GetProfiles((std::uint64_t*)r->data.ptr, (SysClkTitleProfileList*)out_data);
             }
             break;
 
@@ -140,6 +140,17 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
             if(r->data.size >= sizeof(SysClkIpc_SetOverride_Args))
             {
                 return ipcSrv->SetOverride((SysClkIpc_SetOverride_Args*)r->data.ptr);
+            }
+            break;
+
+        case SysClkIpcCmd_GetConfigValues:
+            *out_dataSize = sizeof(SysClkTitleProfileList);
+            return ipcSrv->GetConfigValues((SysClkConfigValueList*)out_data);
+
+        case SysClkIpcCmd_SetConfigValues:
+            if(r->data.size >= sizeof(SysClkConfigValueList))
+            {
+                return ipcSrv->SetConfigValues((SysClkConfigValueList*)r->data.ptr);
             }
             break;
     }
@@ -193,7 +204,7 @@ Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
     return 0;
 }
 
-Result IpcService::GetProfiles(std::uint64_t* tid, SysClkTitleProfiles* out_profiles)
+Result IpcService::GetProfiles(std::uint64_t* tid, SysClkTitleProfileList* out_profiles)
 {
     Config* config = ClockManager::GetInstance()->GetConfig();
     if(!config->HasProfilesLoaded())
@@ -214,7 +225,7 @@ Result IpcService::SetProfiles(SysClkIpc_SetProfiles_Args* args)
         return SYSCLK_ERROR(ConfigNotLoaded);
     }
 
-    SysClkTitleProfiles profiles = args->profiles;
+    SysClkTitleProfileList profiles = args->profiles;
 
     if(!config->SetProfiles(args->tid, &profiles, true))
     {
@@ -241,6 +252,37 @@ Result IpcService::SetOverride(SysClkIpc_SetOverride_Args* args)
 
     Config* config = ClockManager::GetInstance()->GetConfig();
     config->SetOverrideHz(args->module, args->hz);
+
+    return 0;
+}
+
+Result IpcService::GetConfigValues(SysClkConfigValueList* out_configValues)
+{
+    Config* config = ClockManager::GetInstance()->GetConfig();
+    if(!config->HasProfilesLoaded())
+    {
+        return SYSCLK_ERROR(ConfigNotLoaded);
+    }
+
+    config->GetConfigValues(out_configValues);
+
+    return 0;
+}
+
+Result IpcService::SetConfigValues(SysClkConfigValueList* configValues)
+{
+    Config* config = ClockManager::GetInstance()->GetConfig();
+    if(!config->HasProfilesLoaded())
+    {
+        return SYSCLK_ERROR(ConfigNotLoaded);
+    }
+
+    SysClkConfigValueList configValuesCopy = *configValues;
+
+    if(!config->SetConfigValues(&configValuesCopy, true))
+    {
+        return SYSCLK_ERROR(ConfigSaveFailed);
+    }
 
     return 0;
 }

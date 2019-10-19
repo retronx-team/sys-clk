@@ -20,6 +20,10 @@ typedef enum {
     SysClkConfigValue_EnumMax,
 } SysClkConfigValue;
 
+typedef struct {
+    uint64_t values[SysClkConfigValue_EnumMax];
+} SysClkConfigValueList;
+
 static inline const char* sysClkFormatConfigValue(SysClkConfigValue val, bool pretty)
 {
     switch(val)
