@@ -49,7 +49,7 @@ extern "C"
     {
         if (R_FAILED(smInitialize()))
         {
-            fatalSimple(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
         }
 
         Result rc = setsysInitialize();
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     Result rc = FileUtils::Initialize();
     if (R_FAILED(rc))
     {
-        fatalSimple(rc);
+        fatalThrow(rc);
         return 1;
     }
 

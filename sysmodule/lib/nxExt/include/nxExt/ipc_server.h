@@ -33,7 +33,7 @@ typedef struct
 
 typedef struct
 {
-    char name[9];
+    SmServiceName srvName;
     Handle handles[MAX_WAIT_OBJECTS];
     u32 max;
     u32 count;

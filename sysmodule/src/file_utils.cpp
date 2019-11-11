@@ -130,7 +130,7 @@ void FileUtils::RefreshFlags(bool force)
 void FileUtils::InitializeAsync()
 {
     Thread initThread = {0};
-    threadCreate(&initThread, _FileUtils_InitializeThreadFunc, NULL, 0x4000, 0x15, 0);
+    threadCreate(&initThread, _FileUtils_InitializeThreadFunc, NULL, NULL, 0x4000, 0x15, 0);
     threadStart(&initThread);
 }
 

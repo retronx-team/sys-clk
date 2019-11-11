@@ -29,7 +29,7 @@ void ProcessManagement::WaitForQLaunch()
     std::uint64_t pid = 0;
     do
     {
-        rc = pmdmntGetTitlePid(&pid, PROCESS_MANAGEMENT_QLAUNCH_TID);
+        rc = pmdmntGetProcessId(&pid, PROCESS_MANAGEMENT_QLAUNCH_TID);
         svcSleepThread(500000000ULL);
     } while (R_FAILED(rc));
 }
@@ -39,23 +39,23 @@ std::uint64_t ProcessManagement::GetCurrentApplicationTid()
     Result rc = 0;
     std::uint64_t pid = 0;
     std::uint64_t tid = 0;
-    rc = pmdmntGetApplicationPid(&pid);
+    rc = pmdmntGetApplicationProcessId(&pid);
 
     if (rc == 0x20f)
     {
         return PROCESS_MANAGEMENT_QLAUNCH_TID;
     }
 
-    ASSERT_RESULT_OK(rc, "pmdmntGetApplicationPid");
+    ASSERT_RESULT_OK(rc, "pmdmntGetApplicationProcessId");
 
-    rc = pminfoGetTitleId(&tid, pid);
+    rc = pminfoGetProgramId(&tid, pid);
 
     if (rc == 0x20f)
     {
         return PROCESS_MANAGEMENT_QLAUNCH_TID;
     }
 
-    ASSERT_RESULT_OK(rc, "pminfoGetTitleId");
+    ASSERT_RESULT_OK(rc, "pminfoGetProgramId");
 
     return tid;
 }

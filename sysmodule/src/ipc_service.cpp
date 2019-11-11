@@ -22,7 +22,7 @@ IpcService::IpcService()
     ASSERT_RESULT_OK(rc, "svcGetThreadPriority");
     rc = ipcServerInit(&this->server, SYSCLK_IPC_SERVICE_NAME, 42);
     ASSERT_RESULT_OK(rc, "ipcServerInit");
-    rc = threadCreate(&this->thread, &IpcService::ProcessThreadFunc, this, 0x2000, priority, -2);
+    rc = threadCreate(&this->thread, &IpcService::ProcessThreadFunc, this, NULL, 0x2000, priority, -2);
     ASSERT_RESULT_OK(rc, "threadCreate");
     this->running = false;
 }

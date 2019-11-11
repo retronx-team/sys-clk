@@ -17,11 +17,12 @@ Result ipcServerInit(IpcServer* server, const char* name, u32 max_sessions)
     {
         return MAKERESULT(Module_Libnx, LibnxError_BadInput);
     }
-    strncpy(server->name, name, sizeof(server->name) - 1);
+    memset(&server->srvName, 0, sizeof(server->srvName));
+    strncpy(server->srvName.name, name, sizeof(server->srvName.name));
     server->max = max_sessions + 1;
     server->count = 0;
 
-    Result rc = smRegisterService(&server->handles[0], server->name, false, max_sessions);
+    Result rc = smRegisterService(&server->handles[0], server->srvName, false, max_sessions);
     if(R_SUCCEEDED(rc))
     {
         server->count = 1;
@@ -36,7 +37,7 @@ Result ipcServerExit(IpcServer* server)
         svcCloseHandle(server->handles[i]);
     }
     server->count = 0;
-    return smUnregisterService(server->name);
+    return smUnregisterService(server->srvName);
 }
 
 static Result _ipcServerAddSession(IpcServer* server, Handle session)
