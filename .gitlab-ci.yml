@@ -1,4 +1,4 @@
-image: starcarr/libnx:latest
+image: git.m4xw.net:4567/switch/retroarch/libnx-docker-image:develop
 
 variables:
   PACKAGE_FOLDER: "sys-clk"
@@ -8,7 +8,7 @@ stages:
 
 nightly:
   stage: package
-  image: starcarr/libnx:nightly
+  image: git.m4xw.net:4567/switch/retroarch/libnx-docker-image:develop
   script:
     - bash build.sh $PACKAGE_FOLDER develop
   artifacts:
