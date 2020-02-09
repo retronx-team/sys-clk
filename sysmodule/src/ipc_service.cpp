@@ -245,13 +245,16 @@ Result IpcService::SetEnabled(std::uint8_t* enabled)
 
 Result IpcService::SetOverride(SysClkIpc_SetOverride_Args* args)
 {
+    SysClkModule module = args->module;
+    std::uint32_t hz = args->hz;
+
     if(!SYSCLK_ENUM_VALID(SysClkModule, args->module))
     {
         return SYSCLK_ERROR(Generic);
     }
 
     Config* config = ClockManager::GetInstance()->GetConfig();
-    config->SetOverrideHz(args->module, args->hz);
+    config->SetOverrideHz(module, hz);
 
     return 0;
 }
