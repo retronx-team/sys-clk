@@ -58,6 +58,9 @@ static Result _ipcServerDeleteSession(IpcServer* server, u32 index)
     {
         return MAKERESULT(Module_Libnx, LibnxError_BadInput);
     }
+
+    svcCloseHandle(server->handles[index]);
+
     for(u32 j = index; j < (server->count - 1); j++)
     {
         server->handles[j] = server->handles[j + 1];

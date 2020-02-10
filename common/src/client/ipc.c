@@ -8,6 +8,7 @@
  * --------------------------------------------------------------------------
  */
 
+#define NX_SERVICE_ASSUME_NON_DOMAIN
 #include <sysclk/client/ipc.h>
 #include <switch.h>
 #include <string.h>
