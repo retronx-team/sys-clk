@@ -33,7 +33,7 @@ Config::Config(std::string path)
 
     for(unsigned int i = 0; i < SysClkConfigValue_EnumMax; i++)
     {
-        this->configValues[i] = sysClkDefaultConfigValue((SysClkConfigValue)i);
+        this->configValues[i] = sysclkDefaultConfigValue((SysClkConfigValue)i);
     }
 }
 
@@ -74,7 +74,7 @@ void Config::Close()
 
     for(unsigned int i = 0; i < SysClkConfigValue_EnumMax; i++)
     {
-        this->configValues[i] = sysClkDefaultConfigValue((SysClkConfigValue)i);
+        this->configValues[i] = sysclkDefaultConfigValue((SysClkConfigValue)i);
     }
 }
 
@@ -277,12 +277,12 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
     {
         for(unsigned int kval = 0; kval < SysClkConfigValue_EnumMax; kval++)
         {
-            if(!strcmp(key, sysClkFormatConfigValue((SysClkConfigValue)kval, false)))
+            if(!strcmp(key, sysclkFormatConfigValue((SysClkConfigValue)kval, false)))
             {
                 input = strtoul(value, NULL, 0);
-                if(!sysClkValidConfigValue((SysClkConfigValue)kval, input))
+                if(!sysclkValidConfigValue((SysClkConfigValue)kval, input))
                 {
-                    input = sysClkDefaultConfigValue((SysClkConfigValue)kval);
+                    input = sysclkDefaultConfigValue((SysClkConfigValue)kval);
                     FileUtils::LogLine("[cfg] Invalid value for key '%s' in section '%s': using default %d", key, section, input);
                 }
                 config->configValues[kval] = input;
@@ -398,7 +398,7 @@ std::uint64_t Config::GetConfigValue(SysClkConfigValue kval)
 
 const char* Config::GetConfigValueName(SysClkConfigValue kval, bool pretty)
 {
-    const char* result = sysClkFormatConfigValue(kval, pretty);
+    const char* result = sysclkFormatConfigValue(kval, pretty);
 
     if(!result)
     {
@@ -436,7 +436,7 @@ bool Config::SetConfigValues(SysClkConfigValueList* configValues, bool immediate
 
     for(unsigned int kval = 0; kval < SysClkConfigValue_EnumMax; kval++)
     {
-        if(!sysClkValidConfigValue((SysClkConfigValue)kval, configValues->values[kval]) || configValues->values[kval] == sysClkDefaultConfigValue((SysClkConfigValue)kval))
+        if(!sysclkValidConfigValue((SysClkConfigValue)kval, configValues->values[kval]) || configValues->values[kval] == sysclkDefaultConfigValue((SysClkConfigValue)kval))
         {
             continue;
         }
@@ -444,7 +444,7 @@ bool Config::SetConfigValues(SysClkConfigValueList* configValues, bool immediate
         // Put key and value as string
         // And add them to the ini key/value str arrays
         snprintf(sv, 0x20, "%ld", configValues->values[kval]);
-        *ik = sysClkFormatConfigValue((SysClkConfigValue)kval, false);
+        *ik = sysclkFormatConfigValue((SysClkConfigValue)kval, false);
         *iv = sv;
 
         // We used those chars, get to the next ones
@@ -466,13 +466,13 @@ bool Config::SetConfigValues(SysClkConfigValueList* configValues, bool immediate
     {
         for(unsigned int kval = 0; kval < SysClkConfigValue_EnumMax; kval++)
         {
-            if(sysClkValidConfigValue((SysClkConfigValue)kval, configValues->values[kval]))
+            if(sysclkValidConfigValue((SysClkConfigValue)kval, configValues->values[kval]))
             {
                 this->configValues[kval] = configValues->values[kval];
             }
             else
             {
-                this->configValues[kval] = sysClkDefaultConfigValue((SysClkConfigValue)kval);
+                this->configValues[kval] = sysclkDefaultConfigValue((SysClkConfigValue)kval);
             }
         }
     }

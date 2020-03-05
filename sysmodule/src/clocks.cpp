@@ -85,7 +85,7 @@ void Clocks::Exit()
 
 const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
 {
-    const char* result = sysClkFormatModule(module, pretty);
+    const char* result = sysclkFormatModule(module, pretty);
 
     if(!result)
     {
@@ -97,7 +97,7 @@ const char* Clocks::GetModuleName(SysClkModule module, bool pretty)
 
 const char* Clocks::GetProfileName(SysClkProfile profile, bool pretty)
 {
-    const char* result = sysClkFormatProfile(profile, pretty);
+    const char* result = sysclkFormatProfile(profile, pretty);
 
     if(!result)
     {
@@ -109,7 +109,7 @@ const char* Clocks::GetProfileName(SysClkProfile profile, bool pretty)
 
 const char* Clocks::GetThermalSensorName(SysClkThermalSensor sensor, bool pretty)
 {
-    const char* result = sysClkFormatThermalSensor(sensor, pretty);
+    const char* result = sysclkFormatThermalSensor(sensor, pretty);
 
     if(!result)
     {
@@ -119,9 +119,9 @@ const char* Clocks::GetThermalSensorName(SysClkThermalSensor sensor, bool pretty
     return result;
 }
 
-PcvModule Clocks::GetPcvModule(SysClkModule sysClkModule)
+PcvModule Clocks::GetPcvModule(SysClkModule sysclkModule)
 {
-    switch(sysClkModule)
+    switch(sysclkModule)
     {
         case SysClkModule_CPU:
             return PcvModule_CpuBus;
@@ -130,16 +130,16 @@ PcvModule Clocks::GetPcvModule(SysClkModule sysClkModule)
         case SysClkModule_MEM:
             return PcvModule_EMC;
         default:
-            ERROR_THROW("No such SysClkModule: %u", sysClkModule);
+            ERROR_THROW("No such SysClkModule: %u", sysclkModule);
     }
 
     return (PcvModule)0;
 }
 
-PcvModuleId Clocks::GetPcvModuleId(SysClkModule sysClkModule)
+PcvModuleId Clocks::GetPcvModuleId(SysClkModule sysclkModule)
 {
     PcvModuleId pcvModuleId;
-    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(sysClkModule));
+    Result rc = pcvGetModuleId(&pcvModuleId, GetPcvModule(sysclkModule));
     ASSERT_RESULT_OK(rc, "pcvGetModuleId");
 
     return pcvModuleId;

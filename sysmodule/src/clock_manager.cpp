@@ -40,7 +40,7 @@ ClockManager::ClockManager()
 {
     this->config = Config::CreateDefault();
     this->context = new SysClkContext;
-    this->context->applicationTid = 0;
+    this->context->applicationId = 0;
     this->context->profile = SysClkProfile_Handheld;
     this->context->enabled = false;
     for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
@@ -81,7 +81,7 @@ void ClockManager::Tick()
 
             if(!hz)
             {
-                hz = this->config->GetAutoClockHz(this->context->applicationTid, (SysClkModule)module, this->context->profile);
+                hz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
             }
 
             if (hz)
@@ -116,11 +116,11 @@ bool ClockManager::RefreshContext()
         hasChanged = true;
     }
 
-    std::uint64_t applicationTid = ProcessManagement::GetCurrentApplicationTid();
-    if (applicationTid != this->context->applicationTid)
+    std::uint64_t applicationId = ProcessManagement::GetCurrentApplicationId();
+    if (applicationId != this->context->applicationId)
     {
-        FileUtils::LogLine("[mgr] TitleID change: %016lX", applicationTid);
-        this->context->applicationTid = applicationTid;
+        FileUtils::LogLine("[mgr] TitleID change: %016lX", applicationId);
+        this->context->applicationId = applicationId;
         hasChanged = true;
     }
 

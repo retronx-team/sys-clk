@@ -9,16 +9,13 @@
  */
 
 #pragma once
-#include <switch.h>
-#include <cstdint>
 
-#define PROCESS_MANAGEMENT_QLAUNCH_TID 0x0100000000001000ULL
+#define SYSCLK_ERROR_MODULE 388
+#define SYSCLK_ERROR(desc) ((SYSCLK_ERROR_MODULE & 0x1FF) | (SysClkError_##desc & 0x1FFF)<<9)
 
-class ProcessManagement
+typedef enum
 {
-  public:
-    static void Initialize();
-    static void WaitForQLaunch();
-    static std::uint64_t GetCurrentApplicationId();
-    static void Exit();
-};
+    SysClkError_Generic = 0,
+    SysClkError_ConfigNotLoaded = 1,
+    SysClkError_ConfigSaveFailed = 2,
+} SysClkError;

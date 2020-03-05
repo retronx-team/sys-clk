@@ -9,16 +9,21 @@
  */
 
 #pragma once
-#include <switch.h>
-#include <cstdint>
 
-#define PROCESS_MANAGEMENT_QLAUNCH_TID 0x0100000000001000ULL
+#ifdef __SWITCH__
 
-class ProcessManagement
-{
-  public:
-    static void Initialize();
-    static void WaitForQLaunch();
-    static std::uint64_t GetCurrentApplicationId();
-    static void Exit();
-};
+#include <switch/types.h>
+#include <switch/result.h>
+
+#else
+
+#define R_FAILED(res) ((res) != 0)
+#define R_SUCCEEDED(res) ((res) == 0)
+
+typedef std::uint32_t Result;
+typedef std::uint32_t u32;
+typedef std::int32_t s32;
+typedef std::uint64_t u64;
+typedef std::uint8_t u8;
+
+#endif

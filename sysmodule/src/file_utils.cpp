@@ -76,12 +76,12 @@ void FileUtils::WriteContextToCsv(const SysClkContext* context)
 
             for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
             {
-                fprintf(file, ",%s_hz", sysClkFormatModule((SysClkModule)module, false));
+                fprintf(file, ",%s_hz", sysclkFormatModule((SysClkModule)module, false));
             }
 
             for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
             {
-                fprintf(file, ",%s_milliC", sysClkFormatThermalSensor((SysClkThermalSensor)sensor, false));
+                fprintf(file, ",%s_milliC", sysclkFormatThermalSensor((SysClkThermalSensor)sensor, false));
             }
 
             fprintf(file, "\n");
@@ -90,7 +90,7 @@ void FileUtils::WriteContextToCsv(const SysClkContext* context)
         struct timespec now;
         clock_gettime(CLOCK_REALTIME, &now);
 
-        fprintf(file, "%ld%03ld,%s,%016lx", now.tv_sec, now.tv_nsec / 1000000UL, sysClkFormatProfile(context->profile, false), context->applicationTid);
+        fprintf(file, "%ld%03ld,%s,%016lx", now.tv_sec, now.tv_nsec / 1000000UL, sysclkFormatProfile(context->profile, false), context->applicationId);
 
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {

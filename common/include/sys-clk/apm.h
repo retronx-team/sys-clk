@@ -9,16 +9,14 @@
  */
 
 #pragma once
-#include <switch.h>
-#include <cstdint>
 
-#define PROCESS_MANAGEMENT_QLAUNCH_TID 0x0100000000001000ULL
+#include "clocks.h"
 
-class ProcessManagement
-{
-  public:
-    static void Initialize();
-    static void WaitForQLaunch();
-    static std::uint64_t GetCurrentApplicationId();
-    static void Exit();
-};
+typedef struct {
+    uint32_t id;
+    uint32_t cpu_hz;
+    uint32_t gpu_hz;
+    uint32_t mem_hz;
+} SysClkApmConfiguration;
+
+extern SysClkApmConfiguration sys_clk_g_apm_configurations[];
