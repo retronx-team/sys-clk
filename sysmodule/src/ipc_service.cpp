@@ -17,7 +17,7 @@
 
 IpcService::IpcService()
 {
-    std::uint32_t priority;
+    std::int32_t priority;
     Result rc = svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
     ASSERT_RESULT_OK(rc, "svcGetThreadPriority");
     rc = ipcServerInit(&this->server, SYSCLK_IPC_SERVICE_NAME, 42);

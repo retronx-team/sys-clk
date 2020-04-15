@@ -10,18 +10,32 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <switch.h>
 
-Result tcInitialize(void);
-void tcExit(void);
+typedef struct
+{
+	size_t count;
+	Mutex mutex;
+} AtomicRef;
 
-Result tcGetSkinTemperatureMilliC(s32 *out_millis);
-
-#ifdef __cplusplus
+NX_INLINE size_t atomicRefIncrement(AtomicRef* ref)
+{
+	size_t r;
+	mutexLock(&ref->mutex);
+	r = ++ref->count;
+	mutexUnlock(&ref->mutex);
+	return r;
 }
-#endif
+
+NX_INLINE size_t atomicRefDecrement(AtomicRef* ref)
+{
+	size_t r;
+	mutexLock(&ref->mutex);
+	if(ref->count > 0)
+	{
+		ref->count--;
+	}
+	r = ref->count;
+	mutexUnlock(&ref->mutex);
+	return r;
+}
