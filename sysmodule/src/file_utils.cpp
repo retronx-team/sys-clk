@@ -144,6 +144,7 @@ Result FileUtils::Initialize()
     }
 
     __libnx_init_time();
+    timeExit();
 
     if (R_SUCCEEDED(rc))
     {
@@ -177,5 +178,4 @@ void FileUtils::Exit()
 
     fsdevUnmountAll();
     fsExit();
-    timeExit();
 }
