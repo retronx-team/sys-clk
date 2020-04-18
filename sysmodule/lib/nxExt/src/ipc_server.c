@@ -17,6 +17,7 @@ Result ipcServerInit(IpcServer* server, const char* name, u32 max_sessions)
     {
         return MAKERESULT(Module_Libnx, LibnxError_BadInput);
     }
+
     memset(&server->srvName, 0, sizeof(server->srvName));
     strncpy(server->srvName.name, name, sizeof(server->srvName.name));
     server->max = max_sessions + 1;

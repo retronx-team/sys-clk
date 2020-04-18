@@ -12,9 +12,10 @@
 #include <sysclk/client/ipc.h>
 #include <switch.h>
 #include <string.h>
+#include <stdatomic.h>
 
 static Service g_sysclkSrv;
-static u64 g_refCnt;
+static atomic_size_t g_refCnt;
 
 bool sysclkIpcRunning()
 {
@@ -33,7 +34,7 @@ Result sysclkIpcInitialize(void)
 {
     Result rc = 0;
 
-    atomicIncrement64(&g_refCnt);
+    g_refCnt++;
 
     if (serviceIsActive(&g_sysclkSrv))
         return 0;
@@ -47,7 +48,7 @@ Result sysclkIpcInitialize(void)
 
 void sysclkIpcExit(void)
 {
-    if (atomicDecrement64(&g_refCnt) == 0)
+    if (--g_refCnt == 0)
     {
         serviceClose(&g_sysclkSrv);
     }
