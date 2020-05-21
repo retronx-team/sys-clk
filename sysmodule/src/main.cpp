@@ -28,6 +28,7 @@ extern "C"
     extern std::uint32_t __start__;
 
     std::uint32_t __nx_applet_type = AppletType_None;
+    TimeServiceType __nx_time_service_type = TimeServiceType_System;
 
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char nx_inner_heap[INNER_HEAP_SIZE];
