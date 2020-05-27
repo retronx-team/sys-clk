@@ -29,7 +29,7 @@ extern "C"
 
     std::uint32_t __nx_applet_type = AppletType_None;
     TimeServiceType __nx_time_service_type = TimeServiceType_System;
-    u32 __nx_fs_num_sessions = 1;
+    std::uint32_t __nx_fs_num_sessions = 1;
 
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char nx_inner_heap[INNER_HEAP_SIZE];
