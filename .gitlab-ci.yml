@@ -1,4 +1,4 @@
-image: git.m4xw.net:4567/switch/retroarch/libnx-docker-image:develop
+image: $CI_SERVER_HOST:4567/libretro/infrastructure/libretro-build-libnx-devkitpro:latest
 
 variables:
   PACKAGE_FOLDER: "sys-clk"
@@ -8,13 +8,10 @@ stages:
 
 nightly:
   stage: package
-  image: git.m4xw.net:4567/switch/retroarch/libnx-docker-image:develop
   script:
-    - bash build.sh $PACKAGE_FOLDER develop
+    - bash build.sh $PACKAGE_FOLDER
   artifacts:
     name: $PACKAGE_FOLDER
     expire_in: 24 hours
     paths:
     - $PACKAGE_FOLDER
-  except:
-    - master
