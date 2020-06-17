@@ -25,6 +25,6 @@ cp -vf "$ROOT_DIR/sysmodule/out/sys-clk.nsp" "$DIST_DIR/atmosphere/contents/$TIT
 
 echo "*** assets ***"
 mkdir -p "$DIST_DIR/config/sys-clk"
-cp -vf "$ROOT_DIR/config.ini.template" "$DIST_DIR/config/sys-clk/config.ini"
+cp -vf "$ROOT_DIR/config.ini.template" "$DIST_DIR/config/sys-clk/config.ini.template"
 >"$DIST_DIR/config/sys-clk/log.flag"
 cp -vf "$ROOT_DIR/README.md" "$DIST_DIR/README.md"
