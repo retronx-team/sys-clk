@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/natinusala/borealis
+	branch = master
+	commit = 72ac6ae0b9be2bba8b4a71ffa490eb270a1542c4
+	parent = 9e9b60e0ba166c7cb9745f76eabdebcab893d441
+	method = rebase
+	cmdver = 0.4.0

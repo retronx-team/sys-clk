@@ -90,8 +90,10 @@ int main(int argc, char **argv)
         FileUtils::LogLine("Ready");
 
         ClockManager *clockMgr = ClockManager::GetInstance();
+        IpcService *ipcSrv = new IpcService();
         clockMgr->SetRunning(true);
         clockMgr->GetConfig()->SetEnabled(true);
+        ipcSrv->SetRunning(true);
 
         while (clockMgr->Running())
         {
@@ -99,6 +101,8 @@ int main(int argc, char **argv)
             clockMgr->WaitForNextTick();
         }
 
+        ipcSrv->SetRunning(false);
+        delete ipcSrv;
         ClockManager::Exit();
         ProcessManagement::Exit();
         Clocks::Exit();

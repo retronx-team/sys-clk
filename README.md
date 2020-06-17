@@ -67,7 +67,7 @@ handheld_mem=
 A list of games title id can be found in the [Switchbrew wiki](https://switchbrew.org/wiki/Title_list/Games).
 * Frequencies are expressed in mhz, and will be scaled to the nearest possible values, described in the clock table below.
 * If any key is omitted, value is empty or set to 0, it will be ignored, and stock clocks will apply.
-* If charging, sys clk will look for the frequencies in that order, picking the first found 
+* If charging, sys-clk will look for the frequencies in that order, picking the first found 
 	1. Charger specific config (USB or Official) `handheld_charging_usb_X` or `handheld_charging_official_X`
 	2. Non specific charging config `handheld_charging_X`
 	3. Handheld config `handheld_X`

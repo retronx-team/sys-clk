@@ -1,0 +1,9 @@
+.*/
+build/
+build.nx/
+*~
+*.bak
+*.nro
+*.nacp
+*.elf
+.vscode

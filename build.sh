@@ -23,6 +23,14 @@ mkdir -p "$DIST_DIR/atmosphere/contents/$TITLE_ID/flags"
 cp -vf "$ROOT_DIR/sysmodule/out/sys-clk.nsp" "$DIST_DIR/atmosphere/contents/$TITLE_ID/exefs.nsp"
 >"$DIST_DIR/atmosphere/contents/$TITLE_ID/flags/boot2.flag"
 
+echo "*** manager ***"
+pushd "$ROOT_DIR/manager"
+make -j$CORES
+popd > /dev/null
+
+mkdir -p "$DIST_DIR/switch"
+cp -vf "$ROOT_DIR/manager/sys-clk-manager.nro" "$DIST_DIR/switch/sys-clk-manager.nro"
+
 echo "*** assets ***"
 mkdir -p "$DIST_DIR/config/sys-clk"
 cp -vf "$ROOT_DIR/config.ini.template" "$DIST_DIR/config/sys-clk/config.ini.template"
