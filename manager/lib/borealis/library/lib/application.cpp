@@ -226,6 +226,8 @@ bool Application::init(std::string title, Style style, Theme theme)
 #ifdef __SWITCH__
     {
         PlFontData font;
+
+        // Standard font
         Result rc = plGetSharedFontByType(&font, PlSharedFontType_Standard);
         if (R_SUCCEEDED(rc))
         {
@@ -233,6 +235,16 @@ bool Application::init(std::string title, Style style, Theme theme)
             Application::fontStash.regular = Application::loadFontFromMemory("regular", font.address, font.size, false);
         }
 
+        // Korean font
+        rc = plGetSharedFontByType(&font, PlSharedFontType_KO);
+        if (R_SUCCEEDED(rc))
+        {
+            Logger::info("Adding Switch shared Korean font");
+            Application::fontStash.korean = Application::loadFontFromMemory("korean", font.address, font.size, false);
+            nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.korean);
+        }
+
+        // Extented font
         rc = plGetSharedFontByType(&font, PlSharedFontType_NintendoExt);
         if (R_SUCCEEDED(rc))
         {
