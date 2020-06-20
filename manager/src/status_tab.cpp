@@ -70,7 +70,7 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     this->addView(serviceEnabledListItem);
 
     // Frequencies
-    brls::Header *hardwareHeader = new brls::Header("Hardware");
+    brls::Header *hardwareHeader = new brls::Header("Frequencies");
     this->addView(hardwareHeader);
 
     StatusGrid *frequenciesLayout = new StatusGrid();
@@ -87,6 +87,8 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
 
     this->addView(frequenciesLayout);
 
+    brls::Header *tempsHeader = new brls::Header("Temperatures");
+    this->addView(tempsHeader);
     // Temperatures
     StatusGrid *tempsLayout = new StatusGrid();
     tempsLayout->setSpacing(22);
@@ -94,6 +96,7 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
 
     this->socTempCell = new StatusCell("SOC", formatTemp(context.temps[SysClkThermalSensor_SOC]));
     this->pcbTempCell = new StatusCell("PCB", formatTemp(context.temps[SysClkThermalSensor_PCB]));
+    this->sknTempCell = new StatusCell("SKN", formatTemp(context.temps[SysClkThermalSensor_Skin]));
 
     if (context.temps[SysClkThermalSensor_SOC] > DANGEROUS_TEMP_THRESHOLD)
         this->socTempCell->setValueColor(DANGEROUS_TEMP_COLOR);
@@ -101,9 +104,13 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     if (context.temps[SysClkThermalSensor_PCB] > DANGEROUS_TEMP_THRESHOLD)
         this->pcbTempCell->setValueColor(DANGEROUS_TEMP_COLOR);
 
-    tempsLayout->addView(new brls::Rectangle(nvgRGBA(0, 0, 0, 0)));
+    if (context.temps[SysClkThermalSensor_Skin] > DANGEROUS_TEMP_THRESHOLD)
+        this->sknTempCell->setValueColor(DANGEROUS_TEMP_COLOR);
+
+    //tempsLayout->addView(new brls::Rectangle(nvgRGBA(0, 0, 0, 0)));
     tempsLayout->addView(this->socTempCell);
     tempsLayout->addView(this->pcbTempCell);
+    tempsLayout->addView(this->sknTempCell);
 
     this->addView(tempsLayout);
 

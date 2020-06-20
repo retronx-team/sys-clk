@@ -74,6 +74,7 @@ class StatusTab : public brls::List
 
         StatusCell *socTempCell;
         StatusCell *pcbTempCell;
+        StatusCell *sknTempCell;
 
         StatusCell *profileCell;
         StatusCell *tidCell;
