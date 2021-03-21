@@ -77,6 +77,10 @@ void RefreshTask::run(retro_time_t currentTime)
             //SoC Temp
             if (context.temps[SysClkThermalSensor_SOC] != this->oldContext.temps[SysClkThermalSensor_SOC])
                 this->tempUpdateEvent.fire(SysClkThermalSensor_SOC, context.temps[SysClkThermalSensor_SOC]);
+
+            //Skin Temp
+            if (context.temps[SysClkThermalSensor_Skin] != this->oldContext.temps[SysClkThermalSensor_Skin])
+                this->tempUpdateEvent.fire(SysClkThermalSensor_Skin, context.temps[SysClkThermalSensor_Skin]);
         }
 
         this->shouldNotifyTempChange = !this->shouldNotifyTempChange;
