@@ -33,8 +33,8 @@ public:
         list->addItem(new tsl::elm::CategoryHeader("List items"));
 
         auto *clickableListItem = new tsl::elm::ListItem("Clickable List Item", "...");
-        clickableListItem->setClickListener([](u64 keys) { 
-            if (keys & KEY_A) {
+        clickableListItem->setClickListener([](u64 keys) {
+            if (keys & HidNpadButton_A) {
                 tsl::changeTo<GuiSecondary>();
                 return true;
             }
@@ -46,7 +46,7 @@ public:
         list->addItem(new tsl::elm::ListItem("Default List Item"));
         list->addItem(new tsl::elm::ListItem("Default List Item with an extra long name to trigger truncation and scrolling"));
         list->addItem(new tsl::elm::ToggleListItem("Toggle List Item", true));
-        
+
         // Custom Drawer, a element that gives direct access to the renderer
         list->addItem(new tsl::elm::CategoryHeader("Custom Drawer", true));
         list->addItem(new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
@@ -65,7 +65,7 @@ public:
 
         // Add the list to the frame for it to be drawn
         frame->setContent(list);
-        
+
         // Return the frame to have it become the top level element of this Gui
         return frame;
     }
@@ -76,8 +76,8 @@ public:
     }
 
     // Called once every frame to handle inputs not handled by other UI elements
-    virtual bool handleInput(u64 keysDown, u64 keysHeld, touchPosition touchInput, JoystickPosition leftJoyStick, JoystickPosition rightJoyStick) override {
-        return false;   // Return true here to singal the inputs have been consumed
+    virtual bool handleInput(u64 keysDown, u64 keysHeld, const HidTouchState &touchPos, HidAnalogStickState joyStickPosLeft, HidAnalogStickState joyStickPosRight) override {
+        return false;   // Return true here to signal the inputs have been consumed
     }
 };
 
@@ -85,7 +85,7 @@ class OverlayTest : public tsl::Overlay {
 public:
                                              // libtesla already initialized fs, hid, pl, pmdmnt, hid:sys and set:sys
     virtual void initServices() override {}  // Called at the start to initialize all services necessary for this Overlay
-    virtual void exitServices() override {}  // Callet at the end to clean up all services previously initialized
+    virtual void exitServices() override {}  // Called at the end to clean up all services previously initialized
 
     virtual void onShow() override {}    // Called before overlay wants to change from invisible to visible state
     virtual void onHide() override {}    // Called before overlay wants to change from visible to invisible state
