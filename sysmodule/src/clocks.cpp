@@ -195,16 +195,16 @@ SysClkProfile Clocks::GetCurrentProfile()
         return SysClkProfile_Docked;
     }
 
-    ChargerType chargerType;
+    PsmChargerType chargerType;
 
     rc = psmGetChargerType(&chargerType);
     ASSERT_RESULT_OK(rc, "psmGetChargerType");
 
-    if(chargerType == ChargerType_Charger)
+    if(chargerType == PsmChargerType_EnoughPower)
     {
         return SysClkProfile_HandheldChargingOfficial;
     }
-    else if(chargerType == ChargerType_Usb)
+    else if(chargerType == PsmChargerType_LowPower)
     {
         return SysClkProfile_HandheldChargingUSB;
     }

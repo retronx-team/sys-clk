@@ -41,7 +41,7 @@ static SwkbdConfig createSwkbdBaseConfig(std::string headerText, std::string sub
     swkbdConfigSetSubText(&config, subText.c_str());
     swkbdConfigSetStringLenMax(&config, maxStringLength);
     swkbdConfigSetInitialText(&config, initialText.c_str());
-    swkbdConfigSetStringLenMaxExt(&config, 1);
+    swkbdConfigSetStringLenMin(&config, 1);
     swkbdConfigSetBlurBackground(&config, true);
 
     return config;
