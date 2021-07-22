@@ -44,8 +44,8 @@ void GlobalOverrideGui::addModuleListItem(SysClkModule module, std::uint32_t* hz
     tsl::elm::ListItem* listItem = new tsl::elm::ListItem(sysclkFormatModule(module, true));
     listItem->setValue(formatListFreqMhz(0));
 
-    listItem->setClickListener([this, module, hzList](s64 keys) {
-        if((keys & KEY_A) == KEY_A)
+    listItem->setClickListener([this, module, hzList](u64 keys) {
+        if((keys & HidNpadButton_A) == HidNpadButton_A)
         {
             this->openFreqChoiceGui(module, hzList);
             return true;

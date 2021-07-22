@@ -30,8 +30,8 @@ void MainGui::listUI()
     this->listElement->addItem(this->enabledToggle);
 
     tsl::elm::ListItem* appProfileItem = new tsl::elm::ListItem("Edit app profile");
-    appProfileItem->setClickListener([this](s64 keys) {
-        if((keys & KEY_A) == KEY_A && this->context)
+    appProfileItem->setClickListener([this](u64 keys) {
+        if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
         {
             AppProfileGui::changeTo(this->context->applicationId);
             return true;
@@ -44,8 +44,8 @@ void MainGui::listUI()
     this->listElement->addItem(new tsl::elm::CategoryHeader("Advanced"));
 
     tsl::elm::ListItem* globalOverrideItem = new tsl::elm::ListItem("Temporary overrides");
-    globalOverrideItem->setClickListener([this](s64 keys) {
-        if((keys & KEY_A) == KEY_A)
+    globalOverrideItem->setClickListener([this](u64 keys) {
+        if((keys & HidNpadButton_A) == HidNpadButton_A)
         {
             tsl::changeTo<GlobalOverrideGui>();
             return true;

@@ -24,6 +24,6 @@ class FatalGui : public BaseGui
         FatalGui(const std::string message, const std::string info);
         ~FatalGui() {}
         tsl::elm::Element* baseUI() override;
-        bool handleInput(u64 keysDown, u64 keysHeld, touchPosition touchInput, JoystickPosition leftJoyStick, JoystickPosition rightJoyStick);
+        bool handleInput(u64 keysDown, u64 keysHeld, const HidTouchState &touchPos, HidAnalogStickState joyStickPosLeft, HidAnalogStickState joyStickPosRight);
         static void openWithResultCode(std::string tag, Result rc);
 };

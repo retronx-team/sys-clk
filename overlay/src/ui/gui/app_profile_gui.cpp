@@ -44,8 +44,8 @@ void AppProfileGui::addModuleListItem(SysClkProfile profile, SysClkModule module
 {
     tsl::elm::ListItem* listItem = new tsl::elm::ListItem(sysclkFormatModule(module, true));
     listItem->setValue(formatListFreqMhz(this->profileList->mhzMap[profile][module]));
-    listItem->setClickListener([this, listItem, profile, module, hzList](s64 keys) {
-        if((keys & KEY_A) == KEY_A)
+    listItem->setClickListener([this, listItem, profile, module, hzList](u64 keys) {
+        if((keys & HidNpadButton_A) == HidNpadButton_A)
         {
             this->openFreqChoiceGui(listItem, profile, module, hzList);
             return true;

@@ -53,9 +53,9 @@ tsl::elm::Element* FatalGui::baseUI()
     return drawer;
 }
 
-bool FatalGui::handleInput(u64 keysDown, u64 keysHeld, touchPosition touchInput, JoystickPosition leftJoyStick, JoystickPosition rightJoyStick)
+bool FatalGui::handleInput(u64 keysDown, u64 keysHeld, const HidTouchState &touchPos, HidAnalogStickState joyStickPosLeft, HidAnalogStickState joyStickPosRight)
 {
-    if((keysDown & KEY_A) == KEY_A || (keysDown & KEY_B) == KEY_B)
+    if((keysDown & HidNpadButton_A) == HidNpadButton_A || (keysDown & HidNpadButton_B) == HidNpadButton_B)
     {
         while(tsl::Overlay::get()->getCurrentGui() != nullptr) {
             tsl::goBack();
