@@ -2,6 +2,17 @@
 
 Switch sysmodule allowing you to set cpu/gpu/mem clocks according to the running application and docked state.
 
+## Building
+
+Most users will want to download the latest release instead of building from source.
+
+To build for Switch, a standard development environment must first be set up. In order to do so, [refer to the devkitPro Getting Started guide](https://devkitpro.org/wiki/Getting_Started).
+
+```bash
+(sudo) (dkp-)pacman -S switch-dev switch-glfw switch-glm
+./build.sh
+```
+
 ## Installation
 
 The following instructions assumes you have a Nintendo Switch running Atmosphère, updated to at least the latest stable version.
