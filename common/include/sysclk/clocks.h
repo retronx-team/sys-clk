@@ -43,6 +43,7 @@ typedef enum
 typedef struct
 {
     uint8_t enabled;
+    uint8_t boostModeActive;
     uint64_t applicationId;
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];
@@ -60,6 +61,8 @@ typedef struct
 
 #define SYSCLK_GPU_HANDHELD_MAX_HZ 460800000
 #define SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ 768000000
+#define SYSCLK_GPU_BOOST_HZ 76800000
+#define SYSCLK_CPU_BOOST_HZ 1785000000
 
 extern uint32_t sysclk_g_freq_table_mem_hz[];
 extern uint32_t sysclk_g_freq_table_cpu_hz[];

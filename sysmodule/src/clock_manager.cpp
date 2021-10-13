@@ -90,9 +90,16 @@ void ClockManager::Tick()
 
                 if (hz != this->context->freqs[module] && this->context->enabled)
                 {
-                    FileUtils::LogLine("[mgr] %s clock set : %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
-                    Clocks::SetHz((SysClkModule)module, hz);
-                    this->context->freqs[module] = hz;
+                    if (this->context->boostModeActive && module != SysClkModule_MEM)
+                    {
+                        FileUtils::LogLine("[mgr] %s clock not set (Boost mode active)", Clocks::GetModuleName((SysClkModule)module, true));
+                    }
+                    else
+                    {
+                        FileUtils::LogLine("[mgr] %s clock set : %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
+                        Clocks::SetHz((SysClkModule)module, hz);
+                        this->context->freqs[module] = hz;
+                    }
                 }
             }
         }
@@ -162,6 +169,16 @@ bool ClockManager::RefreshContext()
             }
             this->context->overrideFreqs[module] = hz;
             hasChanged = true;
+        }
+    }
+
+    if (hasChanged)
+    {
+        bool boostClocks = this->context->freqs[SysClkModule_CPU] == SYSCLK_CPU_BOOST_HZ && this->context->freqs[SysClkModule_GPU] == SYSCLK_GPU_BOOST_HZ;
+        if (boostClocks != this->context->boostModeActive)
+        {
+            FileUtils::LogLine("[mgr] System has %s Boost mode", boostClocks ? "entered" : "exited");
+            this->context->boostModeActive = boostClocks;
         }
     }
 
