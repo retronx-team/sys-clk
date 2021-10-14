@@ -168,6 +168,8 @@ std::string AdvancedSettingsTab::getDescriptionForConfig(SysClkConfigValue confi
             return "How often to log temperatures (in milliseconds)\n\uE016  Use 0 to disable";
         case SysClkConfigValue_PollingIntervalMs:
             return "How fast to check and apply profiles (in milliseconds)";
+        case SysClkConfigValue_OverrideBoostClocks:
+            return "Whether sys-clk should override Boost mode clocks\n\uE016  Use 0 to disable";
         default:
             return "";
     }

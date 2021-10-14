@@ -75,6 +75,7 @@ void ClockManager::Tick()
     if (this->RefreshContext() || this->config->Refresh())
     {
         std::uint32_t hz = 0;
+        std::uint64_t boostOverride = this->config->GetConfigValue(SysClkConfigValue_OverrideBoostClocks);
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
             hz = this->context->overrideFreqs[module];
@@ -90,7 +91,7 @@ void ClockManager::Tick()
 
                 if (hz != this->context->freqs[module] && this->context->enabled)
                 {
-                    if (this->context->boostModeActive && module != SysClkModule_MEM)
+                    if (!boostOverride && this->context->boostModeActive && module != SysClkModule_MEM)
                     {
                         FileUtils::LogLine("[mgr] %s clock not set (Boost mode active)", Clocks::GetModuleName((SysClkModule)module, true));
                     }

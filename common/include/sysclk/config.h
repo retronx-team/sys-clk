@@ -17,6 +17,7 @@ typedef enum {
     SysClkConfigValue_PollingIntervalMs = 0,
     SysClkConfigValue_TempLogIntervalMs,
     SysClkConfigValue_CsvWriteIntervalMs,
+    SysClkConfigValue_OverrideBoostClocks,
     SysClkConfigValue_EnumMax,
 } SysClkConfigValue;
 
@@ -34,6 +35,8 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Temperature logging interval (ms)" : "temp_log_interval_ms";
         case SysClkConfigValue_CsvWriteIntervalMs:
             return pretty ? "CSV write interval (ms)" : "csv_write_interval_ms";
+        case SysClkConfigValue_OverrideBoostClocks:
+            return pretty ? "Whether or not to overwrite Boost clocks" : "override_boost_clk";
         default:
             return NULL;
     }
@@ -48,6 +51,8 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_CsvWriteIntervalMs:
             return 0ULL;
+        case SysClkConfigValue_OverrideBoostClocks:
+            return 1ULL;
         default:
             return 0ULL;
     }
@@ -62,6 +67,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_CsvWriteIntervalMs:
             return true;
+        case SysClkConfigValue_OverrideBoostClocks:
+            return 0 <= input && input <= 1;
         default:
             return false;
     }
