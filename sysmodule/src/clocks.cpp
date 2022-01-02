@@ -206,10 +206,10 @@ SysClkProfile Clocks::GetCurrentProfile()
     }
     else if(chargerType == PsmChargerType_LowPower)
     {
-        return SysClkProfile_HandheldChargingUSB;
+        return SysClkProfile_HandheldChargingOfficial;
     }
 
-    return SysClkProfile_Handheld;
+    return SysClkProfile_HandheldChargingOfficial;
 }
 
 void Clocks::SetHz(SysClkModule module, std::uint32_t hz)
