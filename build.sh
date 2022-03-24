@@ -42,5 +42,4 @@ cp -vf "$ROOT_DIR/overlay/out/sys-clk-overlay.ovl" "$DIST_DIR/switch/.overlays/s
 echo "*** assets ***"
 mkdir -p "$DIST_DIR/config/sys-clk"
 cp -vf "$ROOT_DIR/config.ini.template" "$DIST_DIR/config/sys-clk/config.ini.template"
->"$DIST_DIR/config/sys-clk/log.flag"
 cp -vf "$ROOT_DIR/README.md" "$DIST_DIR/README.md"
