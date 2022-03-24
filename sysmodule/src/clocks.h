@@ -29,6 +29,7 @@ class Clocks
     static std::uint32_t GetTemperatureMilli(SysClkThermalSensor sensor);
 
   protected:
+    static std::int32_t GetTsTemperatureMilli(TsLocation location);
     static PcvModule GetPcvModule(SysClkModule sysclkModule);
     static PcvModuleId GetPcvModuleId(SysClkModule sysclkModule);
     static std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz);

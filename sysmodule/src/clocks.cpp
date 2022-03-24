@@ -314,25 +314,42 @@ std::uint32_t Clocks::GetNearestHz(SysClkModule module, std::uint32_t inHz)
     return clockTable[i];
 }
 
+std::int32_t Clocks::GetTsTemperatureMilli(TsLocation location) {
+    Result rc;
+    std::int32_t millis = 0;
+
+    if(hosversionAtLeast(14,0,0))
+    {
+        rc = tsGetTemperature(location, &millis);
+        ASSERT_RESULT_OK(rc, "tsGetTemperature(%u)", location);
+        millis *= 1000;
+    }
+    else
+    {
+        rc = tsGetTemperatureMilliC(location, &millis);
+        ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC(%u)", location);
+    }
+
+    return millis;
+}
+
 std::uint32_t Clocks::GetTemperatureMilli(SysClkThermalSensor sensor)
 {
-    Result rc;
     std::int32_t millis = 0;
 
     if(sensor == SysClkThermalSensor_SOC)
     {
-        rc = tsGetTemperatureMilliC(TsLocation_External, &millis);
-        ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC");
+        millis = GetTsTemperatureMilli(TsLocation_External);
     }
     else if(sensor == SysClkThermalSensor_PCB)
     {
-        rc = tsGetTemperatureMilliC(TsLocation_Internal, &millis);
-        ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC");
+        millis = GetTsTemperatureMilli(TsLocation_Internal);
     }
     else if(sensor == SysClkThermalSensor_Skin)
     {
         if(hosversionAtLeast(5,0,0))
         {
+            Result rc;
             rc = tcGetSkinTemperatureMilliC(&millis);
             ASSERT_RESULT_OK(rc, "tcGetSkinTemperatureMilliC");
         }
