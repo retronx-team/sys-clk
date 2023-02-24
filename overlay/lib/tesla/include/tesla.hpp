@@ -765,6 +765,17 @@ namespace tsl {
                 s32 currX = x;
                 s32 currY = y;
 
+                struct Glyph {
+                    stbtt_fontinfo *currFont;
+                    float currFontSize;
+                    int bounds[4];
+                    int xAdvance;
+                    u8 *glyphBmp;
+                    int width, height;
+                };
+
+                static std::unordered_map<u64, Glyph> s_glyphCache;
+
                 do {
                     if (maxWidth > 0 && maxWidth < (currX - x))
                         break;
@@ -777,24 +788,6 @@ namespace tsl {
 
                     string += codepointWidth;
 
-                    stbtt_fontinfo *currFont = nullptr;
-
-                    if (stbtt_FindGlyphIndex(&this->m_extFont, currCharacter))
-                        currFont = &this->m_extFont;
-                    else if(this->m_hasLocalFont && stbtt_FindGlyphIndex(&this->m_stdFont, currCharacter)==0)
-                        currFont = &this->m_localFont;
-                    else
-                        currFont = &this->m_stdFont;
-
-                    float currFontSize = stbtt_ScaleForPixelHeight(currFont, fontSize);
-
-                    int bounds[4] = { 0 };
-                    stbtt_GetCodepointBitmapBoxSubpixel(currFont, currCharacter, currFontSize, currFontSize,
-                                                        0, 0, &bounds[0], &bounds[1], &bounds[2], &bounds[3]);
-
-                    int xAdvance = 0, yAdvance = 0;
-                    stbtt_GetCodepointHMetrics(currFont, monospace ? 'W' : currCharacter, &xAdvance, &yAdvance);
-
                     if (currCharacter == '\n') {
                         maxX = std::max(currX, maxX);
 
@@ -804,10 +797,56 @@ namespace tsl {
                         continue;
                     }
 
-                   if (!std::iswspace(currCharacter) && fontSize > 0 && color.a != 0x0)
-                        this->drawGlyph(currCharacter, currX + bounds[0], currY + bounds[1], color, currFont, currFontSize);
+                    u64 key = (static_cast<u64>(currCharacter) << 32) | static_cast<u64>(std::bit_cast<u32>(fontSize));
 
-                    currX += static_cast<s32>(xAdvance * currFontSize);
+                    Glyph *glyph = nullptr;
+
+                    auto it = s_glyphCache.find(key);
+                    if (it == s_glyphCache.end()) {
+                        /* Cache glyph */
+                        glyph = &s_glyphCache.emplace(key, Glyph()).first->second;
+
+                        if (stbtt_FindGlyphIndex(&this->m_extFont, currCharacter))
+                            glyph->currFont = &this->m_extFont;
+                        else if(this->m_hasLocalFont && stbtt_FindGlyphIndex(&this->m_stdFont, currCharacter)==0)
+                            glyph->currFont = &this->m_localFont;
+                        else
+                            glyph->currFont = &this->m_stdFont;
+
+                        glyph->currFontSize = stbtt_ScaleForPixelHeight(glyph->currFont, fontSize);
+
+                        stbtt_GetCodepointBitmapBoxSubpixel(glyph->currFont, currCharacter, glyph->currFontSize, glyph->currFontSize,
+                                                            0, 0, &glyph->bounds[0], &glyph->bounds[1], &glyph->bounds[2], &glyph->bounds[3]);
+
+                        int yAdvance = 0;
+                        stbtt_GetCodepointHMetrics(glyph->currFont, monospace ? 'W' : currCharacter, &glyph->xAdvance, &yAdvance);
+
+                        glyph->glyphBmp = stbtt_GetCodepointBitmap(glyph->currFont, glyph->currFontSize, glyph->currFontSize, currCharacter, &glyph->width, &glyph->height, nullptr, nullptr);
+                    } else {
+                        /* Use cached glyph */
+                        glyph = &it->second;
+                    }
+
+                    if (glyph->glyphBmp != nullptr && !std::iswspace(currCharacter) && fontSize > 0 && color.a != 0x0) {
+
+                        auto x = currX + glyph->bounds[0];
+                        auto y = currY + glyph->bounds[1];
+                        for (s32 bmpY = 0; bmpY < glyph->height; bmpY++) {
+                            for (s32 bmpX = 0; bmpX < glyph->width; bmpX++) {
+                                auto bmpColor = glyph->glyphBmp[glyph->width * bmpY + bmpX] >> 4;
+                                if (bmpColor == 0xF) {
+                                    this->setPixel(x + bmpX, y + bmpY, color);
+                                } else if (bmpColor != 0x0) {
+                                    Color tmpColor = color;
+                                    tmpColor.a = bmpColor * (float(tmpColor.a) / 0xF);
+                                    this->setPixelBlendDst(x + bmpX, y + bmpY, tmpColor);
+                                }
+                            }
+                        }
+
+                    }
+
+                    currX += static_cast<s32>(glyph->xAdvance * glyph->currFontSize);
 
                 } while (*string != '\0');
 
@@ -1126,36 +1165,6 @@ namespace tsl {
                 framebufferEnd(&this->m_framebuffer);
 
                 this->m_currentFramebuffer = nullptr;
-            }
-
-            /**
-             * @brief Draws a single font glyph
-             *
-             * @param codepoint Unicode codepoint to draw
-             * @param x X pos
-             * @param y Y pos
-             * @param color Color
-             * @param font STB Font to use
-             * @param fontSize Font size
-             */
-            inline void drawGlyph(s32 codepoint, s32 x, s32 y, Color color, stbtt_fontinfo *font, float fontSize) {
-                int width = 10, height = 10;
-
-                u8 *glyphBmp = stbtt_GetCodepointBitmap(font, fontSize, fontSize, codepoint, &width, &height, nullptr, nullptr);
-
-                if (glyphBmp == nullptr)
-                    return;
-
-                for (s32 bmpY = 0; bmpY < height; bmpY++) {
-                    for (s32 bmpX = 0; bmpX < width; bmpX++) {
-                        Color tmpColor = color;
-                        tmpColor.a = (glyphBmp[width * bmpY + bmpX] >> 4) * (float(tmpColor.a) / 0xF);
-                        this->setPixelBlendDst(x + bmpX, y + bmpY, tmpColor);
-                    }
-                }
-
-                std::free(glyphBmp);
-
             }
         };
 
@@ -3653,7 +3662,11 @@ extern "C" {
         tsl::hlp::doWithSmSession([]{
             ASSERT_FATAL(fsInitialize());
             ASSERT_FATAL(hidInitialize());                          // Controller inputs and Touch
-            ASSERT_FATAL(plInitialize(PlServiceType_System));       // Font data. Use pl:s to prevent qlaunch/overlaydisp session exhaustion
+            if (hosversionAtLeast(16,0,0)) {
+                ASSERT_FATAL(plInitialize(PlServiceType_User));     // Font data. Use pl:u for 16.0.0+
+            } else {
+                ASSERT_FATAL(plInitialize(PlServiceType_System));   // Use pl:s for 15.0.1 and below to prevent qlaunch/overlaydisp session exhaustion 
+            }
             ASSERT_FATAL(pmdmntInitialize());                       // PID querying
             ASSERT_FATAL(hidsysInitialize());                       // Focus control
             ASSERT_FATAL(setsysInitialize());                       // Settings querying

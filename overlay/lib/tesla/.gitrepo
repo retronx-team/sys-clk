@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/WerWolv/libtesla
 	branch = master
-	commit = 640629f49f9e8997ef0769b21b26f4fc177c736f
-	parent = 620547e8a05b426e95cb5d8d6bdf807f56079030
+	commit = b32acbca64c78bf37bc456bd386cd6b7148842c8
+	parent = dcd0d5d34dbc2d57b5caade31b92c45ca2c48450
 	method = merge
-	cmdver = 0.4.3
+	cmdver = 0.4.5
