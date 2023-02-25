@@ -47,7 +47,7 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 
-CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=gnu++17
+CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=gnu++20
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
@@ -58,7 +58,7 @@ LIBS	:= -lnx
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(LIBNX) $(TOPDIR)/lib/tesla
+LIBDIRS	:= $(PORTLIBS) $(LIBNX) $(TOPDIR)/lib/libtesla
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional

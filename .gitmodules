@@ -1,0 +1,3 @@
+[submodule "overlay/lib/libtesla"]
+	path = overlay/lib/libtesla
+	url = https://github.com/WerWolv/libtesla
