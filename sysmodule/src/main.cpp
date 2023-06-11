@@ -86,11 +86,12 @@ int main(int argc, char** argv)
         ProcessManagement::Initialize();
 
         ProcessManagement::WaitForQLaunch();
-        ClockManager::Initialize();
+
+        ClockManager* clockMgr = new ClockManager();
+        IpcService* ipcSrv = new IpcService(clockMgr);
+
         FileUtils::LogLine("Ready");
 
-        ClockManager* clockMgr = ClockManager::GetInstance();
-        IpcService* ipcSrv = new IpcService();
         clockMgr->SetRunning(true);
         clockMgr->GetConfig()->SetEnabled(true);
         ipcSrv->SetRunning(true);
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
 
         ipcSrv->SetRunning(false);
         delete ipcSrv;
-        ClockManager::Exit();
+        delete clockMgr;
         ProcessManagement::Exit();
         Board::Exit();
     }

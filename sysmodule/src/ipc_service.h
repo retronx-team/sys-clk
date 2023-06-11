@@ -13,11 +13,12 @@
 #include <atomic>
 #include <nxExt.h>
 #include <sysclk.h>
+#include "clock_manager.h"
 
 class IpcService
 {
   public:
-    IpcService();
+    IpcService(ClockManager* clockMgr);
     virtual ~IpcService();
     void SetRunning(bool running);
 
@@ -41,4 +42,5 @@ class IpcService
     Thread thread;
     LockableMutex threadMutex;
     IpcServer server;
+    ClockManager* clockMgr;
 };

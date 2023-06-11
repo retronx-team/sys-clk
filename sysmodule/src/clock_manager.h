@@ -20,9 +20,8 @@
 class ClockManager
 {
   public:
-    static ClockManager* GetInstance();
-    static void Initialize();
-    static void Exit();
+    ClockManager();
+    virtual ~ClockManager();
 
     SysClkContext GetCurrentContext();
     Config* GetConfig();
@@ -33,16 +32,12 @@ class ClockManager
     void WaitForNextTick();
 
   protected:
-    ClockManager();
-    virtual ~ClockManager();
-
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
     std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz);
     void RefreshFreqTableRow(SysClkModule module);
     bool RefreshContext();
 
-    static ClockManager* instance;
     std::atomic_bool running;
     LockableMutex contextMutex;
     struct {

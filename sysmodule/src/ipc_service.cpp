@@ -12,10 +12,9 @@
 #include <cstring>
 #include <switch.h>
 #include "file_utils.h"
-#include "clock_manager.h"
 #include "errors.h"
 
-IpcService::IpcService()
+IpcService::IpcService(ClockManager* clockMgr)
 {
     std::int32_t priority;
     Result rc = svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
@@ -24,7 +23,9 @@ IpcService::IpcService()
     ASSERT_RESULT_OK(rc, "ipcServerInit");
     rc = threadCreate(&this->thread, &IpcService::ProcessThreadFunc, this, NULL, 0x2000, priority, -2);
     ASSERT_RESULT_OK(rc, "threadCreate");
+
     this->running = false;
+    this->clockMgr = clockMgr;
 }
 
 void IpcService::SetRunning(bool running)
@@ -177,23 +178,21 @@ Result IpcService::GetVersionString(char* out_buf, size_t bufSize)
 
 Result IpcService::GetCurrentContext(SysClkContext* out_ctx)
 {
-    ClockManager* clockMgr = ClockManager::GetInstance();
-    *out_ctx = clockMgr->GetCurrentContext();
+    *out_ctx = this->clockMgr->GetCurrentContext();
 
     return 0;
 }
 
 Result IpcService::Exit()
 {
-    ClockManager* clockMgr = ClockManager::GetInstance();
-    clockMgr->SetRunning(false);
+    this->clockMgr->SetRunning(false);
 
     return 0;
 }
 
 Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
 {
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
@@ -206,7 +205,7 @@ Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
 
 Result IpcService::GetProfiles(std::uint64_t* tid, SysClkTitleProfileList* out_profiles)
 {
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
@@ -219,7 +218,7 @@ Result IpcService::GetProfiles(std::uint64_t* tid, SysClkTitleProfileList* out_p
 
 Result IpcService::SetProfiles(SysClkIpc_SetProfiles_Args* args)
 {
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
@@ -237,7 +236,7 @@ Result IpcService::SetProfiles(SysClkIpc_SetProfiles_Args* args)
 
 Result IpcService::SetEnabled(std::uint8_t* enabled)
 {
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     config->SetEnabled(*enabled);
 
     return 0;
@@ -253,7 +252,7 @@ Result IpcService::SetOverride(SysClkIpc_SetOverride_Args* args)
         return SYSCLK_ERROR(Generic);
     }
 
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     config->SetOverrideHz(module, hz);
 
     return 0;
@@ -261,7 +260,7 @@ Result IpcService::SetOverride(SysClkIpc_SetOverride_Args* args)
 
 Result IpcService::GetConfigValues(SysClkConfigValueList* out_configValues)
 {
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);
@@ -274,7 +273,7 @@ Result IpcService::GetConfigValues(SysClkConfigValueList* out_configValues)
 
 Result IpcService::SetConfigValues(SysClkConfigValueList* configValues)
 {
-    Config* config = ClockManager::GetInstance()->GetConfig();
+    Config* config = this->clockMgr->GetConfig();
     if(!config->HasProfilesLoaded())
     {
         return SYSCLK_ERROR(ConfigNotLoaded);

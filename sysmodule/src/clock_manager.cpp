@@ -15,29 +15,6 @@
 #include "process_management.h"
 #include "errors.h"
 
-ClockManager* ClockManager::instance = NULL;
-
-ClockManager* ClockManager::GetInstance()
-{
-    return instance;
-}
-
-void ClockManager::Exit()
-{
-    if(instance)
-    {
-        delete instance;
-    }
-}
-
-void ClockManager::Initialize()
-{
-    if(!instance)
-    {
-        instance = new ClockManager();
-    }
-}
-
 ClockManager::ClockManager()
 {
     this->config = Config::CreateDefault();
