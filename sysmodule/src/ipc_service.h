@@ -22,7 +22,7 @@ class IpcService
     void SetRunning(bool running);
 
   protected:
-    static void ProcessThreadFunc(void *arg);
+    static void ProcessThreadFunc(void* arg);
     static Result ServiceHandlerFunc(void* arg, const IpcServerRequest* r, std::uint8_t* out_data, size_t* out_dataSize);
 
     Result GetApiVersion(u32* out_version);

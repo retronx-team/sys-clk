@@ -58,7 +58,7 @@ IpcService::~IpcService()
     ASSERT_RESULT_OK(rc, "ipcServerExit");
 }
 
-void IpcService::ProcessThreadFunc(void *arg)
+void IpcService::ProcessThreadFunc(void* arg)
 {
     Result rc;
     IpcService* ipcSrv = (IpcService*)arg;

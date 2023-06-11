@@ -15,7 +15,8 @@ extern "C" {
 #endif
 
 #include "sysclk/ipc.h"
-#include "sysclk/clocks.h"
+#include "sysclk/board.h"
+#include "sysclk/clock_manager.h"
 #include "sysclk/apm.h"
 #include "sysclk/config.h"
 #include "sysclk/errors.h"

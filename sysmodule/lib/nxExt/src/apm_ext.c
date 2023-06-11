@@ -50,7 +50,7 @@ void apmExtExit(void)
     }
 }
 
-Result apmExtGetPerformanceMode(u32 *out_mode)
+Result apmExtGetPerformanceMode(u32* out_mode)
 {
     return serviceDispatchOut(&g_apmSrv, 1, *out_mode);
 }
@@ -60,7 +60,7 @@ Result apmExtSysRequestPerformanceMode(u32 mode)
     return serviceDispatchIn(&g_apmSysSrv, 0, mode);
 }
 
-Result apmExtGetCurrentPerformanceConfiguration(u32 *out_conf)
+Result apmExtGetCurrentPerformanceConfiguration(u32* out_conf)
 {
     return serviceDispatchOut(&g_apmSysSrv, 7, *out_conf);
 }

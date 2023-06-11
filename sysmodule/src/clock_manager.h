@@ -14,7 +14,7 @@
 #include <sysclk.h>
 
 #include "config.h"
-#include "clocks.h"
+#include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 
 class ClockManager
@@ -24,24 +24,33 @@ class ClockManager
     static void Initialize();
     static void Exit();
 
-    void SetRunning(bool running);
-    bool Running();
-    void Tick();
-    void WaitForNextTick();
     SysClkContext GetCurrentContext();
     Config* GetConfig();
+    void SetRunning(bool running);
+    bool Running();
+    void GetFreqList(SysClkModule module, std::uint32_t* list, std::uint32_t maxCount, std::uint32_t* outCount);
+    void Tick();
+    void WaitForNextTick();
 
   protected:
     ClockManager();
     virtual ~ClockManager();
 
+    bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
+    std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
+    std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz);
+    void RefreshFreqTableRow(SysClkModule module);
     bool RefreshContext();
 
-    static ClockManager *instance;
+    static ClockManager* instance;
     std::atomic_bool running;
     LockableMutex contextMutex;
-    Config *config;
-    SysClkContext *context;
+    struct {
+      std::uint32_t count;
+      std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
+    } freqTable[SysClkModule_EnumMax];
+    Config* config;
+    SysClkContext* context;
     std::uint64_t lastTempLogNs;
     std::uint64_t lastCsvWriteNs;
 };

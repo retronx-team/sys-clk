@@ -20,12 +20,16 @@
     {                                                                       \
         ERROR_RESULT_THROW(rc, "ASSERT_RESULT_OK: " format, ##__VA_ARGS__); \
     }
+#define ASSERT_ENUM_VALID(n, v)              \
+    if(!SYSCLK_ENUM_VALID(n, v)) {           \
+        ERROR_THROW("No such %s: %u", #n, v); \
+    }
 
 class Errors
 {
   public:
-    static void ThrowException(const char *format, ...);
+    static void ThrowException(const char* format, ...);
 
   protected:
-    static const char *FormatMessage(const char *format, va_list args);
+    static const char* FormatMessage(const char* format, va_list args);
 };

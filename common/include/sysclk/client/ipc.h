@@ -12,7 +12,7 @@
 
 #include "types.h"
 #include "../config.h"
-#include "../clocks.h"
+#include "../board.h"
 #include "../ipc.h"
 
 bool sysclkIpcRunning();

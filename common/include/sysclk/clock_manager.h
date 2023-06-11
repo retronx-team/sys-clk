@@ -10,13 +10,25 @@
 
 #pragma once
 
+#include <stdint.h>
 #include "board.h"
 
-typedef struct {
-    uint32_t id;
-    uint32_t cpu_hz;
-    uint32_t gpu_hz;
-    uint32_t mem_hz;
-} SysClkApmConfiguration;
+typedef struct
+{
+    uint8_t enabled;
+    uint64_t applicationId;
+    SysClkProfile profile;
+    uint32_t freqs[SysClkModule_EnumMax];
+    uint32_t overrideFreqs[SysClkModule_EnumMax];
+    uint32_t temps[SysClkThermalSensor_EnumMax];
+} SysClkContext;
 
-extern SysClkApmConfiguration sysclk_g_apm_configurations[];
+typedef struct
+{
+    union {
+        uint32_t mhz[SysClkProfile_EnumMax * SysClkModule_EnumMax];
+        uint32_t mhzMap[SysClkProfile_EnumMax][SysClkModule_EnumMax];
+    };
+} SysClkTitleProfileList;
+
+#define SYSCLK_FREQ_LIST_MAX 32

@@ -40,31 +40,6 @@ typedef enum
     SysClkThermalSensor_EnumMax
 } SysClkThermalSensor;
 
-typedef struct
-{
-    uint8_t enabled;
-    uint64_t applicationId;
-    SysClkProfile profile;
-    uint32_t freqs[SysClkModule_EnumMax];
-    uint32_t overrideFreqs[SysClkModule_EnumMax];
-    uint32_t temps[SysClkThermalSensor_EnumMax];
-} SysClkContext;
-
-typedef struct
-{
-    union {
-        uint32_t mhz[SysClkProfile_EnumMax * SysClkModule_EnumMax];
-        uint32_t mhzMap[SysClkProfile_EnumMax][SysClkModule_EnumMax];
-    };
-} SysClkTitleProfileList;
-
-#define SYSCLK_GPU_HANDHELD_MAX_HZ 460800000
-#define SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ 768000000
-
-extern uint32_t sysclk_g_freq_table_mem_hz[];
-extern uint32_t sysclk_g_freq_table_cpu_hz[];
-extern uint32_t sysclk_g_freq_table_gpu_hz[];
-
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)

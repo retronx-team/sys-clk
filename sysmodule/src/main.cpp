@@ -16,7 +16,7 @@
 
 #include "errors.h"
 #include "file_utils.h"
-#include "clocks.h"
+#include "board.h"
 #include "process_management.h"
 #include "clock_manager.h"
 #include "ipc_service.h"
@@ -36,15 +36,15 @@ extern "C"
 
     void __libnx_initheap(void)
     {
-        void *addr = nx_inner_heap;
+        void* addr = nx_inner_heap;
         size_t size = nx_inner_heap_size;
 
         /* Newlib Heap Management */
-        extern char *fake_heap_start;
-        extern char *fake_heap_end;
+        extern char* fake_heap_start;
+        extern char* fake_heap_end;
 
-        fake_heap_start = (char *)addr;
-        fake_heap_end = (char *)addr + size;
+        fake_heap_start = (char*)addr;
+        fake_heap_end = (char*)addr + size;
     }
 
     void __appInit(void)
@@ -71,7 +71,7 @@ extern "C"
     }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     Result rc = FileUtils::Initialize();
     if (R_FAILED(rc))
@@ -82,15 +82,15 @@ int main(int argc, char **argv)
 
     try
     {
-        Clocks::Initialize();
+        Board::Initialize();
         ProcessManagement::Initialize();
 
         ProcessManagement::WaitForQLaunch();
         ClockManager::Initialize();
         FileUtils::LogLine("Ready");
 
-        ClockManager *clockMgr = ClockManager::GetInstance();
-        IpcService *ipcSrv = new IpcService();
+        ClockManager* clockMgr = ClockManager::GetInstance();
+        IpcService* ipcSrv = new IpcService();
         clockMgr->SetRunning(true);
         clockMgr->GetConfig()->SetEnabled(true);
         ipcSrv->SetRunning(true);
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
         delete ipcSrv;
         ClockManager::Exit();
         ProcessManagement::Exit();
-        Clocks::Exit();
+        Board::Exit();
     }
     catch (const std::exception &ex)
     {

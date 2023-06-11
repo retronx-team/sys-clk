@@ -13,26 +13,23 @@
 #include <switch.h>
 #include <sysclk.h>
 
-class Clocks
+class Board
 {
   public:
-    static void Exit();
-    static void Initialize();
-    static void ResetToStock();
-    static SysClkProfile GetCurrentProfile();
-    static std::uint32_t GetCurrentHz(SysClkModule module);
-    static void SetHz(SysClkModule module, std::uint32_t hz);
     static const char* GetProfileName(SysClkProfile profile, bool pretty);
     static const char* GetModuleName(SysClkModule module, bool pretty);
     static const char* GetThermalSensorName(SysClkThermalSensor sensor, bool pretty);
-    static std::uint32_t GetNearestHz(SysClkModule module, SysClkProfile profile, std::uint32_t inHz);
+    static void Initialize();
+    static void Exit();
+    static void ResetToStock();
+    static SysClkProfile GetProfile();
+    static void SetHz(SysClkModule module, std::uint32_t hz);
+    static std::uint32_t GetHz(SysClkModule module);
+    static void GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount);
     static std::uint32_t GetTemperatureMilli(SysClkThermalSensor sensor);
 
   protected:
-    static std::int32_t GetTsTemperatureMilli(TsLocation location);
     static PcvModule GetPcvModule(SysClkModule sysclkModule);
     static PcvModuleId GetPcvModuleId(SysClkModule sysclkModule);
-    static std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz);
-    static void GetList(SysClkModule module, std::uint32_t **outClocks);
-    static std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
+    static std::int32_t GetTsTemperatureMilli(TsLocation location);
 };

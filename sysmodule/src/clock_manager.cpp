@@ -9,9 +9,11 @@
  */
 
 #include "clock_manager.h"
+#include <cstring>
 #include "file_utils.h"
-#include "clocks.h"
+#include "board.h"
 #include "process_management.h"
+#include "errors.h"
 
 ClockManager* ClockManager::instance = NULL;
 
@@ -39,15 +41,18 @@ void ClockManager::Initialize()
 ClockManager::ClockManager()
 {
     this->config = Config::CreateDefault();
+
     this->context = new SysClkContext;
     this->context->applicationId = 0;
     this->context->profile = SysClkProfile_Handheld;
     this->context->enabled = false;
-    for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
+    for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
     {
-        this->context->freqs[i] = 0;
-        this->context->overrideFreqs[i] = 0;
+        this->context->freqs[module] = 0;
+        this->context->overrideFreqs[module] = 0;
+        this->RefreshFreqTableRow((SysClkModule)module);
     }
+
     this->running = false;
     this->lastTempLogNs = 0;
     this->lastCsvWriteNs = 0;
@@ -57,6 +62,17 @@ ClockManager::~ClockManager()
 {
     delete this->config;
     delete this->context;
+}
+
+SysClkContext ClockManager::GetCurrentContext()
+{
+    std::scoped_lock lock{this->contextMutex};
+    return *this->context;
+}
+
+Config* ClockManager::GetConfig()
+{
+    return this->config;
 }
 
 void ClockManager::SetRunning(bool running)
@@ -69,30 +85,130 @@ bool ClockManager::Running()
     return this->running;
 }
 
+void ClockManager::GetFreqList(SysClkModule module, std::uint32_t* list, std::uint32_t maxCount, std::uint32_t* outCount)
+{
+    ASSERT_ENUM_VALID(SysClkModule, module);
+
+    *outCount = std::min(maxCount, this->freqTable[module].count);
+    memcpy(list, &this->freqTable[module].list[0], *outCount * sizeof(this->freqTable[0].list[0]));
+}
+
+bool ClockManager::IsAssignableHz(SysClkModule module, std::uint32_t hz)
+{
+    switch(module)
+    {
+        case SysClkModule_CPU:
+            return hz >= 612000000;
+        case SysClkModule_MEM:
+            return hz == 204000000 || hz >= 665600000;
+        default:
+            return true;
+    }
+}
+
+std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile profile)
+{
+    if(module == SysClkModule_GPU)
+    {
+        if(profile < SysClkProfile_HandheldCharging)
+        {
+            return 460800000;
+        }
+        else if(profile <= SysClkProfile_HandheldChargingUSB)
+        {
+            return 768000000;
+        }
+    }
+
+    return 0;
+}
+
+std::uint32_t ClockManager::GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz)
+{
+    std::uint32_t* freqs = &this->freqTable[module].list[0];
+    size_t count = this->freqTable[module].count - 1;
+
+    size_t i = 0;
+    while(i < count)
+    {
+        if (maxHz > 0 && freqs[i] >= maxHz)
+        {
+            break;
+        }
+
+        if (inHz <= ((std::uint64_t)freqs[i] + freqs[i + 1]) / 2)
+        {
+            break;
+        }
+
+        i++;
+    }
+
+    return freqs[i];
+}
+
+void ClockManager::RefreshFreqTableRow(SysClkModule module)
+{
+    std::scoped_lock lock{this->contextMutex};
+
+    std::uint32_t freqs[SYSCLK_FREQ_LIST_MAX];
+    std::uint32_t count;
+
+    FileUtils::LogLine("[mgr] %s freq list refresh", Board::GetModuleName(module, true));
+    Board::GetFreqList(module, &freqs[0], SYSCLK_FREQ_LIST_MAX, &count);
+
+    std::uint32_t* hz = &this->freqTable[module].list[0];
+    this->freqTable[module].count = 0;
+    for(std::uint32_t i = 0; i < count; i++)
+    {
+        if(!this->IsAssignableHz(module, freqs[i]))
+        {
+            continue;
+        }
+
+        *hz = freqs[i];
+        FileUtils::LogLine("[mgr] %02u - %u - %u.%u Mhz", this->freqTable[module].count, *hz, *hz/1000000, *hz/100000 - *hz/1000000*10);
+
+        this->freqTable[module].count++;
+        hz++;
+    }
+
+    FileUtils::LogLine("[mgr] count = %u", this->freqTable[module].count);
+}
+
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
     if (this->RefreshContext() || this->config->Refresh())
     {
-        std::uint32_t hz = 0;
+        std::uint32_t targetHz = 0;
+        std::uint32_t maxHz = 0;
+        std::uint32_t nearestHz = 0;
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
-            hz = this->context->overrideFreqs[module];
+            targetHz = this->context->overrideFreqs[module];
 
-            if(!hz)
+            if(!targetHz)
             {
-                hz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
+                targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
             }
 
-            if (hz)
+            if (targetHz)
             {
-                hz = Clocks::GetNearestHz((SysClkModule)module, this->context->profile, hz);
+                maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
+                nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
 
-                if (hz != this->context->freqs[module] && this->context->enabled)
+                if (nearestHz != this->context->freqs[module] && this->context->enabled)
                 {
-                    FileUtils::LogLine("[mgr] %s clock set : %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
-                    Clocks::SetHz((SysClkModule)module, hz);
-                    this->context->freqs[module] = hz;
+                    FileUtils::LogLine(
+                        "[mgr] %s clock set : %u.%u Mhz (target = %u.%u Mhz)",
+                        Board::GetModuleName((SysClkModule)module, true),
+                        nearestHz/1000000, nearestHz/100000 - nearestHz/1000000*10,
+                        targetHz/1000000, targetHz/100000 - targetHz/1000000*10
+                    );
+
+                    Board::SetHz((SysClkModule)module, nearestHz);
+                    this->context->freqs[module] = nearestHz;
                 }
             }
         }
@@ -124,10 +240,10 @@ bool ClockManager::RefreshContext()
         hasChanged = true;
     }
 
-    SysClkProfile profile = Clocks::GetCurrentProfile();
+    SysClkProfile profile = Board::GetProfile();
     if (profile != this->context->profile)
     {
-        FileUtils::LogLine("[mgr] Profile change: %s", Clocks::GetProfileName(profile, true));
+        FileUtils::LogLine("[mgr] Profile change: %s", Board::GetProfileName(profile, true));
         this->context->profile = profile;
         hasChanged = true;
     }
@@ -135,16 +251,17 @@ bool ClockManager::RefreshContext()
     // restore clocks to stock values on app or profile change
     if(hasChanged)
     {
-        Clocks::ResetToStock();
+        Board::ResetToStock();
+        this->WaitForNextTick();
     }
 
     std::uint32_t hz = 0;
     for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
     {
-        hz = Clocks::GetCurrentHz((SysClkModule)module);
+        hz = Board::GetHz((SysClkModule)module);
         if (hz != 0 && hz != this->context->freqs[module])
         {
-            FileUtils::LogLine("[mgr] %s clock change: %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
+            FileUtils::LogLine("[mgr] %s clock change: %u.%u Mhz", Board::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
             this->context->freqs[module] = hz;
             hasChanged = true;
         }
@@ -154,11 +271,11 @@ bool ClockManager::RefreshContext()
         {
             if(hz)
             {
-                FileUtils::LogLine("[mgr] %s override change: %u.%u Mhz", Clocks::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
+                FileUtils::LogLine("[mgr] %s override change: %u.%u Mhz", Board::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
             }
             else
             {
-                FileUtils::LogLine("[mgr] %s override disabled", Clocks::GetModuleName((SysClkModule)module, true));
+                FileUtils::LogLine("[mgr] %s override disabled", Board::GetModuleName((SysClkModule)module, true));
             }
             this->context->overrideFreqs[module] = hz;
             hasChanged = true;
@@ -172,10 +289,10 @@ bool ClockManager::RefreshContext()
     bool shouldLogTemp = tempLogInterval && ((ns - this->lastTempLogNs) > tempLogInterval);
     for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
     {
-        millis = Clocks::GetTemperatureMilli((SysClkThermalSensor)sensor);
+        millis = Board::GetTemperatureMilli((SysClkThermalSensor)sensor);
         if(shouldLogTemp)
         {
-            FileUtils::LogLine("[mgr] %s temp: %u.%u °C", Clocks::GetThermalSensorName((SysClkThermalSensor)sensor, true), millis/1000, (millis - millis/1000*1000) / 100);
+            FileUtils::LogLine("[mgr] %s temp: %u.%u °C", Board::GetThermalSensorName((SysClkThermalSensor)sensor, true), millis/1000, (millis - millis/1000*1000) / 100);
         }
         this->context->temps[sensor] = millis;
     }
@@ -194,15 +311,4 @@ bool ClockManager::RefreshContext()
     }
 
     return hasChanged;
-}
-
-SysClkContext ClockManager::GetCurrentContext()
-{
-    std::scoped_lock lock{this->contextMutex};
-    return *this->context;
-}
-
-Config* ClockManager::GetConfig()
-{
-    return this->config;
 }

@@ -19,7 +19,7 @@ static std::uint64_t g_last_flag_check = 0;
 
 extern "C" void __libnx_init_time(void);
 
-static void _FileUtils_InitializeThreadFunc(void *args)
+static void _FileUtils_InitializeThreadFunc(void* args)
 {
     FileUtils::Initialize();
 }
@@ -29,19 +29,19 @@ bool FileUtils::IsInitialized()
     return g_has_initialized;
 }
 
-void FileUtils::LogLine(const char *format, ...)
+void FileUtils::LogLine(const char* format, ...)
 {
+    std::scoped_lock lock{g_log_mutex};
+
     va_list args;
     va_start(args, format);
     if (g_has_initialized)
     {
-        g_log_mutex.Lock();
-
         FileUtils::RefreshFlags(false);
 
         if(g_log_enabled)
         {
-            FILE *file = fopen(FILE_LOG_FILE_PATH, "a");
+            FILE* file = fopen(FILE_LOG_FILE_PATH, "a");
 
             if (file)
             {
@@ -55,8 +55,6 @@ void FileUtils::LogLine(const char *format, ...)
                 fclose(file);
             }
         }
-
-        g_log_mutex.Unlock();
     }
     va_end(args);
 }
@@ -65,7 +63,7 @@ void FileUtils::WriteContextToCsv(const SysClkContext* context)
 {
     std::scoped_lock lock{g_csv_mutex};
 
-    FILE *file = fopen(FILE_CONTEXT_CSV_PATH, "a");
+    FILE* file = fopen(FILE_CONTEXT_CSV_PATH, "a");
 
     if (file)
     {
@@ -115,7 +113,7 @@ void FileUtils::RefreshFlags(bool force)
         return;
     }
 
-    FILE *file = fopen(FILE_LOG_FLAG_PATH, "r");
+    FILE* file = fopen(FILE_LOG_FLAG_PATH, "r");
     if (file)
     {
         g_log_enabled = true;

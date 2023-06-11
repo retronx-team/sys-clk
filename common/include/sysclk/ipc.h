@@ -11,7 +11,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "clocks.h"
+#include "board.h"
+#include "clock_manager.h"
 
 #define SYSCLK_IPC_API_VERSION 0
 #define SYSCLK_IPC_SERVICE_NAME "sys:clk"
