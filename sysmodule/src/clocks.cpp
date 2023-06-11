@@ -12,6 +12,9 @@
 #include "clocks.h"
 #include "errors.h"
 
+#define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
+#define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
+
 void Clocks::GetList(SysClkModule module, std::uint32_t **outClocks)
 {
     switch(module)
@@ -35,7 +38,7 @@ void Clocks::Initialize()
 {
     Result rc = 0;
 
-    if(hosversionAtLeast(8,0,0))
+    if(HOSSVC_HAS_CLKRST)
     {
         rc = clkrstInitialize();
         ASSERT_RESULT_OK(rc, "pcvInitialize");
@@ -55,7 +58,7 @@ void Clocks::Initialize()
     rc = tsInitialize();
     ASSERT_RESULT_OK(rc, "tsInitialize");
 
-    if(hosversionAtLeast(5,0,0))
+    if(HOSSVC_HAS_TC)
     {
         rc = tcInitialize();
         ASSERT_RESULT_OK(rc, "tcInitialize");
@@ -64,7 +67,7 @@ void Clocks::Initialize()
 
 void Clocks::Exit()
 {
-    if(hosversionAtLeast(8,0,0))
+    if(HOSSVC_HAS_CLKRST)
     {
         pcvExit();
     }
@@ -77,7 +80,7 @@ void Clocks::Exit()
     psmExit();
     tsExit();
 
-    if(hosversionAtLeast(5,0,0))
+    if(HOSSVC_HAS_TC)
     {
         tcExit();
     }
@@ -216,7 +219,7 @@ void Clocks::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
 
-    if(hosversionAtLeast(8,0,0))
+    if(HOSSVC_HAS_CLKRST)
     {
         ClkrstSession session = {0};
 
@@ -240,7 +243,7 @@ std::uint32_t Clocks::GetCurrentHz(SysClkModule module)
     Result rc = 0;
     std::uint32_t hz = 0;
 
-    if(hosversionAtLeast(8,0,0))
+    if(HOSSVC_HAS_CLKRST)
     {
         ClkrstSession session = {0};
 
@@ -347,7 +350,7 @@ std::uint32_t Clocks::GetTemperatureMilli(SysClkThermalSensor sensor)
     }
     else if(sensor == SysClkThermalSensor_Skin)
     {
-        if(hosversionAtLeast(5,0,0))
+        if(HOSSVC_HAS_TC)
         {
             Result rc;
             rc = tcGetSkinTemperatureMilliC(&millis);
