@@ -200,6 +200,8 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
 
 void StatusTab::updateWarningForProfile(SysClkProfile profile, bool animated)
 {
+    this->warningLabel->setText("WIP");
+    /*
     switch (profile)
     {
         case SysClkProfile_Handheld:
@@ -218,7 +220,7 @@ void StatusTab::updateWarningForProfile(SysClkProfile profile, bool animated)
             if (!this->warningLabel->isHidden())
                 this->warningLabel->hide([](){}, animated);
             break;
-    }
+    }*/
 }
 
 StatusTab::~StatusTab()

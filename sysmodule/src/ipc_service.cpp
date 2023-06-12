@@ -154,6 +154,19 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->SetConfigValues((SysClkConfigValueList*)r->data.ptr);
             }
             break;
+
+        case SysClkIpcCmd_GetFreqList:
+            if(r->data.size >= sizeof(SysClkIpc_GetFreqList_Args) && r->hipc.meta.num_recv_buffers >= 1)
+            {
+                *out_dataSize = sizeof(std::uint32_t);
+                return ipcSrv->GetFreqList(
+                    (SysClkIpc_GetFreqList_Args*)r->data.ptr,
+                    (std::uint32_t*)hipcGetBufferAddress(r->hipc.data.recv_buffers),
+                    hipcGetBufferSize(r->hipc.data.recv_buffers),
+                    (std::uint32_t*)out_data
+                );
+            }
+            break;
     }
 
     return SYSCLK_ERROR(Generic);
@@ -285,6 +298,23 @@ Result IpcService::SetConfigValues(SysClkConfigValueList* configValues)
     {
         return SYSCLK_ERROR(ConfigSaveFailed);
     }
+
+    return 0;
+}
+
+Result IpcService::GetFreqList(SysClkIpc_GetFreqList_Args* args, std::uint32_t* out_list, std::size_t size, std::uint32_t* out_count)
+{
+    if(!SYSCLK_ENUM_VALID(SysClkModule, args->module))
+    {
+        return SYSCLK_ERROR(Generic);
+    }
+
+    if(args->maxCount != size/sizeof(*out_list))
+    {
+        return SYSCLK_ERROR(Generic);
+    }
+
+    this->clockMgr->GetFreqList(args->module, out_list, args->maxCount, out_count);
 
     return 0;
 }

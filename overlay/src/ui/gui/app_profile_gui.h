@@ -20,8 +20,8 @@ class AppProfileGui : public BaseMenuGui
         std::uint64_t applicationId;
         SysClkTitleProfileList* profileList;
 
-        void openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfile profile, SysClkModule module, std::uint32_t* hzList);
-        void addModuleListItem(SysClkProfile profile, SysClkModule module, std::uint32_t* hzList);
+        void openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfile profile, SysClkModule module);
+        void addModuleListItem(SysClkProfile profile, SysClkModule module);
         void addProfileUI(SysClkProfile profile);
 
     public:

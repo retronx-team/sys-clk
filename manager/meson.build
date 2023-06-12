@@ -23,10 +23,6 @@ source_files = files(
     'src/about_tab.cpp'
 )
 
-common_files = files(
-    '../common/src/clock_table.c'
-)
-
 ipc_files = files(
     'src/ipc/pc_shim/client.cpp',
     'src/ipc/pc_shim/ns.cpp'
@@ -38,7 +34,7 @@ manager_include = include_directories(
 
 sys_clk_manager = executable(
     'sys-clk-manager',
-    [ source_files, borealis_files, common_files, ipc_files ],
+    [ source_files, borealis_files, ipc_files ],
     dependencies : borealis_dependencies,
     install: true,
     include_directories: [borealis_include, manager_include],

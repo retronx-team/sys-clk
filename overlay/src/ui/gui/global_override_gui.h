@@ -20,8 +20,8 @@ class GlobalOverrideGui : public BaseMenuGui
         tsl::elm::ListItem* listItems[SysClkModule_EnumMax];
         std::uint32_t listHz[SysClkModule_EnumMax];
 
-        void openFreqChoiceGui(SysClkModule module, std::uint32_t* hzList);
-        void addModuleListItem(SysClkModule module, std::uint32_t* hzList);
+        void openFreqChoiceGui(SysClkModule module);
+        void addModuleListItem(SysClkModule module);
 
     public:
         GlobalOverrideGui();

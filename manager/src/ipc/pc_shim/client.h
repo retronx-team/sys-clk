@@ -21,6 +21,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <numeric>
 #include "../client.h"
 
@@ -44,9 +45,12 @@ class SysClkShimServer
         void SetConfigValue(SysClkConfigValue kval, u64 val);
         void GetConfigValues(SysClkConfigValueList* out_configValues);
         void SetConfigValues(SysClkConfigValueList* configValues);
+        void AddFreq(SysClkModule module, u32 hz);
+        void GetFreqList(SysClkModule module, u32* list, u32 maxCount, u32* outCount);
 
     protected:
         SysClkContext context;
+        std::vector<u32> freqs[SysClkModule_EnumMax];
         std::map<std::tuple<u64, SysClkModule, SysClkProfile>, u32> store;
         u64 configValues[SysClkConfigValue_EnumMax];
 };

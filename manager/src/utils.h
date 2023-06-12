@@ -22,13 +22,16 @@
 
 #include <string>
 
-#include <sysclk/clocks.h>
+#include <sysclk.h>
 #include "ipc/ipc.h"
 
 #include <borealis.hpp>
 
 #define APP_ASSET(p) APP_RESOURCES p
 
+extern uint32_t g_freq_table_hz[SysClkModule_EnumMax][SYSCLK_FREQ_LIST_MAX+1];
+
+Result cacheFreqList();
 std::string formatListItemTitle(const std::string str, size_t maxScore = 140);
 brls::SelectListItem* createFreqListItem(SysClkModule module, uint32_t selectedFreqInMhz, std::string defaultString = "Do not override");
 

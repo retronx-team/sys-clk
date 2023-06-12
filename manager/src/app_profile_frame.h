@@ -22,7 +22,7 @@
 
 #include <borealis.hpp>
 
-#include <sysclk/clocks.h>
+#include <sysclk.h>
 
 #include "app_profiles_tab.h"
 

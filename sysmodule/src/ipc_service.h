@@ -37,6 +37,7 @@ class IpcService
     Result SetOverride(SysClkIpc_SetOverride_Args* args);
     Result GetConfigValues(SysClkConfigValueList* out_configValues);
     Result SetConfigValues(SysClkConfigValueList* configValues);
+    Result GetFreqList(SysClkIpc_GetFreqList_Args* args, std::uint32_t* out_list, std::size_t size, std::uint32_t* out_count);
 
     bool running;
     Thread thread;

@@ -96,7 +96,7 @@ void AppProfileFrame::addFreqs(brls::List* list, SysClkProfile profile)
 
     cpuListItem->getValueSelectedEvent()->subscribe([this, profile](int result) {
         this->onProfileChanged();
-        this->profiles.mhzMap[profile][SysClkModule_CPU] = result == 0 ? result : sysclk_g_freq_table_cpu_hz[result - 1];
+        this->profiles.mhzMap[profile][SysClkModule_CPU] = result == 0 ? result : g_freq_table_hz[SysClkModule_CPU][result];
 
         brls::Logger::debug("Caching freq for module %d and profile %d to %" PRIu32, SysClkModule_CPU, profile, this->profiles.mhzMap[profile][SysClkModule_CPU]);
     });
@@ -109,7 +109,7 @@ void AppProfileFrame::addFreqs(brls::List* list, SysClkProfile profile)
 
     gpuListItem->getValueSelectedEvent()->subscribe([this, profile](int result) {
         this->onProfileChanged();
-        this->profiles.mhzMap[profile][SysClkModule_GPU] = result == 0 ? result : sysclk_g_freq_table_gpu_hz[result - 1];
+        this->profiles.mhzMap[profile][SysClkModule_GPU] = result == 0 ? result : g_freq_table_hz[SysClkModule_GPU][result];
 
         brls::Logger::debug("Caching freq for module %d and profile %d to %" PRIu32, SysClkModule_GPU, profile, this->profiles.mhzMap[profile][SysClkModule_GPU]);
     });
@@ -122,7 +122,7 @@ void AppProfileFrame::addFreqs(brls::List* list, SysClkProfile profile)
 
     memListItem->getValueSelectedEvent()->subscribe([this, profile](int result) {
         this->onProfileChanged();
-        this->profiles.mhzMap[profile][SysClkModule_MEM] = result == 0 ? result : sysclk_g_freq_table_mem_hz[result - 1];
+        this->profiles.mhzMap[profile][SysClkModule_MEM] = result == 0 ? result : g_freq_table_hz[SysClkModule_MEM][result];
 
         brls::Logger::debug("Caching freq for module %d and profile %d to %" PRIu32, SysClkModule_MEM, profile, this->profiles.mhzMap[profile][SysClkModule_MEM]);
     });

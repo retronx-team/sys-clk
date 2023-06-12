@@ -63,9 +63,15 @@ int main(int argc, char* argv[])
         brls::Logger::error("Unable to initialize sys-clk IPC client");
         brls::Application::crash("Could not connect to sys-clk, please check that it is correctly installed and enabled.");
     }
-    else if (SYSCLK_IPC_API_VERSION != apiVersion) {
+    else if (SYSCLK_IPC_API_VERSION != apiVersion)
+    {
         brls::Logger::error("sys-clk IPC API version mismatch (expected: %u; actual: %u)", SYSCLK_IPC_API_VERSION, apiVersion);
         brls::Application::crash("The manager is not compatible with the currently running sysmodule of sys-clk, please check that you have correctly installed the latest version (reboot?).");
+    }
+    else if (R_FAILED(cacheFreqList()))
+    {
+        brls::Logger::error("Failed to get the freq list from sys-clk");
+        brls::Application::crash("Failed to get the freq list from sys-clk, please check that you have correctly installed the latest version (reboot?).");
     }
     else
     {
@@ -81,6 +87,7 @@ int main(int argc, char* argv[])
             brls::Logger::error("Unable to get sys-clk version string");
             brls::Application::setCommonFooter("[unknown]");
         }
+
 
         // Initialize services with a PC shim
         nsInitialize();
