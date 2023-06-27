@@ -186,6 +186,9 @@ SysClkShimServer::SysClkShimServer()
     this->SetContextHz(SysClkModule_CPU, 0);
     this->SetContextHz(SysClkModule_GPU, 0);
     this->SetContextHz(SysClkModule_MEM, 0);
+    this->SetContextRealHz(SysClkModule_CPU, 0);
+    this->SetContextRealHz(SysClkModule_GPU, 0);
+    this->SetContextRealHz(SysClkModule_MEM, 0);
     this->SetContextOverride(SysClkModule_CPU, 0);
     this->SetContextOverride(SysClkModule_GPU, 0);
     this->SetContextOverride(SysClkModule_MEM, 0);
@@ -210,6 +213,14 @@ void SysClkShimServer::SetContextHz(SysClkModule module, u32 hz)
     if(module < SysClkModule_EnumMax)
     {
         this->context.freqs[module] = hz;
+    }
+}
+
+void SysClkShimServer::SetContextRealHz(SysClkModule module, u32 hz)
+{
+    if(module < SysClkModule_EnumMax)
+    {
+        this->context.realFreqs[module] = hz;
     }
 }
 

@@ -64,6 +64,7 @@ class StatusTab : public brls::List
         RefreshTask *refreshTask;
 
         FreqUpdateEvent::Subscription freqListenerSub;
+        FreqUpdateEvent::Subscription realFreqListenerSub;
         AppIdUpdateEvent::Subscription appIdListenerSub;
         ProfileUpdateEvent::Subscription profileListenerSub;
         TempUpdateEvent::Subscription tempListenerSub;
@@ -72,16 +73,17 @@ class StatusTab : public brls::List
         StatusCell *gpuFreqCell;
         StatusCell *memFreqCell;
 
+        StatusCell *realCpuFreqCell;
+        StatusCell *realGpuFreqCell;
+        StatusCell *realMemFreqCell;
+
+
         StatusCell *socTempCell;
         StatusCell *pcbTempCell;
         StatusCell *skinTempCell;
 
         StatusCell *profileCell;
         StatusCell *tidCell;
-
-        brls::Label *warningLabel;
-
-        void updateWarningForProfile(SysClkProfile profile, bool animated);
 
     public:
         StatusTab(RefreshTask *refreshTask);

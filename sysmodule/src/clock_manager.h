@@ -35,6 +35,7 @@ class ClockManager
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
     std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz);
+    bool ConfigIntervalTimeout(SysClkConfigValue intervalMsConfigValue, std::uint64_t ns, std::uint64_t* lastLogNs);
     void RefreshFreqTableRow(SysClkModule module);
     bool RefreshContext();
 
@@ -47,5 +48,6 @@ class ClockManager
     Config* config;
     SysClkContext* context;
     std::uint64_t lastTempLogNs;
+    std::uint64_t lastFreqLogNs;
     std::uint64_t lastCsvWriteNs;
 };

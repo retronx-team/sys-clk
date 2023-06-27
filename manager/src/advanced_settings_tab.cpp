@@ -166,6 +166,8 @@ std::string AdvancedSettingsTab::getDescriptionForConfig(SysClkConfigValue confi
             return "How often to update /config/sys-clk/context.csv (in milliseconds)\n\uE016  Use 0 to disable";
         case SysClkConfigValue_TempLogIntervalMs:
             return "How often to log temperatures (in milliseconds)\n\uE016  Use 0 to disable";
+        case SysClkConfigValue_FreqLogIntervalMs:
+            return "How often to log real frequencies (in milliseconds)\n\uE016  Use 0 to disable";
         case SysClkConfigValue_PollingIntervalMs:
             return "How fast to check and apply profiles (in milliseconds)";
         default:

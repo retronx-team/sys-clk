@@ -26,6 +26,7 @@ ClockManager::ClockManager()
     for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
     {
         this->context->freqs[module] = 0;
+        this->context->realFreqs[module] = 0;
         this->context->overrideFreqs[module] = 0;
         this->RefreshFreqTableRow((SysClkModule)module);
     }
@@ -122,6 +123,19 @@ std::uint32_t ClockManager::GetNearestHz(SysClkModule module, std::uint32_t inHz
     }
 
     return freqs[i];
+}
+
+bool ClockManager::ConfigIntervalTimeout(SysClkConfigValue intervalMsConfigValue, std::uint64_t ns, std::uint64_t* lastLogNs)
+{
+    std::uint64_t logInterval = this->GetConfig()->GetConfigValue(intervalMsConfigValue) * 1000000ULL;
+    bool shouldLog = logInterval && ((ns - *lastLogNs) > logInterval);
+
+    if(shouldLog)
+    {
+        *lastLogNs = ns;
+    }
+
+    return shouldLog;
 }
 
 void ClockManager::RefreshFreqTableRow(SysClkModule module)
@@ -259,11 +273,11 @@ bool ClockManager::RefreshContext()
         }
     }
 
+    std::uint64_t ns = armTicksToNs(armGetSystemTick());
+
     // temperatures do not and should not force a refresh, hasChanged untouched
     std::uint32_t millis = 0;
-    std::uint64_t ns = armTicksToNs(armGetSystemTick());
-    std::uint64_t tempLogInterval = this->GetConfig()->GetConfigValue(SysClkConfigValue_TempLogIntervalMs) * 1000000ULL;
-    bool shouldLogTemp = tempLogInterval && ((ns - this->lastTempLogNs) > tempLogInterval);
+    bool shouldLogTemp = this->ConfigIntervalTimeout(SysClkConfigValue_TempLogIntervalMs, ns, &this->lastTempLogNs);
     for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
     {
         millis = Board::GetTemperatureMilli((SysClkThermalSensor)sensor);
@@ -274,17 +288,22 @@ bool ClockManager::RefreshContext()
         this->context->temps[sensor] = millis;
     }
 
-    if(shouldLogTemp)
+    // real freqs do not and should not force a refresh, hasChanged untouched
+    std::uint32_t realHz = 0;
+    bool shouldLogFreq = this->ConfigIntervalTimeout(SysClkConfigValue_FreqLogIntervalMs, ns, &this->lastFreqLogNs);
+    for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
     {
-        this->lastTempLogNs = ns;
+        realHz = Board::GetRealHz((SysClkModule)module);
+        if(shouldLogFreq)
+        {
+            FileUtils::LogLine("[mgr] %s real freq: %u.%u MHz", Board::GetModuleName((SysClkModule)module, true), realHz/1000000, realHz/100000 - realHz/1000000*10);
+        }
+        this->context->realFreqs[module] = realHz;
     }
 
-    std::uint64_t csvWriteInterval = this->GetConfig()->GetConfigValue(SysClkConfigValue_CsvWriteIntervalMs) * 1000000ULL;
-
-    if(csvWriteInterval && ((ns - this->lastCsvWriteNs) > csvWriteInterval))
+    if(this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))
     {
         FileUtils::WriteContextToCsv(this->context);
-        this->lastCsvWriteNs = ns;
     }
 
     return hasChanged;

@@ -192,6 +192,23 @@ std::uint32_t Board::GetHz(SysClkModule module)
     return hz;
 }
 
+std::uint32_t Board::GetRealHz(SysClkModule module)
+{
+    switch(module)
+    {
+        case SysClkModule_CPU:
+            return t210ClkCpuFreq();
+        case SysClkModule_GPU:
+            return t210ClkGpuFreq();
+        case SysClkModule_MEM:
+            return t210ClkMemFreq();
+        default:
+            ASSERT_ENUM_VALID(SysClkModule, module);
+    }
+
+    return 0;
+}
+
 void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount)
 {
     Result rc = 0;

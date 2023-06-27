@@ -19,6 +19,7 @@ typedef struct
     uint64_t applicationId;
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];
+    uint32_t realFreqs[SysClkModule_EnumMax];
     uint32_t overrideFreqs[SysClkModule_EnumMax];
     uint32_t temps[SysClkThermalSensor_EnumMax];
 } SysClkContext;

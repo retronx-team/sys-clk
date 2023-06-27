@@ -59,6 +59,18 @@ void RefreshTask::run(retro_time_t currentTime)
         if (context.freqs[SysClkModule_MEM] != this->oldContext.freqs[SysClkModule_MEM])
             this->freqUpdateEvent.fire(SysClkModule_MEM, context.freqs[SysClkModule_MEM]);
 
+        // Real CPU Freq
+        if (context.realFreqs[SysClkModule_CPU] != this->oldContext.realFreqs[SysClkModule_CPU])
+            this->realFreqUpdateEvent.fire(SysClkModule_CPU, context.realFreqs[SysClkModule_CPU]);
+
+        // Real GPU Freq
+        if (context.realFreqs[SysClkModule_GPU] != this->oldContext.realFreqs[SysClkModule_GPU])
+            this->realFreqUpdateEvent.fire(SysClkModule_GPU, context.realFreqs[SysClkModule_GPU]);
+
+        // Real MEM Freq
+        if (context.realFreqs[SysClkModule_MEM] != this->oldContext.realFreqs[SysClkModule_MEM])
+            this->realFreqUpdateEvent.fire(SysClkModule_MEM, context.realFreqs[SysClkModule_MEM]);
+
         // Application ID
         if (context.applicationId != this->oldContext.applicationId)
             this->appIdUpdateEvent.fire(context.applicationId);

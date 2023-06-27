@@ -25,6 +25,7 @@ class Board
     static SysClkProfile GetProfile();
     static void SetHz(SysClkModule module, std::uint32_t hz);
     static std::uint32_t GetHz(SysClkModule module);
+    static std::uint32_t GetRealHz(SysClkModule module);
     static void GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount);
     static std::uint32_t GetTemperatureMilli(SysClkThermalSensor sensor);
     static SysClkSocType GetSocType();

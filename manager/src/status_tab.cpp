@@ -44,7 +44,7 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     }
 
     // Customize list
-    this->setSpacing(this->getSpacing() / 2);
+    this->setSpacing(this->getSpacing() / 4);
     this->setMarginBottom(20);
 
     // Enabled option
@@ -70,22 +70,41 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     this->addView(serviceEnabledListItem);
 
     // Frequencies
-    brls::Header *freqsHeader = new brls::Header("Reported frequencies");
+    brls::Header *freqsHeader = new brls::Header("Frequencies");
     this->addView(freqsHeader);
 
-    StatusGrid *frequenciesLayout = new StatusGrid();
-    frequenciesLayout->setSpacing(22);
-    frequenciesLayout->setHeight(40);
+    brls::BoxLayout *freqsBox = new brls::BoxLayout(brls::BoxLayoutOrientation::VERTICAL);
+    freqsBox->setSpacing(0);
+    freqsBox->setHeight(60);
+    this->addView(freqsBox);
+
+    StatusGrid *freqsLayout = new StatusGrid();
+    freqsLayout->setSpacing(22);
+    freqsLayout->setHeight(40);
 
     this->cpuFreqCell = new StatusCell("CPU", formatFreq(context.freqs[SysClkModule_CPU]));
     this->gpuFreqCell = new StatusCell("GPU", formatFreq(context.freqs[SysClkModule_GPU]));
     this->memFreqCell = new StatusCell("MEM", formatFreq(context.freqs[SysClkModule_MEM]));
 
-    frequenciesLayout->addView(this->cpuFreqCell);
-    frequenciesLayout->addView(this->gpuFreqCell);
-    frequenciesLayout->addView(this->memFreqCell);
+    freqsLayout->addView(this->cpuFreqCell);
+    freqsLayout->addView(this->gpuFreqCell);
+    freqsLayout->addView(this->memFreqCell);
 
-    this->addView(frequenciesLayout);
+    freqsBox->addView(freqsLayout);
+
+    StatusGrid *realFreqsLayout = new StatusGrid();
+    realFreqsLayout->setSpacing(22);
+    realFreqsLayout->setHeight(24);
+
+    this->realCpuFreqCell = new StatusCell("\uE090", formatFreq(context.realFreqs[SysClkModule_CPU]));
+    this->realGpuFreqCell = new StatusCell("\uE090", formatFreq(context.realFreqs[SysClkModule_GPU]));
+    this->realMemFreqCell = new StatusCell("\uE090", formatFreq(context.realFreqs[SysClkModule_MEM]));
+
+    realFreqsLayout->addView(this->realCpuFreqCell);
+    realFreqsLayout->addView(this->realGpuFreqCell);
+    realFreqsLayout->addView(this->realMemFreqCell);
+
+    freqsBox->addView(realFreqsLayout);
 
     // Temperatures
     brls::Header *temperaturesHeader = new brls::Header("Temperatures");
@@ -129,16 +148,6 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
 
     this->addView(infoLayout);
 
-    // Warning label
-    warningLabel = new brls::Label(brls::LabelStyle::SMALL, "");
-
-    warningLabel->setVerticalAlign(NVG_ALIGN_BOTTOM);
-    warningLabel->setHorizontalAlign(NVG_ALIGN_RIGHT);
-
-    this->addView(warningLabel, true);
-
-    updateWarningForProfile(context.profile, false);
-
     // Setup refresh task
     this->freqListenerSub = refreshTask->registerFreqListener([this](SysClkModule module, uint32_t freq) {
         switch(module)
@@ -157,13 +166,29 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
         }
     });
 
+    this->realFreqListenerSub = refreshTask->registerFreqListener([this](SysClkModule module, uint32_t freq) {
+        switch(module)
+        {
+            case SysClkModule_CPU:
+                this->realCpuFreqCell->setValue(formatFreq(freq));
+                break;
+            case SysClkModule_GPU:
+                this->realGpuFreqCell->setValue(formatFreq(freq));
+                break;
+            case SysClkModule_MEM:
+                this->realMemFreqCell->setValue(formatFreq(freq));
+                break;
+            default:
+                break;
+        }
+    });
+
     this->appIdListenerSub = refreshTask->registerAppIdListener([this](uint64_t tid) {
         this->tidCell->setValue(formatTid(tid));
     });
 
     this->profileListenerSub = refreshTask->registerProfileListener([this](SysClkProfile profile) {
         this->profileCell->setValue(formatProfile(profile));
-        updateWarningForProfile(profile, true);
     });
 
     this->tempListenerSub = refreshTask->registerTempListener([this](SysClkThermalSensor sensor, uint32_t temp) {
@@ -200,34 +225,10 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     });
 }
 
-void StatusTab::updateWarningForProfile(SysClkProfile profile, bool animated)
-{
-    this->warningLabel->setText("WIP");
-    /*
-    switch (profile)
-    {
-        case SysClkProfile_Handheld:
-            if (this->warningLabel->isHidden())
-                this->warningLabel->show([](){});
-
-            this->warningLabel->setText("\uE140  Maximum GPU frequency is " + formatFreq(SYSCLK_GPU_HANDHELD_MAX_HZ) + " because you're in handheld mode.");
-            break;
-        case SysClkProfile_HandheldChargingUSB:
-            if (this->warningLabel->isHidden())
-                this->warningLabel->show([](){});
-
-            this->warningLabel->setText("\uE140  Maximum GPU frequency is " + formatFreq(SYSCLK_GPU_UNOFFICIAL_CHARGER_MAX_HZ) + " because you're using an unofficial charger type.");
-            break;
-        default:
-            if (!this->warningLabel->isHidden())
-                this->warningLabel->hide([](){}, animated);
-            break;
-    }*/
-}
-
 StatusTab::~StatusTab()
 {
     refreshTask->unregisterFreqListener(this->freqListenerSub);
+    refreshTask->unregisterRealFreqListener(this->realFreqListenerSub);
     refreshTask->unregisterAppIdListener(this->appIdListenerSub);
     refreshTask->unregisterProfileListener(this->profileListenerSub);
     refreshTask->unregisterTempListener(this->tempListenerSub);
