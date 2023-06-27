@@ -61,7 +61,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
             return input > 0;
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_CsvWriteIntervalMs:
-            return true;
+            return input >= 0;
         default:
             return false;
     }

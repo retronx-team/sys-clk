@@ -22,7 +22,7 @@ Config::Config(std::string path)
 {
     this->path = path;
     this->loaded = false;
-    this->profileMhzMap = std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>();
+    this->profileMHzMap = std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>();
     this->profileCountMap = std::map<std::uint64_t, std::uint8_t>();
     this->mtime = 0;
     this->enabled = false;
@@ -69,7 +69,7 @@ void Config::Load()
 void Config::Close()
 {
     this->loaded = false;
-    this->profileMhzMap.clear();
+    this->profileMHzMap.clear();
     this->profileCountMap.clear();
 
     for(unsigned int i = 0; i < SysClkConfigValue_EnumMax; i++)
@@ -107,12 +107,12 @@ time_t Config::CheckModificationTime()
     return mtime;
 }
 
-std::uint32_t Config::FindClockMhz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
+std::uint32_t Config::FindClockMHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
 {
     if (this->loaded)
     {
-        std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>::const_iterator it = this->profileMhzMap.find(std::make_tuple(tid, profile, module));
-        if (it != this->profileMhzMap.end())
+        std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t>::const_iterator it = this->profileMHzMap.find(std::make_tuple(tid, profile, module));
+        if (it != this->profileMHzMap.end())
         {
             return it->second;
         }
@@ -129,7 +129,7 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule mo
     {
         for(auto profile: profiles)
         {
-            mhz = FindClockMhz(tid, module, profile);
+            mhz = FindClockMHz(tid, module, profile);
 
             if(mhz)
             {
@@ -170,7 +170,7 @@ void Config::GetProfiles(std::uint64_t tid, SysClkTitleProfileList* out_profiles
     {
         for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
-            out_profiles->mhzMap[profile][module] = FindClockMhz(tid, (SysClkModule)module, (SysClkProfile)profile);
+            out_profiles->mhzMap[profile][module] = FindClockMHz(tid, (SysClkModule)module, (SysClkProfile)profile);
         }
     }
 }
@@ -244,11 +244,11 @@ bool Config::SetProfiles(std::uint64_t tid, SysClkTitleProfileList* profiles, bo
             {
                 if(*mhz)
                 {
-                    this->profileMhzMap[std::make_tuple(tid, (SysClkProfile)profile, (SysClkModule)module)] = *mhz;
+                    this->profileMHzMap[std::make_tuple(tid, (SysClkProfile)profile, (SysClkModule)module)] = *mhz;
                 }
                 else
                 {
-                    this->profileMhzMap.erase(std::make_tuple(tid, (SysClkProfile)profile, (SysClkModule)module));
+                    this->profileMHzMap.erase(std::make_tuple(tid, (SysClkProfile)profile, (SysClkModule)module));
                 }
                 mhz++;
             }
@@ -340,7 +340,7 @@ int Config::BrowseIniFunc(const char* section, const char* key, const char* valu
         return 1;
     }
 
-    config->profileMhzMap[std::make_tuple(tid, parsedProfile, parsedModule)] = mhz;
+    config->profileMHzMap[std::make_tuple(tid, parsedProfile, parsedModule)] = mhz;
     std::map<std::uint64_t, std::uint8_t>::iterator it = config->profileCountMap.find(tid);
     if (it == config->profileCountMap.end())
     {

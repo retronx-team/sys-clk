@@ -89,7 +89,7 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
     {
         if(profile < SysClkProfile_HandheldCharging)
         {
-            return 460800000;
+            return Board::GetSocType() == SysClkSocType_Mariko ? 614400000 : 460800000;
         }
         else if(profile <= SysClkProfile_HandheldChargingUSB)
         {
@@ -144,7 +144,7 @@ void ClockManager::RefreshFreqTableRow(SysClkModule module)
         }
 
         *hz = freqs[i];
-        FileUtils::LogLine("[mgr] %02u - %u - %u.%u Mhz", this->freqTable[module].count, *hz, *hz/1000000, *hz/100000 - *hz/1000000*10);
+        FileUtils::LogLine("[mgr] %02u - %u - %u.%u MHz", this->freqTable[module].count, *hz, *hz/1000000, *hz/100000 - *hz/1000000*10);
 
         this->freqTable[module].count++;
         hz++;
@@ -178,7 +178,7 @@ void ClockManager::Tick()
                 if (nearestHz != this->context->freqs[module] && this->context->enabled)
                 {
                     FileUtils::LogLine(
-                        "[mgr] %s clock set : %u.%u Mhz (target = %u.%u Mhz)",
+                        "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
                         Board::GetModuleName((SysClkModule)module, true),
                         nearestHz/1000000, nearestHz/100000 - nearestHz/1000000*10,
                         targetHz/1000000, targetHz/100000 - targetHz/1000000*10
@@ -238,7 +238,7 @@ bool ClockManager::RefreshContext()
         hz = Board::GetHz((SysClkModule)module);
         if (hz != 0 && hz != this->context->freqs[module])
         {
-            FileUtils::LogLine("[mgr] %s clock change: %u.%u Mhz", Board::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
+            FileUtils::LogLine("[mgr] %s clock change: %u.%u MHz", Board::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
             this->context->freqs[module] = hz;
             hasChanged = true;
         }
@@ -248,7 +248,7 @@ bool ClockManager::RefreshContext()
         {
             if(hz)
             {
-                FileUtils::LogLine("[mgr] %s override change: %u.%u Mhz", Board::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
+                FileUtils::LogLine("[mgr] %s override change: %u.%u MHz", Board::GetModuleName((SysClkModule)module, true), hz/1000000, hz/100000 - hz/1000000*10);
             }
             else
             {

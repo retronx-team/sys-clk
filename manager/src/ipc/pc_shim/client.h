@@ -37,7 +37,7 @@ class SysClkShimServer
         void SetContextOverride(SysClkModule module, u32 hz);
         void CopyContext(SysClkContext* out_context);
         void SetProfile(uint64_t applicationId, SysClkModule module, SysClkProfile profile, u32 mhz);
-        u32 GetProfileMhz(uint64_t applicationId, SysClkModule module, SysClkProfile profile);
+        u32 GetProfileMHz(uint64_t applicationId, SysClkModule module, SysClkProfile profile);
         void GetProfiles(u64 applicationId, SysClkTitleProfileList* out_profiles);
         void SetProfiles(u64 applicationId, SysClkTitleProfileList* profiles);
         u8 CountProfiles(u64 applicationId);

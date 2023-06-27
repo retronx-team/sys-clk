@@ -70,8 +70,8 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     this->addView(serviceEnabledListItem);
 
     // Frequencies
-    brls::Header *hardwareHeader = new brls::Header("Hardware");
-    this->addView(hardwareHeader);
+    brls::Header *freqsHeader = new brls::Header("Reported frequencies");
+    this->addView(freqsHeader);
 
     StatusGrid *frequenciesLayout = new StatusGrid();
     frequenciesLayout->setSpacing(22);
@@ -88,6 +88,8 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     this->addView(frequenciesLayout);
 
     // Temperatures
+    brls::Header *temperaturesHeader = new brls::Header("Temperatures");
+    this->addView(temperaturesHeader);
     StatusGrid *tempsLayout = new StatusGrid();
     tempsLayout->setSpacing(22);
     tempsLayout->setHeight(40);

@@ -113,7 +113,7 @@ AdvancedSettingsTab::AdvancedSettingsTab()
 
         std::string label       = std::string(sysclkFormatConfigValue(config, true));
         std::string description = this->getDescriptionForConfig(config);
-        uint64_t defaultValue   = configValues.values[config];
+        uint64_t defaultValue   = this->configValues.values[config];
 
         brls::IntegerInputListItem* configItem = new brls::IntegerInputListItem(label, defaultValue, label, description);
 

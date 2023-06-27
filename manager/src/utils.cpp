@@ -92,7 +92,7 @@ std::string formatListItemTitle(const std::string str, size_t maxScore)
     return str;
 }
 
-brls::SelectListItem* createFreqListItem(SysClkModule module, uint32_t selectedFreqInMhz, std::string defaultString)
+brls::SelectListItem* createFreqListItem(SysClkModule module, uint32_t selectedFreqInMHz, std::string defaultString)
 {
     std::string name;
 
@@ -123,7 +123,7 @@ brls::SelectListItem* createFreqListItem(SysClkModule module, uint32_t selectedF
     {
         uint32_t freq = table[i];
 
-        if (freq / 1000000 == selectedFreqInMhz)
+        if (freq / 1000000 == selectedFreqInMHz)
             selected = i + 1;
 
         char clock[16];

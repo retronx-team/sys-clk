@@ -51,7 +51,7 @@ void GlobalOverrideGui::openFreqChoiceGui(SysClkModule module)
 void GlobalOverrideGui::addModuleListItem(SysClkModule module)
 {
     tsl::elm::ListItem* listItem = new tsl::elm::ListItem(sysclkFormatModule(module, true));
-    listItem->setValue(formatListFreqMhz(0));
+    listItem->setValue(formatListFreqMHz(0));
 
     listItem->setClickListener([this, module](u64 keys) {
         if((keys & HidNpadButton_A) == HidNpadButton_A)

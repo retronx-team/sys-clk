@@ -54,7 +54,7 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer)
         for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
         {
             std::uint32_t hz = this->context->freqs[freqOffsets[i].m];
-            snprintf(buf, sizeof(buf), "%u.%u Mhz", hz / 1000000, hz / 100000 - hz / 1000000 * 10);
+            snprintf(buf, sizeof(buf), "%u.%u MHz", hz / 1000000, hz / 100000 - hz / 1000000 * 10);
             renderer->drawString(buf, false, freqOffsets[i].x, 115, SMALL_TEXT_SIZE, VALUE_COLOR);
         }
         renderer->drawString("CPU:", false, 20, 115, SMALL_TEXT_SIZE, DESC_COLOR);

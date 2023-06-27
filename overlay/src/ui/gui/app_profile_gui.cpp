@@ -37,7 +37,7 @@ void AppProfileGui::openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfil
 
     tsl::changeTo<FreqChoiceGui>(this->profileList->mhzMap[profile][module] * 1000000, hzList, hzCount, [this, listItem, profile, module](std::uint32_t hz) {
         this->profileList->mhzMap[profile][module] = hz / 1000000;
-        listItem->setValue(formatListFreqMhz(this->profileList->mhzMap[profile][module]));
+        listItem->setValue(formatListFreqMHz(this->profileList->mhzMap[profile][module]));
         Result rc = sysclkIpcSetProfiles(this->applicationId, this->profileList);
         if(R_FAILED(rc))
         {
@@ -52,7 +52,7 @@ void AppProfileGui::openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfil
 void AppProfileGui::addModuleListItem(SysClkProfile profile, SysClkModule module)
 {
     tsl::elm::ListItem* listItem = new tsl::elm::ListItem(sysclkFormatModule(module, true));
-    listItem->setValue(formatListFreqMhz(this->profileList->mhzMap[profile][module]));
+    listItem->setValue(formatListFreqMHz(this->profileList->mhzMap[profile][module]));
     listItem->setClickListener([this, listItem, profile, module](u64 keys) {
         if((keys & HidNpadButton_A) == HidNpadButton_A)
         {

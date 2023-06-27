@@ -14,7 +14,7 @@
 
 #define FREQ_DEFAULT_TEXT "Do not override"
 
-static inline std::string formatListFreqMhz(std::uint32_t mhz)
+static inline std::string formatListFreqMHz(std::uint32_t mhz)
 {
     if(mhz == 0)
     {
@@ -22,7 +22,7 @@ static inline std::string formatListFreqMhz(std::uint32_t mhz)
     }
 
     char buf[10];
-    return std::string(buf, snprintf(buf, sizeof(buf), "%u Mhz", mhz));
+    return std::string(buf, snprintf(buf, sizeof(buf), "%u MHz", mhz));
 }
 
-static inline std::string formatListFreqHz(std::uint32_t hz) { return formatListFreqMhz(hz / 1000000); }
+static inline std::string formatListFreqHz(std::uint32_t hz) { return formatListFreqMHz(hz / 1000000); }

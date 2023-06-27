@@ -16,6 +16,13 @@
 
 typedef enum
 {
+    SysClkSocType_Erista = 0,
+    SysClkSocType_Mariko,
+    SysClkSocType_EnumMax
+} SysClkSocType;
+
+typedef enum
+{
     SysClkProfile_Handheld = 0,
     SysClkProfile_HandheldCharging,
     SysClkProfile_HandheldChargingUSB,

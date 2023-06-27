@@ -15,6 +15,8 @@
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
 
+static SysClkSocType g_socType = SysClkSocType_Erista;
+
 const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkModule, module);
@@ -88,6 +90,8 @@ void Board::Initialize()
         rc = tcInitialize();
         ASSERT_RESULT_OK(rc, "tcInitialize");
     }
+
+    FetchHardwareInfos();
 }
 
 void Board::Exit()
@@ -307,4 +311,28 @@ std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
     }
 
     return std::max(0, millis);
+}
+
+SysClkSocType Board::GetSocType() {
+    return g_socType;
+}
+
+void Board::FetchHardwareInfos()
+{
+    u64 sku = 0;
+    Result rc = splInitialize();
+    ASSERT_RESULT_OK(rc, "splInitialize");
+
+    rc = splGetConfig(SplConfigItem_HardwareType, &sku);
+    ASSERT_RESULT_OK(rc, "splGetConfig");
+
+    splExit();
+
+    switch(sku)
+    {
+        case 2 ... 5:
+            g_socType = SysClkSocType_Mariko;
+        default:
+            g_socType = SysClkSocType_Erista;
+    }
 }

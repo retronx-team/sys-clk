@@ -253,7 +253,7 @@ void SysClkShimServer::SetProfile(uint64_t applicationId, SysClkModule module, S
     }
 }
 
-u32 SysClkShimServer::GetProfileMhz(uint64_t applicationId, SysClkModule module, SysClkProfile profile)
+u32 SysClkShimServer::GetProfileMHz(uint64_t applicationId, SysClkModule module, SysClkProfile profile)
 {
     std::tuple<u64, SysClkModule, SysClkProfile> key = std::make_tuple(applicationId, module, profile);
     std::map<std::tuple<u64, SysClkModule, SysClkProfile>, u32>::iterator it = this->store.find(key);
@@ -271,7 +271,7 @@ void SysClkShimServer::GetProfiles(u64 applicationId, SysClkTitleProfileList* ou
     {
         for(unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
-            out_profiles->mhzMap[profile][module] = this->GetProfileMhz(applicationId, (SysClkModule)module, (SysClkProfile)profile);
+            out_profiles->mhzMap[profile][module] = this->GetProfileMHz(applicationId, (SysClkModule)module, (SysClkProfile)profile);
         }
     }
 }
