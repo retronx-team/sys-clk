@@ -47,6 +47,13 @@ typedef enum
     SysClkThermalSensor_EnumMax
 } SysClkThermalSensor;
 
+typedef enum
+{
+    SysClkPowerSensor_Now = 0,
+    SysClkPowerSensor_Avg,
+    SysClkPowerSensor_EnumMax
+} SysClkPowerSensor;
+
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)
@@ -74,6 +81,19 @@ static inline const char* sysclkFormatThermalSensor(SysClkThermalSensor thermSen
             return pretty ? "PCB" : "pcb";
         case SysClkThermalSensor_Skin:
             return pretty ? "Skin" : "skin";
+        default:
+            return NULL;
+    }
+}
+
+static inline const char* sysclkFormatPowerSensor(SysClkPowerSensor powSensor, bool pretty)
+{
+    switch(powSensor)
+    {
+        case SysClkPowerSensor_Now:
+            return pretty ? "Now" : "now";
+        case SysClkPowerSensor_Avg:
+            return pretty ? "Avg" : "avg";
         default:
             return NULL;
     }

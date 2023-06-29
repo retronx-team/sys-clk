@@ -49,5 +49,6 @@ class ClockManager
     SysClkContext* context;
     std::uint64_t lastTempLogNs;
     std::uint64_t lastFreqLogNs;
+    std::uint64_t lastPowerLogNs;
     std::uint64_t lastCsvWriteNs;
 };

@@ -35,6 +35,12 @@ const char* Board::GetThermalSensorName(SysClkThermalSensor sensor, bool pretty)
     return sysclkFormatThermalSensor(sensor, pretty);
 }
 
+const char* Board::GetPowerSensorName(SysClkPowerSensor sensor, bool pretty)
+{
+    ASSERT_ENUM_VALID(SysClkPowerSensor, sensor);
+    return sysclkFormatPowerSensor(sensor, pretty);
+}
+
 PcvModule Board::GetPcvModule(SysClkModule sysclkModule)
 {
     switch(sysclkModule)
@@ -91,6 +97,9 @@ void Board::Initialize()
         ASSERT_RESULT_OK(rc, "tcInitialize");
     }
 
+    rc = max17050Initialize();
+    ASSERT_RESULT_OK(rc, "max17050Initialize");
+
     FetchHardwareInfos();
 }
 
@@ -113,6 +122,8 @@ void Board::Exit()
     {
         tcExit();
     }
+
+    max17050Exit();
 }
 
 SysClkProfile Board::GetProfile()
@@ -328,6 +339,21 @@ std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
     }
 
     return std::max(0, millis);
+}
+
+std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
+{
+    switch(sensor)
+    {
+        case SysClkPowerSensor_Now:
+            return max17050PowerNow();
+        case SysClkPowerSensor_Avg:
+            return max17050PowerAvg();
+        default:
+            ASSERT_ENUM_VALID(SysClkPowerSensor, sensor);
+    }
+
+    return 0;
 }
 
 SysClkSocType Board::GetSocType() {

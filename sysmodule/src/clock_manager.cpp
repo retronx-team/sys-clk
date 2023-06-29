@@ -288,6 +288,19 @@ bool ClockManager::RefreshContext()
         this->context->temps[sensor] = millis;
     }
 
+    // power stats do not and should not force a refresh, hasChanged untouched
+    std::int32_t mw = 0;
+    bool shouldLogPower = this->ConfigIntervalTimeout(SysClkConfigValue_PowerLogIntervalMs, ns, &this->lastPowerLogNs);
+    for (unsigned int sensor = 0; sensor < SysClkPowerSensor_EnumMax; sensor++)
+    {
+        mw = Board::GetPowerMw((SysClkPowerSensor)sensor);
+        if(shouldLogPower)
+        {
+            FileUtils::LogLine("[mgr] Power %s: %d mW", Board::GetPowerSensorName((SysClkPowerSensor)sensor, false), mw);
+        }
+        this->context->power[sensor] = mw;
+    }
+
     // real freqs do not and should not force a refresh, hasChanged untouched
     std::uint32_t realHz = 0;
     bool shouldLogFreq = this->ConfigIntervalTimeout(SysClkConfigValue_FreqLogIntervalMs, ns, &this->lastFreqLogNs);

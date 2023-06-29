@@ -19,6 +19,7 @@ class Board
     static const char* GetProfileName(SysClkProfile profile, bool pretty);
     static const char* GetModuleName(SysClkModule module, bool pretty);
     static const char* GetThermalSensorName(SysClkThermalSensor sensor, bool pretty);
+    static const char* GetPowerSensorName(SysClkPowerSensor sensor, bool pretty);
     static void Initialize();
     static void Exit();
     static void ResetToStock();
@@ -28,6 +29,7 @@ class Board
     static std::uint32_t GetRealHz(SysClkModule module);
     static void GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount);
     static std::uint32_t GetTemperatureMilli(SysClkThermalSensor sensor);
+    static std::int32_t GetPowerMw(SysClkPowerSensor sensor);
     static SysClkSocType GetSocType();
 
   protected:

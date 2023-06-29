@@ -10,8 +10,18 @@
 
 #pragma once
 
-#include "nxExt/apm_ext.h"
-#include "nxExt/t210_clk.h"
-#include "nxExt/max17050.h"
-#include "nxExt/ipc_server.h"
-#include "nxExt/cpp/lockable_mutex.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <switch.h>
+
+Result max17050Initialize(void);
+void max17050Exit(void);
+s32 max17050PowerNow(void);
+s32 max17050PowerAvg(void);
+
+#ifdef __cplusplus
+}
+#endif
