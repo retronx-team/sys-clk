@@ -82,6 +82,16 @@ void FileUtils::WriteContextToCsv(const SysClkContext* context)
                 fprintf(file, ",%s_milliC", sysclkFormatThermalSensor((SysClkThermalSensor)sensor, false));
             }
 
+            for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+            {
+                fprintf(file, ",%s_real_hz", sysclkFormatModule((SysClkModule)module, false));
+            }
+
+            for (unsigned int sensor = 0; sensor < SysClkPowerSensor_EnumMax; sensor++)
+            {
+                fprintf(file, ",%s_mw", sysclkFormatPowerSensor((SysClkPowerSensor)sensor, false));
+            }
+
             fprintf(file, "\n");
         }
 
@@ -98,6 +108,16 @@ void FileUtils::WriteContextToCsv(const SysClkContext* context)
         for (unsigned int sensor = 0; sensor < SysClkThermalSensor_EnumMax; sensor++)
         {
             fprintf(file, ",%d", context->temps[sensor]);
+        }
+
+        for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+        {
+            fprintf(file, ",%d", context->realFreqs[module]);
+        }
+
+        for (unsigned int sensor = 0; sensor < SysClkPowerSensor_EnumMax; sensor++)
+        {
+            fprintf(file, ",%d", context->power[sensor]);
         }
 
         fprintf(file, "\n");
