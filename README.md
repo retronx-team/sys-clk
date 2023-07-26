@@ -103,7 +103,9 @@ The `[values]` section allows you to alter timings in sys-clk, you should not ne
 
 | Key                     | Desc                                                                          | Default |
 |:-----------------------:|-------------------------------------------------------------------------------|:-------:|
-|**temp_log_interval_ms** | Defines how often sys-clk log temperatures, in milliseconds (`0` to disable)  | 0 ms    |
+|**temp_log_interval_ms** | Defines how often sys-clk logs temperatures, in milliseconds (`0` to disable) | 0 ms    |
+|**freq_log_interval_ms** | Defines how often sys-clk logs real freqs, in milliseconds (`0` to disable)   | 0 ms    |
+|**power_log_interval_ms**| Defines how often sys-clk logs power usage, in milliseconds (`0` to disable)  | 0 ms    |
 |**csv_write_interval_ms**| Defines how often sys-clk writes to the CSV, in milliseconds (`0` to disable) | 0 ms    |
 |**poll_interval_ms**     | Defines how fast sys-clk checks and applies profiles, in milliseconds         | 300 ms  |
 
