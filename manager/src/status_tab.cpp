@@ -44,8 +44,8 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     }
 
     // Customize list
-    this->setSpacing(this->getSpacing() / 4);
-    this->setMarginBottom(20);
+    this->setSpacing(10);
+    this->setMarginBottom(0);
 
     // Enabled option
     brls::ToggleListItem *serviceEnabledListItem = new brls::ToggleListItem("Enable service", context.enabled, "", "Yes", "No");
@@ -131,6 +131,22 @@ StatusTab::StatusTab(RefreshTask *refreshTask) :
     tempsLayout->addView(this->skinTempCell);
 
     this->addView(tempsLayout);
+
+    // Power
+    brls::Header *powerHeader = new brls::Header("Power");
+    this->addView(powerHeader);
+    StatusGrid *powerLayout = new StatusGrid();
+    powerLayout->setSpacing(22);
+    powerLayout->setHeight(40);
+
+    this->nowPowerCell = new StatusCell("Now", formatPower(context.power[SysClkPowerSensor_Now]));
+    this->avgPowerCell = new StatusCell("Avg", formatPower(context.power[SysClkPowerSensor_Avg]));
+
+    powerLayout->addView(new StatusCell("", ""));
+    powerLayout->addView(this->nowPowerCell);
+    powerLayout->addView(this->avgPowerCell);
+
+    this->addView(powerLayout);
 
     // Info
     brls::Header *systemHeader = new brls::Header("System");

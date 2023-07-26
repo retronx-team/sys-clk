@@ -77,10 +77,12 @@ class StatusTab : public brls::List
         StatusCell *realGpuFreqCell;
         StatusCell *realMemFreqCell;
 
-
         StatusCell *socTempCell;
         StatusCell *pcbTempCell;
         StatusCell *skinTempCell;
+
+        StatusCell *nowPowerCell;
+        StatusCell *avgPowerCell;
 
         StatusCell *profileCell;
         StatusCell *tidCell;

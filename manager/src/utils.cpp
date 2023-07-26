@@ -67,6 +67,13 @@ std::string formatTemp(uint32_t temp)
     return std::string(str);
 }
 
+std::string formatPower(int32_t power)
+{
+    char str[16];
+    snprintf(str, sizeof(str), "%d mW", power);
+    return std::string(str);
+}
+
 void errorResult(std::string tag, Result rc)
 {
 #ifdef __SWITCH__

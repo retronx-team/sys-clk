@@ -39,5 +39,6 @@ std::string formatFreq(uint32_t freq);
 std::string formatTid(uint64_t tid);
 std::string formatProfile(SysClkProfile profile);
 std::string formatTemp(uint32_t temp);
+std::string formatPower(int32_t power);
 
 void errorResult(std::string tag, Result rc);

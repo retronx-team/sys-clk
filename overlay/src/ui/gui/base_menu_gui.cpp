@@ -33,13 +33,16 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer)
     if(this->context)
     {
         char buf[32];
+        std::uint32_t y = 85;
 
-        renderer->drawString("App ID: ", false, 20, 90, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("App ID: ", false, 20, y, SMALL_TEXT_SIZE, DESC_COLOR);
         snprintf(buf, sizeof(buf), "%016lX", context->applicationId);
-        renderer->drawString(buf, false, 81, 90, SMALL_TEXT_SIZE, VALUE_COLOR);
+        renderer->drawString(buf, false, 81, y, SMALL_TEXT_SIZE, VALUE_COLOR);
 
-        renderer->drawString("Profile: ", false, 246, 90, SMALL_TEXT_SIZE, DESC_COLOR);
-        renderer->drawString(sysclkFormatProfile(context->profile, true), false, 302, 90, SMALL_TEXT_SIZE, VALUE_COLOR);
+        renderer->drawString("Profile: ", false, 246, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString(sysclkFormatProfile(context->profile, true), false, 302, y, SMALL_TEXT_SIZE, VALUE_COLOR);
+
+        y += 30;
 
         static struct
         {
@@ -55,30 +58,63 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer)
         {
             std::uint32_t hz = this->context->freqs[freqOffsets[i].m];
             snprintf(buf, sizeof(buf), "%u.%u MHz", hz / 1000000, hz / 100000 - hz / 1000000 * 10);
-            renderer->drawString(buf, false, freqOffsets[i].x, 115, SMALL_TEXT_SIZE, VALUE_COLOR);
+            renderer->drawString(buf, false, freqOffsets[i].x, y, SMALL_TEXT_SIZE, VALUE_COLOR);
         }
-        renderer->drawString("CPU:", false, 20, 115, SMALL_TEXT_SIZE, DESC_COLOR);
-        renderer->drawString("GPU:", false, 162, 115, SMALL_TEXT_SIZE, DESC_COLOR);
-        renderer->drawString("MEM:", false, 295, 115, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("CPU:", false, 20, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("GPU:", false, 162, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("MEM:", false, 295, y, SMALL_TEXT_SIZE, DESC_COLOR);
+
+        y += 25;
+
+        for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
+        {
+            std::uint32_t hz = this->context->realFreqs[freqOffsets[i].m];
+            snprintf(buf, sizeof(buf), "%u.%u MHz", hz / 1000000, hz / 100000 - hz / 1000000 * 10);
+            renderer->drawString(buf, false, freqOffsets[i].x, y, SMALL_TEXT_SIZE, VALUE_COLOR);
+        }
+
+        y += 25;
 
         static struct
         {
             SysClkThermalSensor s;
             std::uint32_t x;
         } tempOffsets[SysClkModule_EnumMax] = {
-            { SysClkThermalSensor_SOC, 60 },
-            { SysClkThermalSensor_PCB, 165 },
-            { SysClkThermalSensor_Skin, 268 },
+            { SysClkThermalSensor_SOC, 61 },
+            { SysClkThermalSensor_PCB, 204 },
+            { SysClkThermalSensor_Skin, 342 },
         };
 
-        renderer->drawString("SOC:", false, 20, 140, SMALL_TEXT_SIZE, DESC_COLOR);
-        renderer->drawString("PCB:", false, 125, 140, SMALL_TEXT_SIZE, DESC_COLOR);
-        renderer->drawString("Skin:", false, 230, 140, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("SOC:", false, 20, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("PCB:", false, 166, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("Skin:", false, 303, y, SMALL_TEXT_SIZE, DESC_COLOR);
         for(unsigned int i = 0; i < SysClkModule_EnumMax; i++)
         {
             std::uint32_t millis = this->context->temps[tempOffsets[i].s];
             snprintf(buf, sizeof(buf), "%u.%u °C", millis / 1000, (millis - millis / 1000 * 1000) / 100);
-            renderer->drawString(buf, false, tempOffsets[i].x, 140, SMALL_TEXT_SIZE, VALUE_COLOR);
+            renderer->drawString(buf, false, tempOffsets[i].x, y, SMALL_TEXT_SIZE, VALUE_COLOR);
+        }
+
+        y += 30;
+
+        static struct
+        {
+            SysClkPowerSensor s;
+            std::uint32_t x;
+        } powerOffsets[SysClkPowerSensor_EnumMax] = {
+            { SysClkPowerSensor_Now, 204 },
+            { SysClkPowerSensor_Avg, 342 },
+        };
+
+        renderer->drawString("Battery Power", false, 20, y, SMALL_TEXT_SIZE, DESC_COLOR);
+
+        renderer->drawString("Now:", false, 160, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        renderer->drawString("Avg:", false, 304, y, SMALL_TEXT_SIZE, DESC_COLOR);
+        for(unsigned int i = 0; i < SysClkPowerSensor_EnumMax; i++)
+        {
+            std::uint32_t mw = this->context->power[powerOffsets[i].s];
+            snprintf(buf, sizeof(buf), "%d mW", mw);
+            renderer->drawString(buf, false, powerOffsets[i].x, y, SMALL_TEXT_SIZE, VALUE_COLOR);
         }
     }
 }
