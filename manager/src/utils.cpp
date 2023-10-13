@@ -131,7 +131,7 @@ brls::SelectListItem* createFreqListItem(SysClkModule module, uint32_t selectedF
         uint32_t freq = table[i];
 
         if (freq / 1000000 == selectedFreqInMHz)
-            selected = i + 1;
+            selected = i;
 
         char clock[16];
         snprintf(clock, sizeof(clock), "%d MHz", freq / 1000000);
