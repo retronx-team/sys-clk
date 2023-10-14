@@ -223,7 +223,7 @@ std::uint32_t Board::GetRealHz(SysClkModule module)
 void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount)
 {
     Result rc = 0;
-    PcvClockRatesListType type;
+    PcvExtClockRatesListType type;
     s32 tmpInMaxCount = maxCount;
     s32 tmpOutCount = 0;
 
@@ -234,18 +234,18 @@ void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32
         rc = clkrstOpenSession(&session, Board::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
 
-        rc = clkrstGetPossibleClockRates(&session, outList, tmpInMaxCount, &type, &tmpOutCount);
+        rc = clkrstExtGetPossibleClockRates(&session, outList, tmpInMaxCount, &type, &tmpOutCount);
         ASSERT_RESULT_OK(rc, "clkrstGetPossibleClockRates");
 
         clkrstCloseSession(&session);
     }
     else
     {
-        rc = pcvGetPossibleClockRates(Board::GetPcvModule(module), outList, tmpInMaxCount, &type, &tmpOutCount);
+        rc = pcvExtGetPossibleClockRates(Board::GetPcvModule(module), outList, tmpInMaxCount, &type, &tmpOutCount);
         ASSERT_RESULT_OK(rc, "pcvGetPossibleClockRates");
     }
 
-    if(type != PcvClockRatesListType_Discrete)
+    if(type != PcvExtClockRatesListType_Discrete)
     {
         ERROR_THROW("Unexpected PcvClockRatesListType: %u (module = %s)", type, Board::GetModuleName(module, false));
     }

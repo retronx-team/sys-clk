@@ -11,6 +11,7 @@
 #pragma once
 
 #include "nxExt/apm_ext.h"
+#include "nxExt/pcv_ext.h"
 #include "nxExt/t210_clk.h"
 #include "nxExt/max17050.h"
 #include "nxExt/ipc_server.h"
