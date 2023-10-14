@@ -297,7 +297,21 @@ std::int32_t Board::GetTsTemperatureMilli(TsLocation location)
     Result rc;
     std::int32_t millis = 0;
 
-    if(hosversionAtLeast(14,0,0))
+    if(hosversionAtLeast(17,0,0))
+    {
+        TsExtSession session = {0};
+        float temp = 0;
+
+        rc = tsExtOpenSession(&session, location);
+        ASSERT_RESULT_OK(rc, "tsExtOpenSession(%u)", location);
+
+        rc = tsExtSessionGetTemperature(&session, &temp);
+        ASSERT_RESULT_OK(rc, "tsExtSessionGetTemperature(%u)", location);
+        millis = temp * 1000;
+
+        tsExtCloseSession(&session);
+    }
+    else if(hosversionAtLeast(14,0,0))
     {
         rc = tsGetTemperature(location, &millis);
         ASSERT_RESULT_OK(rc, "tsGetTemperature(%u)", location);

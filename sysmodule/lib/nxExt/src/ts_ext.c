@@ -8,12 +8,21 @@
  * --------------------------------------------------------------------------
  */
 
-#pragma once
-
-#include "nxExt/apm_ext.h"
-#include "nxExt/pcv_ext.h"
 #include "nxExt/ts_ext.h"
-#include "nxExt/t210_clk.h"
-#include "nxExt/max17050.h"
-#include "nxExt/ipc_server.h"
-#include "nxExt/cpp/lockable_mutex.h"
+
+Result tsExtOpenSession(TsExtSession *out, TsLocation dev) {
+    const u32 in = ((u32)dev + 1) | 0x41000000;
+    return serviceDispatchIn(tsGetServiceSession(), 4, in,
+        .out_num_objects = 1,
+        .out_objects = &out->s,
+    );
+}
+
+
+void tsExtCloseSession(TsExtSession *session) {
+    serviceClose(&session->s);
+}
+
+Result tsExtSessionGetTemperature(TsExtSession *session, float *temperature) {
+    return serviceDispatchOut(&session->s, 4, *temperature);
+}
