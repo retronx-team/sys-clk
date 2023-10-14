@@ -14,6 +14,7 @@
 #include <map>
 #include <mutex>
 #include <initializer_list>
+#include <string>
 #include <switch.h>
 #include <minIni.h>
 #include <nxExt.h>
