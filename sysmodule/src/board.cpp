@@ -223,7 +223,7 @@ std::uint32_t Board::GetRealHz(SysClkModule module)
 void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount)
 {
     Result rc = 0;
-    PcvExtClockRatesListType type;
+    PcvClockRatesListType type;
     s32 tmpInMaxCount = maxCount;
     s32 tmpOutCount = 0;
 
@@ -234,18 +234,18 @@ void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32
         rc = clkrstOpenSession(&session, Board::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
 
-        rc = clkrstExtGetPossibleClockRates(&session, outList, tmpInMaxCount, &type, &tmpOutCount);
+        rc = clkrstGetPossibleClockRates(&session, outList, tmpInMaxCount, &type, &tmpOutCount);
         ASSERT_RESULT_OK(rc, "clkrstGetPossibleClockRates");
 
         clkrstCloseSession(&session);
     }
     else
     {
-        rc = pcvExtGetPossibleClockRates(Board::GetPcvModule(module), outList, tmpInMaxCount, &type, &tmpOutCount);
+        rc = pcvGetPossibleClockRates(Board::GetPcvModule(module), outList, tmpInMaxCount, &type, &tmpOutCount);
         ASSERT_RESULT_OK(rc, "pcvGetPossibleClockRates");
     }
 
-    if(type != PcvExtClockRatesListType_Discrete)
+    if(type != PcvClockRatesListType_Discrete)
     {
         ERROR_THROW("Unexpected PcvClockRatesListType: %u (module = %s)", type, Board::GetModuleName(module, false));
     }
@@ -299,17 +299,17 @@ std::int32_t Board::GetTsTemperatureMilli(TsLocation location)
 
     if(hosversionAtLeast(17,0,0))
     {
-        TsExtSession session = {0};
+        TsSession session = {0};
         float temp = 0;
 
-        rc = tsExtOpenSession(&session, location);
-        ASSERT_RESULT_OK(rc, "tsExtOpenSession(%u)", location);
+        rc = tsOpenSession(&session, ((u32)location + 1) | 0x41000000);
+        ASSERT_RESULT_OK(rc, "tsOpenSession(%u)", location);
 
-        rc = tsExtSessionGetTemperature(&session, &temp);
-        ASSERT_RESULT_OK(rc, "tsExtSessionGetTemperature(%u)", location);
+        rc = tsSessionGetTemperature(&session, &temp);
+        ASSERT_RESULT_OK(rc, "tsSessionGetTemperature(%u)", location);
         millis = temp * 1000;
 
-        tsExtCloseSession(&session);
+        tsSessionClose(&session);
     }
     else if(hosversionAtLeast(14,0,0))
     {
