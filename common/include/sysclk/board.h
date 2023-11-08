@@ -54,6 +54,13 @@ typedef enum
     SysClkPowerSensor_EnumMax
 } SysClkPowerSensor;
 
+typedef enum
+{
+    SysClkRamLoad_All = 0,
+    SysClkRamLoad_Cpu,
+    SysClkRamLoad_EnumMax
+} SysClkRamLoad;
+
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)

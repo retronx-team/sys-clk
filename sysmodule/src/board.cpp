@@ -370,6 +370,21 @@ std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
     return 0;
 }
 
+std::uint32_t Board::GetRamLoad(SysClkRamLoad loadSource)
+{
+    switch(loadSource)
+    {
+        case SysClkRamLoad_All:
+            return t210EmcLoadAll();
+        case SysClkRamLoad_Cpu:
+            return t210EmcLoadCpu();
+        default:
+            ASSERT_ENUM_VALID(SysClkRamLoad, loadSource);
+    }
+
+    return 0;
+}
+
 SysClkSocType Board::GetSocType() {
     return g_socType;
 }

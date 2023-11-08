@@ -314,6 +314,12 @@ bool ClockManager::RefreshContext()
         this->context->realFreqs[module] = realHz;
     }
 
+    // ram load do not and should not force a refresh, hasChanged untouched
+    for (unsigned int loadSource = 0; loadSource < SysClkRamLoad_EnumMax; loadSource++)
+    {
+        this->context->ramLoad[loadSource] = Board::GetRamLoad((SysClkRamLoad)loadSource);
+    }
+
     if(this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))
     {
         FileUtils::WriteContextToCsv(this->context);

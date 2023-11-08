@@ -1,7 +1,6 @@
 /*
- * Copyright (c) 2018 naehrwert
- * Copyright (c) 2018-2022 CTCaer
- * Copyright (c) 2022 p-sam
+ * Copyright (c) 2020-2023 CTCaer
+ * Copyright (c) 2023 p-sam
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -16,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "nxExt/t210_clk.h"
+#include "nxExt/t210.h"
 
 #define WAIT_NS 1000000000UL
 
@@ -53,12 +52,70 @@
 
 #define CLOCK(x) (*(volatile u32 *)(g_clk_base + (x)))
 
+/* Actmon Global registers */
+#define ACTMON_GLB_STATUS          0x0
+#define ACTMON_MCCPU_MON_ACT      BIT(8)
+#define ACTMON_MCALL_MON_ACT      BIT(9)
+#define ACTMON_CPU_FREQ_MON_ACT   BIT(10)
+#define ACTMON_BPMP_MON_ACT       BIT(14)
+#define ACTMON_CPU_MON_ACT        BIT(15)
+
+#define ACTMON_GLB_PERIOD_CTRL     0x4
+#define ACTMON_GLB_PERIOD_USEC    BIT(8)
+#define ACTMON_GLB_PERIOD_SAMPLE(n) (((n) - 1) & 0xFF)
+
+/* Actmon Device Registers */
+#define ACTMON_DEV_SIZE           0x40
+/* Actmon CTRL */
+#define ACTMON_DEV_CTRL_K_VAL(k)                       (((k) & 7) << 10)
+#define ACTMON_DEV_CTRL_ENB_PERIODIC                   BIT(18)
+#define ACTMON_DEV_CTRL_ENB                            BIT(31)
+
+#define ACTMON_PERIOD_MS 20
+#define DEV_COUNT_WEIGHT 1024
+
+#define ACTMON_BASE     (g_act_base + 0x800)
+#define ACTMON_DEV_BASE (ACTMON_BASE + 0x80)
+#define ACTMON(x) (*(volatile u32 *)(ACTMON_BASE + (x)))
+
+typedef enum _actmon_dev_t
+{
+    ACTMON_DEV_CPU,
+    ACTMON_DEV_BPMP,
+    ACTMON_DEV_AHB,
+    ACTMON_DEV_APB,
+    ACTMON_DEV_CPU_FREQ,
+    ACTMON_DEV_MC_ALL,
+    ACTMON_DEV_MC_CPU,
+
+    ACTMON_DEV_NUM,
+} actmon_dev_t;
+
+typedef struct _actmon_dev_reg_t
+{
+    vu32 ctrl;
+    vu32 upper_wnark;
+    vu32 lower_wmark;
+    vu32 init_avg;
+    vu32 avg_upper_wmark;
+    vu32 avg_lower_wmark;
+    vu32 count_weight;
+    vu32 count;
+    vu32 avg_count;
+    vu32 intr_status;
+    vu32 ctrl2;
+    vu32 rsvd[5];
+} actmon_dev_reg_t;
+
 static uintptr_t g_clk_base = 0;
 static uintptr_t g_gpu_base = 0;
+static uintptr_t g_act_base = 0;
 static u64 g_update_ticks = 0;
 static u32 g_cpu_freq = 0;
 static u32 g_gpu_freq = 0;
 static u32 g_mem_freq = 0;
+static u32 g_emc_lall = 0;
+static u32 g_emc_lcpu = 0;
 
 static u32 _clock_get_dev_freq(u32 id)
 {
@@ -94,6 +151,23 @@ static u32 _clock_get_dev_freq(u32 id)
     u32 freq_khz = (u64)cnt * pto_osc / pto_win / 1000;
 
     return freq_khz;
+}
+
+static void _actmon_dev_enable(actmon_dev_t dev, u32 freq, u32 weight)
+{
+    actmon_dev_reg_t *regs = (actmon_dev_reg_t *)(ACTMON_DEV_BASE + (dev * ACTMON_DEV_SIZE));
+
+    regs->init_avg = (u32)freq * ACTMON_PERIOD_MS / 2;
+    regs->count_weight = weight;
+
+    regs->ctrl = ACTMON_DEV_CTRL_ENB | ACTMON_DEV_CTRL_ENB_PERIODIC | ACTMON_DEV_CTRL_K_VAL(3); // 8 samples average.
+}
+
+static u32 _actmon_dev_get_count_avg(actmon_dev_t dev)
+{
+    actmon_dev_reg_t *regs = (actmon_dev_reg_t *)(ACTMON_DEV_BASE + (dev * ACTMON_DEV_SIZE));
+
+    return regs->avg_count;
 }
 
 static inline Result _svcQueryIoMappingFallback(u64* virtaddr, u64 physaddr, u64 size)
@@ -154,6 +228,33 @@ static void _clock_update_freqs(void)
     u32 divn  = (coeff >>  8) & 0xFF;
     u32 divp  = (coeff >> 16) & 0x3F;
     g_gpu_freq = osc * divn / (divm * divp) / 2;
+
+    if (!g_act_base)
+    {
+        _svcQueryIoMappingFallback(&g_act_base, 0x6000C000ul, 0x1000);
+    }
+
+    if(!g_act_base)
+    {
+        return;
+    }
+
+    u32 emc_freq = g_mem_freq / 1000;
+
+    // Check if actmon is disabled
+    if (!(ACTMON(ACTMON_GLB_STATUS) & ACTMON_MCALL_MON_ACT))
+    {
+        ACTMON(ACTMON_GLB_PERIOD_CTRL) = ACTMON_GLB_PERIOD_SAMPLE(ACTMON_PERIOD_MS);
+        _actmon_dev_enable(ACTMON_DEV_MC_ALL, emc_freq, 256 * 4);
+    }
+
+    // Check if actmon is disabled
+    if (!(ACTMON(ACTMON_GLB_STATUS) & ACTMON_MCCPU_MON_ACT))
+        _actmon_dev_enable(ACTMON_DEV_MC_CPU, emc_freq, 256 * 4);
+
+    // Get 1000 -> 100.0.
+    g_emc_lall = (u64)_actmon_dev_get_count_avg(ACTMON_DEV_MC_ALL) * 10 * 100 / (emc_freq * ACTMON_PERIOD_MS);
+    g_emc_lcpu = (u64)_actmon_dev_get_count_avg(ACTMON_DEV_MC_CPU) * 10 * 100 / (emc_freq * ACTMON_PERIOD_MS);
 }
 
 
@@ -173,4 +274,16 @@ u32 t210ClkGpuFreq(void)
 {
     _clock_update_freqs();
     return g_gpu_freq;
+}
+
+u32 t210EmcLoadAll()
+{
+    _clock_update_freqs();
+    return g_emc_lall;
+}
+
+u32 t210EmcLoadCpu()
+{
+    _clock_update_freqs();
+    return g_emc_lcpu;
 }

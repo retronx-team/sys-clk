@@ -20,6 +20,8 @@ extern "C"
 u32 t210ClkCpuFreq(void);
 u32 t210ClkMemFreq(void);
 u32 t210ClkGpuFreq(void);
+u32 t210EmcLoadAll(void);
+u32 t210EmcLoadCpu(void);
 
 #ifdef __cplusplus
 }

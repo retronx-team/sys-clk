@@ -30,6 +30,7 @@ class Board
     static void GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount);
     static std::uint32_t GetTemperatureMilli(SysClkThermalSensor sensor);
     static std::int32_t GetPowerMw(SysClkPowerSensor sensor);
+    static std::uint32_t GetRamLoad(SysClkRamLoad load);
     static SysClkSocType GetSocType();
 
   protected:
