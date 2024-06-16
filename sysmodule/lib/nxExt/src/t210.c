@@ -170,12 +170,12 @@ static u32 _actmon_dev_get_count_avg(actmon_dev_t dev)
     return regs->avg_count;
 }
 
-static inline Result _svcQueryIoMappingFallback(u64* virtaddr, u64 physaddr, u64 size)
+static inline Result _svcQueryMemoryMappingFallback(u64* virtaddr, u64 physaddr, u64 size)
 {
     if(hosversionAtLeast(10,0,0))
     {
         u64 out_size;
-        return svcQueryIoMapping(virtaddr, &out_size, physaddr, size);
+        return svcQueryMemoryMapping(virtaddr, &out_size, physaddr, size);
     }
     else
     {
@@ -195,7 +195,7 @@ static void _clock_update_freqs(void)
 
     if (!g_clk_base)
     {
-        _svcQueryIoMappingFallback(&g_clk_base, 0x60006000ul, 0x1000);
+        _svcQueryMemoryMappingFallback(&g_clk_base, 0x60006000ul, 0x1000);
     }
 
     if(!g_clk_base)
@@ -208,7 +208,7 @@ static void _clock_update_freqs(void)
 
     if (!g_gpu_base)
     {
-        _svcQueryIoMappingFallback(&g_gpu_base, 0x57000000ul, 0x1000000);
+        _svcQueryMemoryMappingFallback(&g_gpu_base, 0x57000000ul, 0x1000000);
     }
 
     if (!g_gpu_base)
@@ -231,7 +231,7 @@ static void _clock_update_freqs(void)
 
     if (!g_act_base)
     {
-        _svcQueryIoMappingFallback(&g_act_base, 0x6000C000ul, 0x1000);
+        _svcQueryMemoryMappingFallback(&g_act_base, 0x6000C000ul, 0x1000);
     }
 
     if(!g_act_base)

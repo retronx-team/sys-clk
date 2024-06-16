@@ -111,7 +111,7 @@
 				"svcCreateEvent": "0x45",
 				"svcCreateInterruptEvent": "0x53",
 				"svcReadWriteRegister": "0x4E",
-				"svcQueryIoMapping": "0x55",
+				"svcQueryMemoryMapping": "0x55",
 				"svcCreateDeviceAddressSpace": "0x56",
 				"svcAttachDeviceAddressSpace": "0x57",
 				"svcDetachDeviceAddressSpace": "0x58",
