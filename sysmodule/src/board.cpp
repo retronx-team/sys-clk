@@ -297,7 +297,11 @@ std::int32_t Board::GetTsTemperatureMilli(TsLocation location)
     Result rc;
     std::int32_t millis = 0;
 
-    if(hosversionAtLeast(17,0,0))
+    if(hosversionAtLeast(19,0,0))
+    {
+        // TODO: see https://github.com/retronx-team/sys-clk/issues/85
+    }
+    else if(hosversionAtLeast(17,0,0))
     {
         TsSession session = {0};
         float temp = 0;
