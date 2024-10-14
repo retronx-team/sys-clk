@@ -13,7 +13,7 @@
 #define I2C_CMD_SND 0
 #define I2C_CMD_RCV 1
 
-Result i2csessionExtSendU8Receive(I2cSession* s, u8 in, void* out, u8 out_size)
+Result i2csessionExtRegReceive(I2cSession* s, u8 in, void* out, u8 out_size)
 {
     u8 cmdlist[5] = {
         I2C_CMD_SND | (I2cTransactionOption_Start << 6),

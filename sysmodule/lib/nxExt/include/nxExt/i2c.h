@@ -17,7 +17,7 @@ extern "C"
 
 #include <switch.h>
 
-Result i2csessionExtSendU8Receive(I2cSession* s, u8 in, void* out, u8 out_size);
+Result i2csessionExtRegReceive(I2cSession* s, u8 in, void* out, u8 out_size);
 
 #ifdef __cplusplus
 }

@@ -36,12 +36,12 @@ static s32 g_temp_soc = 0;
 static Result _tmp451_get_temp(u8 reg, u8 dec_reg, s32* out)
 {
     u8 val = 0;
-    Result rc = i2csessionExtSendU8Receive(&g_i2c_session, reg, &val, sizeof(val));
+    Result rc = i2csessionExtRegReceive(&g_i2c_session, reg, &val, sizeof(val));
 
     if(R_SUCCEEDED(rc))
     {
         *out = (s32)val * 1000;
-        rc = i2csessionExtSendU8Receive(&g_i2c_session, dec_reg, &val, sizeof(val));
+        rc = i2csessionExtRegReceive(&g_i2c_session, dec_reg, &val, sizeof(val));
     }
 
     if(R_SUCCEEDED(rc))

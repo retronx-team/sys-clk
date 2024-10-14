@@ -98,7 +98,7 @@ void Board::Initialize()
     ASSERT_RESULT_OK(rc, "max17050Initialize");
 
     rc = tmp451Initialize();
-    ASSERT_RESULT_OK(rc, "max17050Initialize");
+    ASSERT_RESULT_OK(rc, "tmp451Initialize");
 
     FetchHardwareInfos();
 }
