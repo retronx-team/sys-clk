@@ -37,5 +37,4 @@ class Board
     static void FetchHardwareInfos();
     static PcvModule GetPcvModule(SysClkModule sysclkModule);
     static PcvModuleId GetPcvModuleId(SysClkModule sysclkModule);
-    static std::int32_t GetTsTemperatureMilli(TsLocation location);
 };

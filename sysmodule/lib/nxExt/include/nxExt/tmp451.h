@@ -10,10 +10,18 @@
 
 #pragma once
 
-#include "nxExt/apm_ext.h"
-#include "nxExt/i2c.h"
-#include "nxExt/t210.h"
-#include "nxExt/max17050.h"
-#include "nxExt/tmp451.h"
-#include "nxExt/ipc_server.h"
-#include "nxExt/cpp/lockable_mutex.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <switch.h>
+
+Result tmp451Initialize(void);
+void tmp451Exit(void);
+s32 tmp451TempPcb(void);
+s32 tmp451TempSoc(void);
+
+#ifdef __cplusplus
+}
+#endif

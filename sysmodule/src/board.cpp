@@ -88,9 +88,6 @@ void Board::Initialize()
     rc = psmInitialize();
     ASSERT_RESULT_OK(rc, "psmInitialize");
 
-    rc = tsInitialize();
-    ASSERT_RESULT_OK(rc, "tsInitialize");
-
     if(HOSSVC_HAS_TC)
     {
         rc = tcInitialize();
@@ -98,6 +95,9 @@ void Board::Initialize()
     }
 
     rc = max17050Initialize();
+    ASSERT_RESULT_OK(rc, "max17050Initialize");
+
+    rc = tmp451Initialize();
     ASSERT_RESULT_OK(rc, "max17050Initialize");
 
     FetchHardwareInfos();
@@ -116,7 +116,6 @@ void Board::Exit()
 
     apmExtExit();
     psmExit();
-    tsExit();
 
     if(HOSSVC_HAS_TC)
     {
@@ -124,6 +123,7 @@ void Board::Exit()
     }
 
     max17050Exit();
+    tmp451Exit();
 }
 
 SysClkProfile Board::GetProfile()
@@ -292,55 +292,17 @@ void Board::ResetToStock()
     }
 }
 
-std::int32_t Board::GetTsTemperatureMilli(TsLocation location)
-{
-    Result rc;
-    std::int32_t millis = 0;
-
-    if(hosversionAtLeast(19,0,0))
-    {
-        // TODO: see https://github.com/retronx-team/sys-clk/issues/85
-    }
-    else if(hosversionAtLeast(17,0,0))
-    {
-        TsSession session = {0};
-        float temp = 0;
-
-        rc = tsOpenSession(&session, ((u32)location + 1) | 0x41000000);
-        ASSERT_RESULT_OK(rc, "tsOpenSession(%u)", location);
-
-        rc = tsSessionGetTemperature(&session, &temp);
-        ASSERT_RESULT_OK(rc, "tsSessionGetTemperature(%u)", location);
-        millis = temp * 1000;
-
-        tsSessionClose(&session);
-    }
-    else if(hosversionAtLeast(14,0,0))
-    {
-        rc = tsGetTemperature(location, &millis);
-        ASSERT_RESULT_OK(rc, "tsGetTemperature(%u)", location);
-        millis *= 1000;
-    }
-    else
-    {
-        rc = tsGetTemperatureMilliC(location, &millis);
-        ASSERT_RESULT_OK(rc, "tsGetTemperatureMilliC(%u)", location);
-    }
-
-    return millis;
-}
-
 std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
 {
     std::int32_t millis = 0;
 
     if(sensor == SysClkThermalSensor_SOC)
     {
-        millis = GetTsTemperatureMilli(TsLocation_External);
+        millis = tmp451TempSoc();
     }
     else if(sensor == SysClkThermalSensor_PCB)
     {
-        millis = GetTsTemperatureMilli(TsLocation_Internal);
+        millis = tmp451TempPcb();
     }
     else if(sensor == SysClkThermalSensor_Skin)
     {

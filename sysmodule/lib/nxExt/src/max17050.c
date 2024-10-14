@@ -23,8 +23,9 @@
  */
 
 #include "nxExt/max17050.h"
+#include "nxExt/i2c.h"
 
-#define MAX17050_WAIT_NS 1175800000UL
+#define MAX17050_WAIT_NS 1000000000UL
 
 #define MAX17050_VCELL      0x09
 #define MAX17050_Current    0x0A
@@ -39,28 +40,16 @@ static u64 g_update_ticks = 0;
 static s32 g_power_now = 0;
 static s32 g_power_avg = 0;
 
-static Result _max17050_get_reg(u8 reg, u16* out)
-{
-    Result rc = i2csessionSendAuto(&g_i2c_session, &reg, sizeof(reg), I2cTransactionOption_All);
-
-    if(R_SUCCEEDED(rc))
-    {
-        rc = i2csessionReceiveAuto(&g_i2c_session, out, sizeof(*out), I2cTransactionOption_All);
-    }
-
-    return rc;
-}
-
 static Result _max17050_get_power(u8 creg, u8 vreg, s32 *out_mw)
 {
     u16 current = 0;
     u16 voltage = 0;
 
-    Result rc = _max17050_get_reg(creg, &current);
+    Result rc = i2csessionExtSendU8Receive(&g_i2c_session, creg, &current, sizeof(current));
 
     if(R_SUCCEEDED(rc))
     {
-        rc = _max17050_get_reg(vreg, &voltage);
+        rc = i2csessionExtSendU8Receive(&g_i2c_session, vreg, &voltage, sizeof(voltage));
     }
 
     if(R_SUCCEEDED(rc))

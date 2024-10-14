@@ -10,10 +10,15 @@
 
 #pragma once
 
-#include "nxExt/apm_ext.h"
-#include "nxExt/i2c.h"
-#include "nxExt/t210.h"
-#include "nxExt/max17050.h"
-#include "nxExt/tmp451.h"
-#include "nxExt/ipc_server.h"
-#include "nxExt/cpp/lockable_mutex.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <switch.h>
+
+Result i2csessionExtSendU8Receive(I2cSession* s, u8 in, void* out, u8 out_size);
+
+#ifdef __cplusplus
+}
+#endif

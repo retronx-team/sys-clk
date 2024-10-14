@@ -222,13 +222,6 @@ static void _clock_update_freqs(void)
         return;
     }
 
-    const u32 osc = 38400000;
-    u32 coeff = GPU_TRIM_SYS_GPCPLL(GPU_TRIM_SYS_GPCPLL_COEFF);
-    u32 divm  = coeff & 0xFF;
-    u32 divn  = (coeff >>  8) & 0xFF;
-    u32 divp  = (coeff >> 16) & 0x3F;
-    g_gpu_freq = osc * divn / (divm * divp) / 2;
-
     if (!g_act_base)
     {
         _svcQueryMemoryMappingFallback(&g_act_base, 0x6000C000ul, 0x1000);
@@ -238,6 +231,13 @@ static void _clock_update_freqs(void)
     {
         return;
     }
+
+    const u32 osc = 38400000;
+    u32 coeff = GPU_TRIM_SYS_GPCPLL(GPU_TRIM_SYS_GPCPLL_COEFF);
+    u32 divm  = coeff & 0xFF;
+    u32 divn  = (coeff >>  8) & 0xFF;
+    u32 divp  = (coeff >> 16) & 0x3F;
+    g_gpu_freq = osc * divn / (divm * divp) / 2;
 
     u32 emc_freq = g_mem_freq / 1000;
 
