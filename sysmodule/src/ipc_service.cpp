@@ -145,7 +145,7 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
             break;
 
         case SysClkIpcCmd_GetConfigValues:
-            *out_dataSize = sizeof(SysClkConfigValueList); // Fixed by Souldbminer :)
+            *out_dataSize = sizeof(SysClkConfigValueList);
             return ipcSrv->GetConfigValues((SysClkConfigValueList*)out_data);
 
         case SysClkIpcCmd_SetConfigValues:
