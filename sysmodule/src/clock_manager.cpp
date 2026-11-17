@@ -33,6 +33,8 @@ ClockManager::ClockManager()
 
     this->running = false;
     this->lastTempLogNs = 0;
+    this->lastFreqLogNs = 0;
+    this->lastPowerLogNs = 0;
     this->lastCsvWriteNs = 0;
 }
 
@@ -103,6 +105,12 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
 
 std::uint32_t ClockManager::GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz)
 {
+    if(this->freqTable[module].count == 0)
+    {
+        // empty table (freq list unavailable): never index it
+        return 0;
+    }
+
     std::uint32_t* freqs = &this->freqTable[module].list[0];
     size_t count = this->freqTable[module].count - 1;
 
@@ -170,7 +178,10 @@ void ClockManager::RefreshFreqTableRow(SysClkModule module)
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
-    if (this->RefreshContext() || this->config->Refresh())
+    // both must run every tick (|| would skip the config reload when the context changed)
+    bool contextChanged = this->RefreshContext();
+    bool configChanged = this->config->Refresh();
+    if (contextChanged || configChanged)
     {
         std::uint32_t targetHz = 0;
         std::uint32_t maxHz = 0;
@@ -189,7 +200,7 @@ void ClockManager::Tick()
                 maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
                 nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
 
-                if (nearestHz != this->context->freqs[module] && this->context->enabled)
+                if (nearestHz && nearestHz != this->context->freqs[module] && this->context->enabled)
                 {
                     FileUtils::LogLine(
                         "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
