@@ -9,6 +9,16 @@ Copy the `atmosphere`, and `switch` folders at the root of your sdcard, overwrit
 
 **Note:** sys-clk-overlay requires to have [Tesla](https://gbatemp.net/threads/tesla-the-nintendo-switch-overlay-menu.557362/) installed and running
 
+### HOS 23.x (23.0.0 – 23.5.0)
+
+HOS 21.0.0 changed the thread-local storage ABI. Atmosphère's compatibility patch for
+homebrew compiled with older libnx no longer works on 23.x, so **old sys-clk binaries crash**.
+
+* Use Atmosphère **1.12.2 or newer** (23.5.0 support).
+* Build sys-clk with **libnx v4.10.0 or newer** (`dkp-pacman -Syu libnx switch-tools`).
+  `build.sh` refuses to package binaries built with an outdated libnx.
+* Update your overlay loader too (nx-ovlloader / Tesla menu or Ultrahand), as it is also homebrew built with libnx.
+
 ## Relevant files
 
 * Config file allows one to set custom clocks per docked state and title id, described below

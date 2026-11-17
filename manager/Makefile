@@ -54,7 +54,11 @@ APP_RESOURCES		:=	romfs:/
 #---------------------------------------------------------------------------------
 # version control constants
 #---------------------------------------------------------------------------------
-TARGET_VERSION	:= $(shell git describe --dirty --always --tags)
+TARGET_VERSION	:= $(shell git describe --dirty --always --tags 2>/dev/null)
+# Fallback when building from a source archive (no .git folder)
+ifeq ($(strip $(TARGET_VERSION)),)
+TARGET_VERSION	:= 2.0.1-hos23.5
+endif
 APP_VERSION		:= $(TARGET_VERSION)
 
 #---------------------------------------------------------------------------------
