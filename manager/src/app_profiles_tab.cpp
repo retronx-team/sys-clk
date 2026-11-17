@@ -109,8 +109,7 @@ AppProfilesTab::AppProfilesTab()
     // Applications list
     NsApplicationRecord record;
     uint64_t tid;
-    // ~144 KiB: keep it off the stack
-    NsApplicationControlData* controlData = (NsApplicationControlData*) malloc(sizeof(NsApplicationControlData));
+    NsApplicationControlData controlData;
     NacpLanguageEntry* langEntry = NULL;
 
     Result rc;
@@ -118,7 +117,7 @@ AppProfilesTab::AppProfilesTab()
     int recordCount     = 0;
     size_t controlSize  = 0;
 
-    while (controlData != nullptr)
+    while (true)
     {
         // Record
         rc = nsListApplicationRecord(&record, sizeof(record), i, &recordCount);
@@ -134,29 +133,24 @@ AppProfilesTab::AppProfilesTab()
         tid = record.application_id;
 
         // Control data
-        // A single unreadable title (archived, gamecard removed, corrupted...) must not
-        // hide all the following ones: skip it instead of stopping the listing.
-        rc = nsGetApplicationControlData(NsApplicationControlSource_Storage, tid, controlData, sizeof(*controlData), &controlSize);
+        rc = nsGetApplicationControlData(NsApplicationControlSource_Storage, tid, &controlData, sizeof(controlData), &controlSize);
         if (R_FAILED(rc))
         {
-            brls::Logger::error("nsGetApplicationControlData(%016lX) failed: 0x%x", tid, rc);
-            i++;
-            continue;
+            errorResult("nsGetApplicationControlData", rc);
+            break;
         }
 
         // Decompress lang entries if required (fixes garbled text for updated titles like BOTW on 21.0.0+)
-        if(!_nacpConvertTitleData(&controlData->nacp)) {
-            i++;
-            continue;
+        if(!_nacpConvertTitleData(&controlData.nacp)) {
+            break;
         }
 
         // Language entry
-        rc = nacpGetLanguageEntry(&controlData->nacp, &langEntry);
-        if (R_FAILED(rc) || langEntry == NULL)
+        rc = nacpGetLanguageEntry(&controlData.nacp, &langEntry);
+        if (R_FAILED(rc))
         {
-            brls::Logger::error("nacpGetLanguageEntry(%016lX) failed: 0x%x", tid, rc);
-            i++;
-            continue;
+            errorResult("nacpGetLanguageEntry", rc);
+            break;
         }
 
         // Name
@@ -167,17 +161,12 @@ AppProfilesTab::AppProfilesTab()
         }
 
         Title* title = (Title*) malloc(sizeof(Title));
-        if (title == nullptr)
-        {
-            brls::Logger::error("Out of memory while listing applications");
-            break;
-        }
         title->tid = tid;
 
         memset(title->name, 0, sizeof(title->name));
         strncpy(title->name, langEntry->name, sizeof(title->name)-1);
 
-        memcpy(title->icon, controlData->icon, sizeof(title->icon));
+        memcpy(title->icon, controlData.icon, sizeof(title->icon));
 
         // Profile
         rc = sysclkIpcGetProfileCount(tid, &title->profileCount);
@@ -221,8 +210,6 @@ AppProfilesTab::AppProfilesTab()
 
         i++;
     }
-
-    free(controlData);
 
     // Empty list message
     this->emptyListLabel = new brls::Label(brls::LabelStyle::REGULAR, "", true);
