@@ -1,0 +1,30 @@
+name: Build sys-clk
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Image maintained by devkitPro, always ships the latest libnx (>= 4.10 required for HOS 23.x)
+    container: devkitpro/devkita64:latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update devkitPro packages
+        run: |
+          dkp-pacman -Syu --noconfirm libnx switch-tools || true
+
+      - name: Build
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          bash build.sh "$GITHUB_WORKSPACE/dist"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sys-clk
+          path: dist
