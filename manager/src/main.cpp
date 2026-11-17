@@ -97,6 +97,14 @@ int main(int argc, char* argv[])
 
         // Add the root view to the stack
         brls::Application::pushView(mainFrame);
+
+#ifdef __SWITCH__
+        // Applet mode (album) has very little memory: listing many applications can crash
+        if (appletGetAppletType() != AppletType_Application && appletGetAppletType() != AppletType_SystemApplication)
+        {
+            brls::Application::notify("Applet mode: low memory. Launch via a game (hold R) if the app crashes.");
+        }
+#endif
     }
 
     // Run the app
